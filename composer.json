@@ -1,5 +1,5 @@
 {
-    "name": "marsender/epub-loader",
+    "name": "mikespub/epub-loader",
     "description": "epub-loader is a utility resource for ebooks",
     "authors": [
         {
@@ -13,12 +13,15 @@
             "role": "Developer"
         }
     ],
-    "type": "project",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
     "require": {
+        "php": ">=7.4",
         "freearhey/wikidata": "^3.6",
+        "mikespub/php-epub-meta": "^1.5",
         "twig/twig": "^3.7"
     },
     "autoload": {
-        "classmap": ["src/", "../php-epub-meta/lib/"]
+        "classmap": ["src/"]
     }
 }
