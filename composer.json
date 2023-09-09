@@ -17,11 +17,13 @@
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=7.4",
-        "freearhey/wikidata": "^3.6",
-        "mikespub/php-epub-meta": "^1.5",
-        "twig/twig": "^3.7"
+        "mikespub/php-epub-meta": "^1.5"
     },
     "autoload": {
         "classmap": ["src/"]
+    },
+    "require-dev": {
+        "freearhey/wikidata": "^3.6",
+        "twig/twig": "^3.7"
     }
 }
