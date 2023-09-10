@@ -65,3 +65,4 @@ $gConfig['actions']['authors'] = 'Check authors in database';
 $gConfig['actions']['books'] = 'Check books for author';
 $gConfig['actions']['series'] = 'Check series for author';
 $gConfig['actions']['wikidata'] = 'Find Wikidata entity';
+$gConfig['actions']['google'] = 'Search Google Books';

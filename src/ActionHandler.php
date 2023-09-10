@@ -62,6 +62,10 @@ class ActionHandler
             case 'wikidata':
                 $result = $this->wikidata($matchId, $authorId);
                 break;
+            case 'google':
+                $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
+                $result = $this->google($authorId, $bookId, $matchId);
+                break;
             default:
                 $result = null;
         }
@@ -241,6 +245,48 @@ class ActionHandler
 
         // Return info
         return ['entity' => $entity, 'entityId' => $entityId, 'authorId' => $authorId, 'authors' => $authorList];
+    }
+
+    /**
+     * Summary of google
+     * @param int|null $authorId
+     * @param int|null $bookId
+     * @param string|null $matchId
+     * @return array<mixed>|null
+     */
+    public function google($authorId, $bookId, $matchId)
+    {
+        global $gErrorArray;
+
+        $authors = $this->db->getAuthors($authorId);
+        if (empty($authorId) && empty($bookId)) {
+            //$gErrorArray[$this->dbFileName] = "Please specify authorId and/or bookId";
+            //return null;
+            $authorId = array_keys($authors)[0];
+        }
+
+        if (count($authors) < 1) {
+            $gErrorArray[$this->dbFileName] = "Please specify a valid authorId";
+            return null;
+        }
+        $author = $authors[$authorId];
+
+        // Find match on Google Books
+        $googlematch = new GoogleMatch($this->cacheDir);
+
+        $matched = null;
+        if (!empty($bookId)) {
+            $books = $this->db->getBooks($bookId);
+            $query = $books[$bookId]['title'];
+            $matched = $googlematch->findWorksByTitle($query);
+        } else {
+            $books = $this->db->getBooksByAuthor($authorId);
+            $matched = $googlematch->findWorksByAuthor($author);
+        }
+        $authorList = $this->getAuthorList();
+
+        // Return info
+        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList];
     }
 
     /**
