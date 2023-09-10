@@ -8,11 +8,7 @@
 
 namespace Marsender\EPubLoader;
 
-use SebLucas\EPubMeta\Tools\ZipFile;
 use Exception;
-
-$ePubMetaPath = realpath(dirname(__DIR__, 2)) . '/php-epub-meta';
-require_once $ePubMetaPath . '/lib/Tools/ZipFile.php';
 
 /**
  * BookInfos class contains informations about a book,
@@ -80,7 +76,7 @@ class BookInfos
         }
 
         // Load the epub file
-        $ePub = new BookEPub($fullFileName, ZipFile::class);
+        $ePub = new BookEPub($fullFileName);
 
         // Check epub version
         $version = $ePub->getEpubVersion();

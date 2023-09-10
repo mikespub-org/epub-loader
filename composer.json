@@ -9,21 +9,24 @@
         },
         {
             "name": "mikespub",
-            "homepage": "https://github.com/mikespub-org/seblucas-cops",
+            "homepage": "https://github.com/mikespub-org/epub-loader",
             "role": "Developer"
         }
     ],
-    "type": "library",
+    "type": "project",
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=7.4",
-        "mikespub/php-epub-meta": "^1.5"
+        "freearhey/wikidata": "^3.6",
+        "mikespub/php-epub-meta": "^1.5",
+        "twig/twig": "^3.7"
     },
     "autoload": {
         "classmap": ["src/"]
     },
     "require-dev": {
-        "freearhey/wikidata": "^3.6",
-        "twig/twig": "^3.7"
+    },
+    "suggest": {
+        "mikespub/seblucas-cops": "COPS - Calibre OPDS (and HTML) PHP Server"
     }
 }
