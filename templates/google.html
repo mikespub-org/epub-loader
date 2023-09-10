@@ -73,14 +73,41 @@
 	{% if matched %}
 	Kind: {{matched.kind}}<br>
 	Total: {{matched.totalItems}}<br>
-	Items:
-	<ul>
+	<table width="100%">
+		<tr>
+			<th>Author</th>
+			<th>Image</th>
+			<th>Title</th>
+			<th>Date</th>
+			<th>Publisher</th>
+			<th>Summary</th>
+		</tr>
+		<ul>
 		{% for item in matched.items %}
-		<li>
-			{{ _self.show_item(item) }}
-		</li>
+		<tr>
+			<td>{{item.volumeInfo.authors|join(', ')}}</td>
+			<td><img src="{{item.volumeInfo.imageLinks.smallThumbnail}}" /></td>
+			<td><a href="{{item.selfLink}}">{{item.volumeInfo.title}}</a></td>
+			<td>{{item.volumeInfo.publishedDate}}</td>
+			<td>{{item.volumeInfo.publisher}}</td>
+			<td>{{item.searchInfo.textSnippet|raw}}</td>
+		</tr>
+		<tr>
+			<td colspan="6">
+				{{item.volumeInfo.description}}
+				{#
+				<ul>
+				{% for key, value in item.volumeInfo %}
+					<li>
+						{{ _self.tree(key, value) }}
+					</li>
+				{% endfor %}
+				</ul>
+				#}
+			</td>
+		</tr>
 		{% endfor %}
-	</ul>
+	</table>
 	{% else %}
 		No match found
 	{% endif %}
