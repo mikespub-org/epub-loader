@@ -36,15 +36,14 @@ $action = $_GET['action'] ?? null;
 $dbNum = isset($_GET['dbnum']) ? (int)$_GET['dbnum'] : null;
 
 $data = [
-    'app_name' => $gConfig['app_name'] ?? 'Epub loader',
-    'version' => $gConfig['app_version'] ?? '2.1',
+    'app_name' => $gConfig['app_name'] ?? 'Epub Loader',
+    'version' => $gConfig['version'] ?? '2.1',
     'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13($gConfig['admin_email']),
 ];
 
 // you can define extra actions for your app - see example.php
 $handler = new RequestHandler($gConfig, ExtraActions::class);
 $result = $handler->request($action, $dbNum);
-$template = $handler->template;
 
 if (is_array($result)) {
     $data = array_merge($data, $result);
@@ -52,9 +51,9 @@ if (is_array($result)) {
     $data['result'] = $result;
 }
 
-$loader = new \Twig\Loader\FilesystemLoader(dirname(__DIR__) . '/templates');
-$twig = new \Twig\Environment($loader);
+$templateDir = null;  // $handler->templateDir = dirname(__DIR__) . '/templates';
+$template = null;  // $handler->template;
 
 header('Content-type: text/html; charset=utf-8');
 
-echo $twig->render($template, $data);
+echo $handler->output($data, $templateDir, $template);

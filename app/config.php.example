@@ -16,12 +16,12 @@ $gConfig = [];
 /**
  * Application name
  */
-$gConfig['app_name'] = 'Epub loader';
+$gConfig['app_name'] = 'Epub Loader';
 
 /**
  * Application version
  */
-$gConfig['app_version'] = '2.1';
+$gConfig['version'] = '2.1';
 
 /**
  * Admin email

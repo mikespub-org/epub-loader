@@ -15,21 +15,6 @@
 	{% endif %}
 {% endmacro %}
 
-{% macro show_item(item) %}
-	{{item.volumeInfo.authors|join(', ')}}: <a href="{{item.selfLink}}">{{item.volumeInfo.title}} ({{item.id}})</a> on {{item.volumeInfo.publishedDate}} by {{item.volumeInfo.publisher}}
-	<p>
-		<img src="{{item.volumeInfo.imageLinks.smallThumbnail}}" />
-		{{item.searchInfo.textSnippet}}
-	</p>
-	<ul>
-	{% for key, value in item.volumeInfo %}
-		<li>
-			{{ _self.tree(key, value) }}
-		</li>
-	{% endfor %}
-	</ul>
-{% endmacro %}
-
 {% block content %}
 <div class="title">
 	<form method="GET" action="./index.php">

@@ -13,12 +13,18 @@ use Exception;
 
 class RequestHandler
 {
+    public const APP_NAME = 'Epub Loader';
+    public const VERSION = '2.1';
+    public const TEMPLATE = 'index.html';
+
     /** @var array<mixed> */
     public $gConfig = [];
     /** @var string */
     public $handlerClass;
     /** @var string|null */
     public $cacheDir;
+    /** @var string|null */
+    public $templateDir;
     /** @var string */
     public $template;
     /** @var array<mixed> */
@@ -36,7 +42,8 @@ class RequestHandler
         $this->gErrorArray = [];
         $this->handlerClass = $handlerClass;
         $this->cacheDir = $cacheDir;
-        $this->template = 'index.html';
+        $this->templateDir = dirname(__DIR__) . '/templates';
+        $this->template = static::TEMPLATE;
     }
 
     /**
@@ -47,6 +54,13 @@ class RequestHandler
     public function loadConfig($config)
     {
         $this->gConfig = array_merge($this->gConfig, $config);
+        // verify required keys
+        $this->gConfig['create_db'] ??= false;
+        $this->gConfig['databases'] ??= [];
+        $this->gConfig['actions'] ??= [];
+        // verify expected keys
+        $this->gConfig['app_name'] ??= static::APP_NAME;
+        $this->gConfig['version'] ??= static::VERSION;
     }
 
     /**
@@ -69,9 +83,8 @@ class RequestHandler
             $result['dbNum'] = $dbNum;
             $result['dbConfig'] = $this->gConfig['databases'][$dbNum];
             $result['errors'] = $this->getErrors();
-            if (is_file(dirname(__DIR__) . '/templates/' . $action . '.html')) {
-                $this->template = $action . '.html';
-            }
+            // check if the template file actually exists in output()
+            $this->template = $action . '.html';
             return $result;
         }
         if (!isset($action)) {
@@ -79,6 +92,12 @@ class RequestHandler
             $result = ['actions' => $this->gConfig['actions']];
             $result['errors'] = $this->getErrors();
             $this->template = 'actions.html';
+            return $result;
+        }
+        if (!array_key_exists($action, $this->gConfig['actions'])) {
+            $this->gErrorArray[$action] = 'Invalid action';
+            $result = [];
+            $result['errors'] = $this->getErrors();
             return $result;
         }
         // Display databases
@@ -107,23 +126,27 @@ class RequestHandler
     {
         $result = null;
         if (!array_key_exists($action, $this->gConfig['actions'])) {
-            die('Invalid action');
+            $this->gErrorArray[$action] = 'Invalid action';
+            return null;
         }
         if (!isset($this->gConfig['databases'][$dbNum])) {
-            die('Incorrect database num: ' . $dbNum);
+            $this->gErrorArray[$dbNum] = 'Incorrect database num: ' . $dbNum;
+            return null;
         }
         $dbConfig = $this->gConfig['databases'][$dbNum];
         $dbPath = $dbConfig['db_path'];
         if (!is_dir($dbPath)) {
             if (!mkdir($dbPath, 0755, true)) {
-                die('Cannot create directory: ' . $dbPath);
+                $this->gErrorArray[$dbPath] = 'Cannot create directory: ' . $dbPath;
+                return null;
             }
         }
         // @todo remove this in the future
         if (!$this->handlerClass::hasAction($action)) {
             $fileName = sprintf('%s%s%s%saction_%s.php', dirname(__DIR__), DIRECTORY_SEPARATOR, 'app', DIRECTORY_SEPARATOR, $action);
             if (!file_exists($fileName)) {
-                die('Incorrect action file: ' . $fileName);
+                $this->gErrorArray[$fileName] = 'Incorrect action file: ' . $fileName;
+                return null;
             }
             $result = require($fileName);
             return $result;
@@ -147,6 +170,28 @@ class RequestHandler
     public function getErrors()
     {
         return $this->gErrorArray;
+    }
+
+    /**
+     * Summary of output
+     * @param array<mixed> $result
+     * @param string|null $templateDir
+     * @param string|null $template
+     * @return string
+     */
+    public function output($result, $templateDir = null, $template = null)
+    {
+        $templateDir ??= $this->templateDir;
+        $loader = new \Twig\Loader\FilesystemLoader($templateDir);
+        $twig = new \Twig\Environment($loader);
+
+        $template ??= $this->template;
+        // check if the template file actually exists under $templateDir here
+        if (!is_file($templateDir . '/' . $template)) {
+            $template = static::TEMPLATE;
+        }
+
+        return $twig->render($template, $result);
     }
 
     /**

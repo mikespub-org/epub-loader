@@ -50,6 +50,10 @@ use Marsender\EPubLoader\RequestHandler;
 // you can define extra actions for your app - see example.php
 $handler = new RequestHandler($gConfig, ExtraActions::class);
 $result = $handler->request($action, $dbNum);
+
+// handle the result yourself or let epub-loader generate the output
+$result['app_name'] = 'My Application';
+echo $handler->output($result, $templateDir, $template);
 ```
 
 ## Adding extra actions

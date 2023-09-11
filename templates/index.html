@@ -87,6 +87,9 @@
 	<!-- Content begin -->
 	<div class="content">
 		{% block content %}
+			{% if actionTitle %}
+			<div><p><a href="./index.php?action={{action}}">{{actionTitle}}</a></p></div>
+			{% endif %}
 			{{result|raw}}
 		{% endblock content %}
 	</div>
