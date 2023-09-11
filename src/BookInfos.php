@@ -94,7 +94,7 @@ class BookInfos
         $this->mBasePath = $inBasePath;
         $this->mPath = pathinfo($inFileName, PATHINFO_DIRNAME);
         $this->mName = pathinfo($inFileName, PATHINFO_FILENAME);
-        $this->mUuid = $ePub->getUuid();
+        $this->mUuid = $ePub->getUniqueIdentifier() ?: $ePub->getUuid();
         $this->mUri = $ePub->getUri();
         $this->mTitle = $ePub->getTitle();
         $this->mAuthors = $ePub->getAuthors();

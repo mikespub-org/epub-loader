@@ -4,7 +4,8 @@
   * ...
 
 2.0.x - 2023xxxx To be continued (PHP >= 8.1)
-  * ...
+  * Add example.php on how to add extra actions in your own app
+  * Add RequestHandler to make it easier to integrate epub-loader
   * Add GoogleMatch to match ebooks and authors with Google Books
 
 2.0.3 - 20230910 Finalize package preparation for composer (PHP >= 8.1)

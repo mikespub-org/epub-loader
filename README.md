@@ -12,9 +12,9 @@
 
 They have the same PHP version dependencies for 1.x and 2.x releases
 
-## Description (original)
+## Description
 
-epub-loader is a utility resource for ebooks.
+epub-loader is a utility package for ebooks. It can be used as a stand-alone project or included in your own PHP application
 
 - CalibreDbLoader class allows create Calibre databases and add ebooks
 - BookExport class allows to export ebooks metadata in csv files
@@ -22,9 +22,46 @@ epub-loader is a utility resource for ebooks.
 - GoogleMatch class allows to match ebooks and authors with Google Books
 - The app directory contains samples and allows to run actions
 
-## Installation
+## Installation (stand-alone)
+
+```sh
+composer create-project mikespub/epub-loader
+```
 
 - If a first-time install, copy app/config.php.example to app/config.php
 - Edit config.php to match your config
-- Run `composer install -o` to install all package dependencies and optimize autoloader
 - Open the app directory url: [./app/index.php](./app/index.php)
+
+## Installation (included)
+
+```sh
+composer require mikespub/epub-loader
+```
+
+- Run `composer install -o` to install all package dependencies and optimize autoloader if needed
+- You can use `Marsender\EPubLoader\RequestHandler` to handle the request like in [./app/index.php](./app/index.php)
+
+```php
+use Marsender\EPubLoader\RequestHandler;
+
+// get the global config for epub-loader from somewhere
+// get the current action and dbNum if any
+
+// you can define extra actions for your app - see example.php
+$handler = new RequestHandler($gConfig, ExtraActions::class);
+$result = $handler->request($action, $dbNum);
+```
+
+## Adding extra actions
+
+- You can add extra actions on databases and/or epub files as shown in [./app/example.php](./app/example.php)
+```php
+public function more()
+{
+    // do some more...
+    return [
+        'result' => 'This is more...',
+        'extra' => 'easy',
+    ];
+}
+```

@@ -19,20 +19,26 @@ class ActionHandler
     public $cacheDir;
     /** @var string */
     public $dbFileName;
+    /** @var array<mixed> */
+    protected $gErrorArray;
 
     /**
      * Summary of __construct
      * @param array<mixed> $dbConfig
+     * @param string|null $cacheDir
      */
-    public function __construct($dbConfig)
+    public function __construct($dbConfig, $cacheDir = null)
     {
+        $this->gErrorArray = [];
         $this->dbConfig = $dbConfig;
-        $this->cacheDir = dirname(__DIR__) . '/cache';
+        $this->cacheDir = $cacheDir ?? dirname(__DIR__) . '/cache';
         // Init database file
         $dbPath = $this->dbConfig['db_path'];
         $this->dbFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
         // Open the database
-        $this->db = new CalibreDbLoader($this->dbFileName);
+        if (is_file($this->dbFileName)) {
+            $this->db = new CalibreDbLoader($this->dbFileName);
+        }
     }
 
     /**
@@ -48,6 +54,13 @@ class ActionHandler
             $matchId = null;
         }
         switch($action) {
+            case 'csv_export':
+                $result = $this->csv_export();
+                break;
+            case 'db_load':
+                $createDb = $this->dbConfig['create_db'];
+                $result = $this->db_load($createDb);
+                break;
             case 'authors':
                 $result = $this->authors($authorId, $matchId);
                 break;
@@ -67,9 +80,77 @@ class ActionHandler
                 $result = $this->google($authorId, $bookId, $matchId);
                 break;
             default:
-                $result = null;
+                $result = $this->$action();
         }
         return $result;
+    }
+
+    /**
+     * Summary of csv_export
+     * @return string
+     */
+    public function csv_export()
+    {
+        // Init csv file
+        $dbPath = $this->dbConfig['db_path'];
+        $fileName = $dbPath . DIRECTORY_SEPARATOR . basename($dbPath) . '_metadata.csv';
+        // Open or create the export file
+        $export = new BookExport($fileName, BookExport::eExportTypeCsv, true);
+        // Add the epub files into the export file
+        $nbOk = 0;
+        $nbError = 0;
+        $epubPath = $this->dbConfig['epub_path'];
+        if (!empty($epubPath)) {
+            $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+            foreach ($fileList as $file) {
+                $filePath = substr($file, strlen($dbPath) + 1);
+                $error = $export->AddEpub($dbPath, $filePath);
+                if (!empty($error)) {
+                    $this->addError($file, $error);
+                    $nbError++;
+                    continue;
+                }
+                $nbOk++;
+            }
+        }
+        // Save export
+        $export->SaveToFile();
+        // Display info
+        return sprintf('Export ebooks to %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError) . '<br />';
+    }
+
+    /**
+     * Summary of db_load
+     * @param bool $createDb
+     * @return string
+     */
+    public function db_load($createDb = false)
+    {
+        // Init database file
+        $dbPath = $this->dbConfig['db_path'];
+        $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
+        $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . 'bookids.txt';
+        // Open or create the database
+        $db = new CalibreDbLoader($calibreFileName, $createDb, $bookIdsFileName);
+        // Add the epub files into the database
+        $nbOk = 0;
+        $nbError = 0;
+        $epubPath = $this->dbConfig['epub_path'];
+        if (!empty($epubPath)) {
+            $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+            foreach ($fileList as $file) {
+                $filePath = substr($file, strlen($dbPath) + 1);
+                $error = $db->AddEpub($dbPath, $filePath);
+                if (!empty($error)) {
+                    $this->addError($file, $error);
+                    $nbError++;
+                    continue;
+                }
+                $nbOk++;
+            }
+        }
+        // Display info
+        return sprintf('Load database %s - %d files OK - %d files Error', $calibreFileName, $nbOk, $nbError) . '<br />';
     }
 
     /**
@@ -80,13 +161,11 @@ class ActionHandler
      */
     public function authors($authorId, $matchId)
     {
-        global $gErrorArray;
-
         // Update the author link
         if (!is_null($authorId) && !is_null($matchId)) {
             $link = WikiMatch::link($matchId);
             if (!$this->db->setAuthorLink($authorId, $link)) {
-                $gErrorArray[$this->dbFileName] = "Failed updating link {$link} for authorId {$authorId}";
+                $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
                 return null;
             }
             $authorId = null;
@@ -129,17 +208,15 @@ class ActionHandler
      */
     public function books($authorId, $bookId, $matchId)
     {
-        global $gErrorArray;
-
         $authors = $this->db->getAuthors($authorId);
         if (empty($authorId) && empty($bookId)) {
-            //$gErrorArray[$this->dbFileName] = "Please specify authorId and/or bookId";
+            //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
             //return null;
             $authorId = array_keys($authors)[0];
         }
 
         if (count($authors) < 1) {
-            $gErrorArray[$this->dbFileName] = "Please specify a valid authorId";
+            $this->addError($this->dbFileName, "Please specify a valid authorId");
             return null;
         }
         $author = $authors[$authorId];
@@ -184,17 +261,15 @@ class ActionHandler
      */
     public function series($authorId, $seriesId, $matchId)
     {
-        global $gErrorArray;
-
         $authors = $this->db->getAuthors($authorId);
         if (empty($authorId) && empty($seriesId)) {
-            //$gErrorArray[$this->dbFileName] = "Please specify authorId and/or seriesId";
+            //$this->addError($this->dbFileName, "Please specify authorId and/or seriesId");
             //return null;
             $authorId = array_keys($authors)[0];
         }
 
         if (count($authors) < 1) {
-            $gErrorArray[$this->dbFileName] = "Please specify a valid authorId";
+            $this->addError($this->dbFileName, "Please specify a valid authorId");
             return null;
         }
         $author = $authors[$authorId];
@@ -256,17 +331,15 @@ class ActionHandler
      */
     public function google($authorId, $bookId, $matchId)
     {
-        global $gErrorArray;
-
         $authors = $this->db->getAuthors($authorId);
         if (empty($authorId) && empty($bookId)) {
-            //$gErrorArray[$this->dbFileName] = "Please specify authorId and/or bookId";
+            //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
             //return null;
             $authorId = array_keys($authors)[0];
         }
 
         if (count($authors) < 1) {
-            $gErrorArray[$this->dbFileName] = "Please specify a valid authorId";
+            $this->addError($this->dbFileName, "Please specify a valid authorId");
             return null;
         }
         $author = $authors[$authorId];
@@ -304,6 +377,26 @@ class ActionHandler
     }
 
     /**
+     * Summary of addError
+     * @param string $file
+     * @param mixed $message
+     * @return void
+     */
+    public function addError($file, $message)
+    {
+        $this->gErrorArray[$file] = $message;
+    }
+
+    /**
+     * Summary of getErrors
+     * @return array<mixed>
+     */
+    public function getErrors()
+    {
+        return $this->gErrorArray;
+    }
+
+    /**
      * Summary of hasAction
      * @param string $action
      * @return bool
@@ -314,46 +407,5 @@ class ActionHandler
             return true;
         }
         return false;
-    }
-
-    /**
-     * Recursive get files
-     *
-     * @param string $inPath Base directory to search in
-     * @param string $inPattern Search pattern
-     * @return array<string>
-     */
-    public static function getFiles($inPath = '', $inPattern = '*.epub')
-    {
-        $res = [];
-
-        // Check path
-        if (!is_dir($inPath)) {
-            return $res;
-        }
-
-        // Get the list of directories
-        if (substr($inPath, -1) != DIRECTORY_SEPARATOR) {
-            $inPath .= DIRECTORY_SEPARATOR;
-        }
-
-        // Add files from the current directory
-        $files = glob($inPath . $inPattern, GLOB_MARK | GLOB_NOSORT);
-        foreach ($files as $item) {
-            if (substr($item, -1) == DIRECTORY_SEPARATOR) {
-                continue;
-            }
-            $res[] = $item;
-        }
-
-        // Scan sub directories
-        $paths = glob($inPath . '*', GLOB_MARK | GLOB_ONLYDIR | GLOB_NOSORT);
-        foreach ($paths as $path) {
-            $res = array_merge($res, static::getFiles($path, $inPattern));
-        }
-
-        sort($res);
-
-        return $res;
     }
 }

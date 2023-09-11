@@ -4,9 +4,8 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
-
-defined('DEF_AppName') or die('Restricted access');
 
 if (PHP_SAPI === 'cli') {
     parse_str(implode('&', array_slice($argv, 1)), $_GET);
@@ -20,19 +19,14 @@ $gConfig = [];
 $gConfig['app_name'] = 'Epub loader';
 
 /**
- * Admin email
+ * Application version
  */
-$gConfig['admin_email'] = 'contact@atoll-digital-library.org';
+$gConfig['app_version'] = '2.1';
 
 /**
- * Cops directory
- *
- * This is the base path of Cops library
+ * Admin email
  */
-$gConfig['cops_directory'] = dirname(dirname(dirname(__DIR__)));
-if (!is_dir($gConfig['cops_directory'])) {
-    die('Incorrect Cops directory: ' . $gConfig['cops_directory']);
-}
+$gConfig['admin_email'] = '';
 
 /**
  * Create Calibre databases ?
@@ -66,3 +60,5 @@ $gConfig['actions']['books'] = 'Check books for author';
 $gConfig['actions']['series'] = 'Check series for author';
 $gConfig['actions']['wikidata'] = 'Find Wikidata entity';
 $gConfig['actions']['google'] = 'Search Google Books';
+$gConfig['actions']['hello_world'] = 'Example: Hello, World - see app/example.php';
+$gConfig['actions']['goodbye'] = 'Example: Goodbye - see app/example.php';

@@ -22,7 +22,7 @@
         "twig/twig": "^3.7"
     },
     "autoload": {
-        "classmap": ["src/"]
+        "classmap": ["src/", "app/"]
     },
     "require-dev": {
     },
