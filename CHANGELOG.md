@@ -6,7 +6,8 @@
 1.5.x - 2023xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-2.1.0 - 2023xxxx To be continued (PHP >= 8.1)
+2.1.1 - 20230911 Public release for integration (PHP >= 8.1)
+  * Make URL endpoint configurable for easier integration
   * Add example.php on how to add extra actions in your own app
   * Add RequestHandler to make it easier to integrate epub-loader
   * Add GoogleMatch to match ebooks and authors with Google Books

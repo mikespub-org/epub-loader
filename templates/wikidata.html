@@ -83,7 +83,7 @@
 {% endmacro %}
 
 {% block content %}
-<form method="GET" action="./index.php">
+<form method="GET" action="{{endpoint}}">
 	<input type="hidden" name="action" value="{{action}}" />
 	<input type="hidden" name="dbnum" value="{{dbNum}}" />
 	Entity <input type="text" name="matchId" value="{{entityId}}" />

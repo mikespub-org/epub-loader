@@ -1,8 +1,8 @@
 {% extends 'index.html' %}
 
 {% block content %}
-<div class="title"><a href="./index.php?action={{action}}">{{actionTitle}}</a> for <a href="./index.php?action={{action}}&dbnum={{dbNum}}">{{dbConfig.name}}</a></div>
-<form method="POST" action="./index.php?action={{action}}&dbnum={{dbNum}}">
+<div class="title"><a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">{{dbConfig.name}}</a></div>
+<form method="POST" action="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">
 <table width="100%">
 	<tr>
 		<th>Id</th>
@@ -16,13 +16,13 @@
 		<td>{{item.id}}</td>
 		<td>
 			{{item.name}}
-			<a href="./index.php?action=books&dbnum={{dbNum}}&authorId={{item.id}}" title="Books">B</a>
-			<a href="./index.php?action=series&dbnum={{dbNum}}&authorId={{item.id}}" title="Series">S</a>
-			<a href="./index.php?action=google&dbnum={{dbNum}}&authorId={{item.id}}" title="Google">G</a>
+			<a href="{{endpoint}}?action=books&dbnum={{dbNum}}&authorId={{item.id}}" title="Books">B</a>
+			<a href="{{endpoint}}?action=series&dbnum={{dbNum}}&authorId={{item.id}}" title="Series">S</a>
+			<a href="{{endpoint}}?action=google&dbnum={{dbNum}}&authorId={{item.id}}" title="Google">G</a>
 		</td>
 		<td>{{item.sort}}</td>
-		<td>{% if authorId == item.id %}<strong>Search</strong>{% else %}<a href="./index.php?action={{action}}&dbnum={{dbNum}}&authorId={{item.id}}">Search</a>{% endif %}</td>
-		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="./index.php?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
+		<td>{% if authorId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{item.id}}">Search</a>{% endif %}</td>
+		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>
 	{% endfor %}
 </table>
@@ -41,9 +41,9 @@
 		</tr>
 		{% for match in matched %}
 		<tr>
-			<td><a href="./index.php?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.id}}">{{match.id}}</a></td>
+			<td><a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.id}}">{{match.id}}</a></td>
 			<td>{{match.label}}</td>
-			<td><a href="./index.php?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.id}}">Match</a></td>
+			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.id}}">Match</a></td>
 			<td>{{match.description}}</td>
 			<td>{% if match.wiki_url %}<a rel="external" target="_blank" href="{{match.wiki_url}}">Wikipedia</a>{% endif %}</td>
 		</tr>
@@ -52,7 +52,7 @@
 			<td colspan="5">
 				<ul>
 				{% for entry in match.entries %}
-				<li><a href="./index.php?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
+				<li><a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
 				{% endfor %}
 				</ul>
 			</td>

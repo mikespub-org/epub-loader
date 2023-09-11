@@ -13,8 +13,9 @@ use Exception;
 
 class RequestHandler
 {
+    public const ENDPOINT = './index.php';
     public const APP_NAME = 'Epub Loader';
-    public const VERSION = '2.1';
+    public const VERSION = '2.1.1';
     public const TEMPLATE = 'index.html';
 
     /** @var array<mixed> */
@@ -59,6 +60,7 @@ class RequestHandler
         $this->gConfig['databases'] ??= [];
         $this->gConfig['actions'] ??= [];
         // verify expected keys
+        $this->gConfig['endpoint'] ??= static::ENDPOINT;
         $this->gConfig['app_name'] ??= static::APP_NAME;
         $this->gConfig['version'] ??= static::VERSION;
     }

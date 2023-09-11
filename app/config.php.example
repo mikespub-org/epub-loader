@@ -14,6 +14,11 @@ if (PHP_SAPI === 'cli') {
 $gConfig = [];
 
 /**
+ * URL endpoint for your application
+ */
+$gConfig['endpoint'] = './index.php';
+
+/**
  * Application name
  */
 $gConfig['app_name'] = 'Epub Loader';
@@ -21,7 +26,7 @@ $gConfig['app_name'] = 'Epub Loader';
 /**
  * Application version
  */
-$gConfig['version'] = '2.1';
+$gConfig['version'] = '2.1.1';
 
 /**
  * Admin email

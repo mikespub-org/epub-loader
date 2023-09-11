@@ -2,8 +2,8 @@
 
 {% block content %}
 <div class="title">
-	<form method="GET" action="./index.php">
-		<a href="./index.php?action={{action}}">{{actionTitle}}</a> in <a href="./index.php?action=authors&dbnum={{dbNum}}">{{dbConfig.name}}</a>
+	<form method="GET" action="{{endpoint}}">
+		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=authors&dbnum={{dbNum}}">{{dbConfig.name}}</a>
 		<input type="hidden" name="action" value="{{action}}" />
 		<input type="hidden" name="dbnum" value="{{dbNum}}" />
 		Author <select name="authorId">
@@ -19,7 +19,7 @@
 		<input type="submit" value="Find"/>
 	</form>
 </div>
-<form method="POST" action="./index.php?action={{action}}&dbnum={{dbNum}}">
+<form method="POST" action="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">
 <table width="100%">
 	<tr>
 		<th>Id</th>
@@ -31,7 +31,7 @@
 	<tr>
 		<td>{{item.id}}</td>
 		<td>{{item.title}}</td>
-		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="./index.php?action={{action}}&dbnum={{dbNum}}&authorId={{item.author}}&bookId={{item.id}}">Search</a>{% endif %}</td>
+		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{item.author}}&bookId={{item.id}}">Search</a>{% endif %}</td>
 		<td>
 			{% for identifier in item.identifiers %}
 				{% if identifier.url %}
@@ -60,9 +60,9 @@
 		</tr>
 		{% for match in matched %}
 		<tr>
-			<td><a href="./index.php?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.id}}">{{match.id}}</a></td>
+			<td><a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.id}}">{{match.id}}</a></td>
 			<td>{{match.label}}</td>
-			<td><a href="./index.php?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.id}}">Match</a></td>
+			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.id}}">Match</a></td>
 			<td>{{match.description}}</td>
 			<td>{% if match.wiki_url %}<a rel="external" target="_blank" href="{{match.wiki_url}}">Wikipedia</a>{% endif %}</td>
 		</tr>
@@ -71,7 +71,7 @@
 			<td colspan="5">
 				<ul>
 				{% for entry in match.entries %}
-				<li><a href="./index.php?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
+				<li><a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
 				{% endfor %}
 				</ul>
 			</td>

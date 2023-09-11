@@ -5,7 +5,7 @@
 <ul>
 {% for action, actionInfo in actions %}
 	<li>
-		<a href="./index.php?action={{action}}">{{actionInfo}}</a>
+		<a href="{{endpoint}}?action={{action}}">{{actionInfo}}</a>
 	</li>
 {% endfor %}
 </ul>

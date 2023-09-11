@@ -17,8 +17,8 @@
 
 {% block content %}
 <div class="title">
-	<form method="GET" action="./index.php">
-		<a href="./index.php?action={{action}}">{{actionTitle}}</a> in <a href="./index.php?action=authors&dbnum={{dbNum}}">{{dbConfig.name}}</a>
+	<form method="GET" action="{{endpoint}}">
+		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=authors&dbnum={{dbNum}}">{{dbConfig.name}}</a>
 		<input type="hidden" name="action" value="{{action}}" />
 		<input type="hidden" name="dbnum" value="{{dbNum}}" />
 		Author <select name="authorId">
@@ -34,7 +34,7 @@
 		<input type="submit" value="Find"/>
 	</form>
 </div>
-<form method="POST" action="./index.php?action={{action}}&dbnum={{dbNum}}">
+<form method="POST" action="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">
 <table width="100%">
 	<tr>
 		<th>Id</th>
@@ -46,7 +46,7 @@
 	<tr>
 		<td>{{item.id}}</td>
 		<td>{{item.title}}</td>
-		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="./index.php?action={{action}}&dbnum={{dbNum}}&authorId={{item.author}}&bookId={{item.id}}">Search</a>{% endif %}</td>
+		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{item.author}}&bookId={{item.id}}">Search</a>{% endif %}</td>
 		<td>
 			{% for identifier in item.identifiers %}
 				{% if identifier.url %}
@@ -85,7 +85,7 @@
 			<td><a href="{{item.selfLink}}">{{item.volumeInfo.title}}</a></td>
 			<td>{{item.volumeInfo.publishedDate}}</td>
 			<td>{{item.volumeInfo.publisher}}</td>
-			<td><a href="./index.php?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{item.id}}">Match</a></td>
+			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{item.id}}">Match</a></td>
 			<td>{{item.searchInfo.textSnippet|raw}}</td>
 		</tr>
 		<tr>

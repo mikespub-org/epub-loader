@@ -52,6 +52,7 @@ $handler = new RequestHandler($gConfig, ExtraActions::class);
 $result = $handler->request($action, $dbNum);
 
 // handle the result yourself or let epub-loader generate the output
+$result['endpoint'] = 'loader.php';
 $result['app_name'] = 'My Application';
 echo $handler->output($result, $templateDir, $template);
 ```
