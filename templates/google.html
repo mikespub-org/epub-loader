@@ -47,7 +47,16 @@
 		<td>{{item.id}}</td>
 		<td>{{item.title}}</td>
 		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="./index.php?action={{action}}&dbnum={{dbNum}}&authorId={{item.author}}&bookId={{item.id}}">Search</a>{% endif %}</td>
-		<td>{% for identifier in item.identifiers %}{{identifier.type}}: {{identifier.value}}<br/>{% endfor %}</td>
+		<td>
+			{% for identifier in item.identifiers %}
+				{% if identifier.url %}
+					{{identifier.type}}: <a href="{{identifier.url}}">{{identifier.value}}</a>
+				{% else %}
+					{{identifier.type}}: {{identifier.value}}
+				{% endif %}
+				<br/>
+			{% endfor %}
+		</td>
 	</tr>
 	{% endfor %}
 </table>
@@ -65,6 +74,7 @@
 			<th>Title</th>
 			<th>Date</th>
 			<th>Publisher</th>
+			<th>Action</th>
 			<th>Summary</th>
 		</tr>
 		<ul>
@@ -75,10 +85,11 @@
 			<td><a href="{{item.selfLink}}">{{item.volumeInfo.title}}</a></td>
 			<td>{{item.volumeInfo.publishedDate}}</td>
 			<td>{{item.volumeInfo.publisher}}</td>
+			<td><a href="./index.php?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{item.id}}">Match</a></td>
 			<td>{{item.searchInfo.textSnippet|raw}}</td>
 		</tr>
 		<tr>
-			<td colspan="6">
+			<td colspan="7">
 				{{item.volumeInfo.description}}
 				{#
 				<ul>

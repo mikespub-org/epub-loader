@@ -64,23 +64,38 @@ class GoogleMatch extends BaseMatch
     /**
      * Summary of findWorksByTitle
      * @param string $query
+     * @param array<mixed>|null $author
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>
      */
-    public function findWorksByTitle($query, $lang = null, $limit = 10)
+    public function findWorksByTitle($query, $author = null, $lang = null, $limit = 10)
     {
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/google/titles/' . $query . '.' . $lang . '.json';
+            if (!empty($author)) {
+                $cacheFile = $this->cacheDir . '/google/titles/' . $author['name'] . '.' . $query . '.' . $lang . '.json';
+            } else {
+                $cacheFile = $this->cacheDir . '/google/titles/' . $query . '.' . $lang . '.json';
+            }
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
         }
+        // search by title and author first
         $query = 'intitle:"' . $query . '"';
+        if (!empty($author)) {
+            $query .= ' inauthor:"' . $author['name'] . '"';
+        }
         $results = $this->getResults($query, $lang, $limit);
         $matched = json_decode($results, true);
+        // fall back to search by title alone
+        if (!empty($author) && (empty($matched) || $matched['totalItems'] == 0)) {
+            $query = 'intitle:"' . $query . '"';
+            $results = $this->getResults($query, $lang, $limit);
+            $matched = json_decode($results, true);
+        }
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }

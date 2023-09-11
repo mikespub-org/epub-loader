@@ -50,9 +50,6 @@ class ActionHandler
     {
         $authorId = isset($_GET['authorId']) ? (int)$_GET['authorId'] : null;
         $matchId = $_GET['matchId'] ?? null;
-        if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
-            $matchId = null;
-        }
         switch($action) {
             case 'csv_export':
                 $result = $this->csv_export();
@@ -62,17 +59,29 @@ class ActionHandler
                 $result = $this->db_load($createDb);
                 break;
             case 'authors':
+                if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
+                    $matchId = null;
+                }
                 $result = $this->authors($authorId, $matchId);
                 break;
             case 'books':
                 $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
+                if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
+                    $matchId = null;
+                }
                 $result = $this->books($authorId, $bookId, $matchId);
                 break;
             case 'series':
                 $seriesId = isset($_GET['seriesId']) ? (int)$_GET['seriesId'] : null;
+                if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
+                    $matchId = null;
+                }
                 $result = $this->series($authorId, $seriesId, $matchId);
                 break;
             case 'wikidata':
+                if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
+                    $matchId = null;
+                }
                 $result = $this->wikidata($matchId, $authorId);
                 break;
             case 'google':
@@ -221,6 +230,11 @@ class ActionHandler
         }
         $author = $authors[$authorId];
 
+        // Update the book identifier
+        if (!is_null($bookId) && !is_null($matchId)) {
+            $this->updateBookIdentifier('wd', $bookId, $matchId);
+        }
+
         // Find match on Wikidata
         $wikimatch = new WikiMatch($this->cacheDir);
         //$entityId = $wikimatch->findAuthorId($author);
@@ -344,6 +358,14 @@ class ActionHandler
         }
         $author = $authors[$authorId];
 
+        // Update the book identifier
+        if (!is_null($bookId) && !is_null($matchId)) {
+            if (!$this->updateBookIdentifier('google', $bookId, $matchId)) {
+                $this->addError($this->dbFileName, "Failed updating google identifier for bookId {$bookId} to {$matchId}");
+                return null;
+            }
+        }
+
         // Find match on Google Books
         $googlematch = new GoogleMatch($this->cacheDir);
 
@@ -351,7 +373,7 @@ class ActionHandler
         if (!empty($bookId)) {
             $books = $this->db->getBooks($bookId);
             $query = $books[$bookId]['title'];
-            $matched = $googlematch->findWorksByTitle($query);
+            $matched = $googlematch->findWorksByTitle($query, $author);
         } else {
             $books = $this->db->getBooksByAuthor($authorId);
             $matched = $googlematch->findWorksByAuthor($author);
@@ -360,6 +382,27 @@ class ActionHandler
 
         // Return info
         return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList];
+    }
+
+    /**
+     * Summary of updateBookIdentifier
+     * @param string $type
+     * @param int $bookId
+     * @param string $matchId
+     * @return bool
+     */
+    public function updateBookIdentifier($type, $bookId, $matchId)
+    {
+        $books = $this->db->getBooks($bookId);
+        $book = $books[$bookId];
+        if (!empty($book) && !empty($book['identifiers'])) {
+            foreach ($book['identifiers'] as $id => $identifier) {
+                if ($identifier['type'] == $type) {
+                    return $this->db->updateIdentifier($id, $matchId);
+                }
+            }
+        }
+        return $this->db->insertIdentifier($bookId, $type, $matchId);
     }
 
     /**

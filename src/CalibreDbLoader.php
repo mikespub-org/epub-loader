@@ -646,6 +646,10 @@ class CalibreDbLoader
         $stmt->execute($bookIdList);
         while ($post = $stmt->fetchObject()) {
             $books[$post->book]['identifiers'][$post->id] = (array) $post;
+            $url = $this->getIdentifierUrl($post->type, $post->value);
+            if (!empty($url)) {
+                $books[$post->book]['identifiers'][$post->id]['url'] = $url;
+            }
         }
         return $books;
     }
@@ -658,6 +662,57 @@ class CalibreDbLoader
     public function getBooksByAuthor($authorId)
     {
         return $this->getBooks(null, $authorId);
+    }
+
+    /**
+     * Summary of getIdentifierUrl
+     * @param string $type
+     * @param mixed $value
+     * @return string
+     */
+    public function getIdentifierUrl($type, $value)
+    {
+        if (empty($value)) {
+            return '';
+        }
+        switch ($type) {
+            case 'google':
+                $url = GoogleMatch::link($value);
+                break;
+            case 'wd':
+                $url = WikiMatch::link($value);
+                break;
+            default:
+                $url = '';
+        }
+        return $url;
+    }
+
+    /**
+     * Summary of updateIdentifier
+     * @param int $id
+     * @param mixed $value
+     * @return bool
+     */
+    public function updateIdentifier($id, $value)
+    {
+        $sql = 'update identifiers set val = ? where id = ?';
+        $stmt = $this->mDb->prepare($sql);
+        return $stmt->execute([$value, $id]);
+    }
+
+    /**
+     * Summary of insertIdentifier
+     * @param int $bookId
+     * @param string $type
+     * @param mixed $value
+     * @return bool
+     */
+    public function insertIdentifier($bookId, $type, $value)
+    {
+        $sql = 'insert into identifiers(book, type, val) values(?, ?, ?)';
+        $stmt = $this->mDb->prepare($sql);
+        return $stmt->execute([$bookId, $type, $value]);
     }
 
     /**
