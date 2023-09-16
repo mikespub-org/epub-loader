@@ -11,3 +11,4 @@ parameters:
         - vendor/autoload.php
     excludePaths:
         - vendor/*
+        - cache/*

@@ -1,0 +1,63 @@
+{% extends 'index.html' %}
+
+{% macro tree(id, item) %}
+	{% if item is iterable %}
+		{% if 0 in item|keys %}
+			{{id}}: 
+			<ul>
+			{% for key, value in item %}
+				<li>
+					{{ _self.tree(0, value) }}
+				</li>
+			{% endfor %}
+			</ul>
+		{% elseif id == 0 %}
+			<ul>
+			{% for key, value in item %}
+				<li>
+					{{ _self.tree(key, value) }}
+				</li>
+			{% endfor %}
+			</ul>
+		{% elseif item|length == 0 %}
+			{{id}}
+		{% else %}
+			{{id}}: 
+			<ul>
+			{% for key, value in item %}
+				<li>
+					{{ _self.tree(key, value) }}
+				</li>
+			{% endfor %}
+			</ul>
+		{% endif %}
+	{% elseif id == 0 %}
+		{{item}}
+	{% else %}
+		{{id}}: {{item}}
+	{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="title">
+	<form method="GET" action="{{endpoint}}">
+		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=google&dbnum={{dbNum}}&lang={{lang}}">{{dbConfig.name}}</a>
+		<input type="hidden" name="action" value="{{action}}" />
+		<input type="hidden" name="dbnum" value="{{dbNum}}" />
+		<input type="hidden" name="lang" value="{{lang}}" />
+		Volume <input type="text" name="matchId" value="{{volumeId}}" />
+		<input type="submit" value="Find"/>
+	</form>
+</div>
+<div><b>Google Books Volume {{volumeId}}</b></div>
+{% if volume|length > 0 and 'imageLinks' in volume.volumeInfo|keys and 'thumbnail' in volume.volumeInfo.imageLinks|keys %}
+	<img src="{{volume.volumeInfo.imageLinks.thumbnail}}"/>
+{% endif %}
+<ul>
+{% for key, value in volume %}
+	<li>
+		{{ _self.tree(key, value) }}
+	</li>
+{% endfor %}
+</ul>
+{% endblock content %}

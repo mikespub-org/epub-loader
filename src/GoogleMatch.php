@@ -125,4 +125,16 @@ class GoogleMatch extends BaseMatch
         }
         return $entity;
     }
+
+    /**
+     * Summary of getLanguages
+     * @return array<string, string>
+     */
+    public static function getLanguages()
+    {
+        return [
+            'en' => 'English',
+            'fr' => 'Français',
+        ];
+    }
 }

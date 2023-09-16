@@ -86,7 +86,12 @@ class ActionHandler
                 break;
             case 'google':
                 $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
-                $result = $this->google($authorId, $bookId, $matchId);
+                $lang = $_GET['lang'] ?? 'en';
+                $result = $this->google($authorId, $bookId, $matchId, $lang);
+                break;
+            case 'volume':
+                $lang = $_GET['lang'] ?? 'en';
+                $result = $this->volume($matchId, $lang);
                 break;
             default:
                 $result = $this->$action();
@@ -341,9 +346,10 @@ class ActionHandler
      * @param int|null $authorId
      * @param int|null $bookId
      * @param string|null $matchId
+     * @param string $lang
      * @return array<mixed>|null
      */
-    public function google($authorId, $bookId, $matchId)
+    public function google($authorId, $bookId, $matchId, $lang = 'en')
     {
         $authors = $this->db->getAuthors($authorId);
         if (empty($authorId) && empty($bookId)) {
@@ -367,7 +373,7 @@ class ActionHandler
         }
 
         // Find match on Google Books
-        $googlematch = new GoogleMatch($this->cacheDir);
+        $googlematch = new GoogleMatch($this->cacheDir, $lang);
 
         $matched = null;
         if (!empty($bookId)) {
@@ -381,7 +387,27 @@ class ActionHandler
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList];
+        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'lang' => $lang, 'langList' => GoogleMatch::getLanguages()];
+    }
+
+    /**
+     * Summary of volume
+     * @param string $volumeId
+     * @param string $lang
+     * @return array<mixed>
+     */
+    public function volume($volumeId, $lang)
+    {
+        $volume = [];
+
+        // Get volume on Google Books
+        if (!empty($volumeId)) {
+            $googlematch = new GoogleMatch($this->cacheDir, $lang);
+            $volume = $googlematch->getVolume($volumeId);
+        }
+
+        // Return info
+        return ['volume' => $volume, 'volumeId' => $volumeId, 'lang' => $lang, 'langList' => GoogleMatch::getLanguages()];
     }
 
     /**
