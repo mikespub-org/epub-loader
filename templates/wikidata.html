@@ -4,13 +4,13 @@
 	{% if item is iterable %}
 		{% if 0 in item|keys %}
 			{{id}}: 
-			<ul>
+			<ol>
 			{% for key, value in item %}
 				<li>
 					{{ _self.tree(0, value) }}
 				</li>
 			{% endfor %}
-			</ul>
+			</ol>
 		{% elseif item.id and item.id == id and item.label %}
 			{{item.id}}: {{item.label}}
 			{% if 'values' in item|keys and item.values|length == 1 and 0 in item.values|keys %}
@@ -83,23 +83,26 @@
 {% endmacro %}
 
 {% block content %}
-<form method="GET" action="{{endpoint}}">
-	<input type="hidden" name="action" value="{{action}}" />
-	<input type="hidden" name="dbnum" value="{{dbNum}}" />
-	Entity <input type="text" name="matchId" value="{{entityId}}" />
-	Search <input type="text" name="query" value="" />
-	Author <select name="authorId">
-		<option value=""></option>
-		{% for id, name in authors %}
-		{% if authorId and authorId == id %}
-		<option value="{{id}}" selected>{{name}}</option>
-		{% else %}
-		<option value="{{id}}">{{name}}</option>
-		{% endif %}
-		{% endfor %}
-	</select>
-	<input type="submit" value="Find"/>
-</form>
+<div class="title">
+	<form method="GET" action="{{endpoint}}">
+		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=authors&dbnum={{dbNum}}">{{dbConfig.name}}</a>
+		<input type="hidden" name="action" value="{{action}}" />
+		<input type="hidden" name="dbnum" value="{{dbNum}}" />
+		Entity <input type="text" name="matchId" value="{{entityId}}" />
+		Search <input type="text" name="query" value="" />
+		Author <select name="authorId">
+			<option value=""></option>
+			{% for id, name in authors %}
+			{% if authorId and authorId == id %}
+			<option value="{{id}}" selected>{{name}}</option>
+			{% else %}
+			<option value="{{id}}">{{name}}</option>
+			{% endif %}
+			{% endfor %}
+		</select>
+		<input type="submit" value="Find"/>
+	</form>
+</div>
 <div><b>Wikidata Entity {{entityId}}</b></div>
 {% if entity|length > 0 and 'P18' in entity.properties|keys and entity.properties.P18.values|length > 0 %}
 	{% set url = entity.properties.P18.values[0].id|split('/')|slice(-1) %}

@@ -4,13 +4,13 @@
 	{% if item is iterable %}
 		{% if 0 in item|keys %}
 			{{id}}: 
-			<ul>
+			<ol>
 			{% for key, value in item %}
 				<li>
 					{{ _self.tree(0, value) }}
 				</li>
 			{% endfor %}
-			</ul>
+			</ol>
 		{% elseif id == 0 %}
 			<ul>
 			{% for key, value in item %}
