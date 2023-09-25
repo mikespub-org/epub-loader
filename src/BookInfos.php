@@ -118,8 +118,8 @@ class BookInfos
         // Tag sample in opf file:
         //   <meta content="7" name="calibre:series_index"/>
         $this->mSerieIndex = $ePub->getSeriesIndex();
-        $this->mCreationDate = $this->GetSqlDate($ePub->CreationDate()) ?? '';
-        $this->mModificationDate = $this->GetSqlDate($ePub->ModificationDate()) ?? '';
+        $this->mCreationDate = $this->GetSqlDate($ePub->getCreationDate()) ?? '';
+        $this->mModificationDate = $this->GetSqlDate($ePub->getModificationDate()) ?? '';
         // Timestamp is used to get latest ebooks
         $this->mTimeStamp = $this->mCreationDate;
     }

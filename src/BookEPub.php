@@ -163,9 +163,22 @@ class BookEPub extends EPub
     /**
      * Set or get the book's creation date - with fallback to dcterms:created
      *
+     * @deprecated 2.1.2 use getCreationDate() instead
      * @param string|false $date Date eg: 2012-05-19T12:54:25Z
+     * @return string
      */
     public function CreationDate($date = false)
+    {
+        return $this->getCreationDate($date);
+    }
+
+    /**
+     * Get the book's creation date - with fallback to dcterms:created
+     *
+     * @param string|false $date Date eg: 2012-05-19T12:54:25Z
+     * @return string
+     */
+    public function getCreationDate($date = false)
     {
         // <dc:date opf:event="creation">2014-08-03T16:01:40Z</dc:date>
         $res = $this->getset('dc:date', $date, 'opf:event', 'creation');
@@ -194,9 +207,22 @@ class BookEPub extends EPub
     /**
      * Set or get the book's modification date - with fallback to dcterms:modified
      *
+     * @deprecated 2.1.2 use getModificationDate() instead
      * @param string|false $date Date eg: 2012-05-19T12:54:25Z
+     * @return string
      */
     public function ModificationDate($date = false)
+    {
+        return $this->getModificationDate($date);
+    }
+
+    /**
+     * Get the book's modification date - with fallback to dcterms:modified
+     *
+     * @param string|false $date Date eg: 2012-05-19T12:54:25Z
+     * @return string
+     */
+    public function getModificationDate($date = false)
     {
         // <dc:date opf:event="modification">2014-08-03T16:01:40Z</dc:date>
         $res = $this->getset('dc:date', $date, 'opf:event', 'modification');
