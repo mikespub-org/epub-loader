@@ -1,10 +1,17 @@
 # Change Log for epub-loader (this fork)
 
-2.1.x - 2023xxxx To be continued (PHP >= 8.1)
+2.2.x - 2023xxxx To be continued (PHP >= 8.1)
   * ...
 
 1.5.x - 2023xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
+
+2.2.x - 2023xxxx To be continued (PHP >= 8.1)
+  * Update dependencies in composer.json
+
+2.2.0 - 20230925 Expand GoogleMatch + deprecate  (PHP >= 8.1)
+  * Add Google Books volumes and language
+  * Mark combined getsetters for BookEPub() as deprecated for 2.1.2
 
 2.1.1 - 20230911 Public release for integration (PHP >= 8.1)
   * Make URL endpoint configurable for easier integration

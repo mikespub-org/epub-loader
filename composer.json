@@ -25,7 +25,7 @@
         "ext-zlib": "*",
         "freearhey/wikidata": "^3.6",
         "mikespub/php-epub-meta": "^2.2",
-        "twig/twig": "^3.7"
+        "twig/twig": "^3.8"
     },
     "autoload": {
         "classmap": ["src/", "app/"]
