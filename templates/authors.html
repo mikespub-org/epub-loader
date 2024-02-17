@@ -16,53 +16,27 @@
 		<td>{{item.id}}</td>
 		<td>
 			{{item.name}}
-			<a href="{{endpoint}}?action=books&dbnum={{dbNum}}&authorId={{item.id}}" title="Books">B</a>
-			<a href="{{endpoint}}?action=series&dbnum={{dbNum}}&authorId={{item.id}}" title="Series">S</a>
-			<a href="{{endpoint}}?action=google&dbnum={{dbNum}}&authorId={{item.id}}" title="Google">G</a>
 		</td>
 		<td>{{item.sort}}</td>
-		<td>{% if authorId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{item.id}}">Search</a>{% endif %}</td>
-		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
+		<td>
+			<a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}&authorId={{item.id}}" title="WikiData Author">Check</a>
+			<a href="{{endpoint}}?action=wd_books&dbnum={{dbNum}}&authorId={{item.id}}" title="WikiData Books">Books</a>
+			<a href="{{endpoint}}?action=wd_series&dbnum={{dbNum}}&authorId={{item.id}}" title="WikiData Series">Series</a>
+			<a href="{{endpoint}}?action=gb_books&dbnum={{dbNum}}&authorId={{item.id}}" title="Google Books">Google</a>
+			<a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{item.id}}" title="OpenLibrary Author">Author</a>
+			<a href="{{endpoint}}?action=ol_books&dbnum={{dbNum}}&authorId={{item.id}}" title="OpenLibrary Works">Works</a>
+		</td>
+		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}?action={{item.entityType}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>
 	{% endfor %}
 </table>
 </form>
+{% block lookup %}
 {% if authorId %}
 <div class="part">
-	<p>Wikidata:</p>
-	{% if matched %}
-	<table width="100%">
-		<tr>
-			<th>Id</th>
-			<th>Label</th>
-			<th>Action</th>
-			<th>Description</th>
-			<th>Link</th>
-		</tr>
-		{% for match in matched %}
-		<tr>
-			<td><a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.id}}">{{match.id}}</a></td>
-			<td>{{match.label}}</td>
-			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.id}}">Match</a></td>
-			<td>{{match.description}}</td>
-			<td>{% if match.wiki_url %}<a rel="external" target="_blank" href="{{match.wiki_url}}">Wikipedia</a>{% endif %}</td>
-		</tr>
-		{% if match.entries %}
-		<tr>
-			<td colspan="5">
-				<ul>
-				{% for entry in match.entries %}
-				<li><a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
-				{% endfor %}
-				</ul>
-			</td>
-		</tr>
-		{% endif %}
-		{% endfor %}
-		</table>
-	{% else %}
-		No match found
-	{% endif %}
+	<p>Lookup:</p>
+	{{authorId}}
 </div>
 {% endif %}
+{% endblock lookup %}
 {% endblock content %}

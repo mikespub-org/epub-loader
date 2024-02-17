@@ -85,7 +85,7 @@
 {% block content %}
 <div class="title">
 	<form method="GET" action="{{endpoint}}">
-		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=authors&dbnum={{dbNum}}">{{dbConfig.name}}</a>
+		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}">{{dbConfig.name}}</a>
 		<input type="hidden" name="action" value="{{action}}" />
 		<input type="hidden" name="dbnum" value="{{dbNum}}" />
 		Entity <input type="text" name="matchId" value="{{entityId}}" />

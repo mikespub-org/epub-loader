@@ -1,0 +1,31 @@
+{% extends 'books.html' %}
+
+{% block lookup %}
+{% if authorId %}
+<div class="part">
+	<p>Wikidata:</p>
+	{% if matched %}
+	<table width="100%">
+		<tr>
+			<th>Key</th>
+			<th>Title</th>
+			<th>Action</th>
+			<th>Description</th>
+			<th>Link</th>
+		</tr>
+		{% for match in matched %}
+		<tr>
+			<td><a href="{{endpoint}}?action=ol_work&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.key}}">{{match.key}}</a></td>
+			<td>{{match.title}}</td>
+			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.key}}">Match</a></td>
+			<td>{{match.description}}</td>
+			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org{{match.key}}">OpenLibrary</a>{% endif %}</td>
+		</tr>
+		{% endfor %}
+		</table>
+	{% else %}
+		No match found
+	{% endif %}
+</div>
+{% endif %}
+{% endblock lookup %}

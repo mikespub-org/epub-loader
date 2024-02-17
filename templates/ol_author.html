@@ -1,0 +1,44 @@
+{% extends 'authors.html' %}
+
+{% block lookup %}
+{% if authorId %}
+<div class="part">
+	<p>OpenLibrary:</p>
+	{% if matched %}
+	<table width="100%">
+		<tr>
+			<th>Key</th>
+			<th>Name</th>
+			<th>Action</th>
+			<th>Work Count</th>
+			<th>Top Work</th>
+			<th>Link</th>
+		</tr>
+		{% for match in matched %}
+		<tr>
+			<td><a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.key}}">{{match.key}}</a></td>
+			<td>{{match.name}}</td>
+			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.key}}">Match</a></td>
+			<td>{{match.work_count}}</td>
+			<td>{{match.top_work}}</td>
+			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org/authors/{{match.key}}">OpenLibrary</a>{% endif %}</td>
+		</tr>
+		{% if match.entries %}
+		<tr>
+			<td colspan="5">
+				<ul>
+				{% for entry in match.entries %}
+				<li><a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
+				{% endfor %}
+				</ul>
+			</td>
+		</tr>
+		{% endif %}
+		{% endfor %}
+		</table>
+	{% else %}
+		No match found
+	{% endif %}
+</div>
+{% endif %}
+{% endblock lookup %}

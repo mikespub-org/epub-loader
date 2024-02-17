@@ -1,0 +1,59 @@
+{% extends 'index.html' %}
+
+{% macro tree(id, item) %}
+	{% if item is iterable %}
+		{% if 0 in item|keys %}
+			{{id}}: 
+			<ol>
+			{% for key, value in item %}
+				<li>
+					{{ _self.tree(0, value) }}
+				</li>
+			{% endfor %}
+			</ol>
+		{% elseif id == 0 %}
+			<ul>
+			{% for key, value in item %}
+				<li>
+					{{ _self.tree(key, value) }}
+				</li>
+			{% endfor %}
+			</ul>
+		{% elseif item|length == 0 %}
+			{{id}}
+		{% else %}
+			{{id}}: 
+			<ul>
+			{% for key, value in item %}
+				<li>
+					{{ _self.tree(key, value) }}
+				</li>
+			{% endfor %}
+			</ul>
+		{% endif %}
+	{% elseif id == 0 %}
+		{{item}}
+	{% else %}
+		{{id}}: {{item}}
+	{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="title">
+	<form method="GET" action="{{endpoint}}">
+		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=ol_books&dbnum={{dbNum}}">{{dbConfig.name}}</a>
+		<input type="hidden" name="action" value="{{action}}" />
+		<input type="hidden" name="dbnum" value="{{dbNum}}" />
+		Volume <input type="text" name="matchId" value="{{workId}}" />
+		<input type="submit" value="Find"/>
+	</form>
+</div>
+<div><b>Open Library Work {{workId}}</b></div>
+<ul>
+{% for key, value in work %}
+	<li>
+		{{ _self.tree(key, value) }}
+	</li>
+{% endfor %}
+</ul>
+{% endblock content %}

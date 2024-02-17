@@ -1,6 +1,6 @@
 <?php
 /**
- * WikiMatch class
+ * WikiDataMatch class
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     mikespub
@@ -10,10 +10,11 @@ namespace Marsender\EPubLoader;
 
 use Wikidata\Wikidata;
 
-class WikiMatch extends BaseMatch
+class WikiDataMatch extends BaseMatch
 {
     public const ENTITY_URL = 'http://www.wikidata.org/entity/';
-    public const CACHE_TYPES = ['authors', 'works', 'series', 'entities'];
+    public const ENTITY_PATTERN = '/^Q\d+$/';
+    public const CACHE_TYPES = ['wikidata/authors', 'wikidata/works', 'wikidata/series', 'wikidata/entities'];
     public const AUTHOR_PROPERTY = 'P50';
 
     /** @var Wikidata|null */
@@ -42,7 +43,7 @@ class WikiMatch extends BaseMatch
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/authors/' . $query . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/authors/' . $query . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -66,7 +67,7 @@ class WikiMatch extends BaseMatch
      */
     public function findAuthorId($author, $lang = null)
     {
-        if (!empty($author['link']) && strncmp($author['link'], static::ENTITY_URL, strlen(static::ENTITY_URL)) === 0) {
+        if (!empty($author['link']) && static::isValidLink($author['link'])) {
             return static::entity($author['link']);
         }
         $entityId = null;
@@ -80,13 +81,13 @@ class WikiMatch extends BaseMatch
     }
 
     /**
-     * Summary of findWorksByAuthor
+     * Summary of findWorksByAuthorProperty
      * @param array<mixed> $author
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>
      */
-    public function findWorksByAuthor($author, $lang = null, $limit = 100)
+    public function findWorksByAuthorProperty($author, $lang = null, $limit = 100)
     {
         $lang ??= $this->lang;
         $limit ??= $this->limit;
@@ -95,7 +96,7 @@ class WikiMatch extends BaseMatch
             return [];
         }
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/works/' . $entityId . '.' . $lang . '.' . $limit . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/works/' . $entityId . '.' . $lang . '.' . $limit . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -123,23 +124,24 @@ class WikiMatch extends BaseMatch
     }
 
     /**
-     * Summary of findWorksByName
+     * Summary of findWorksByAuthorName
      * @param array<mixed> $author
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>
      */
-    public function findWorksByName($author, $lang = null, $limit = 100)
+    public function findWorksByAuthorName($author, $lang = null, $limit = 100)
     {
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         $query = $author['name'];
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/works/' . $query . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/works/' . $query . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
         }
+        // Use P2093 when author property is unknown or does not exist
         $propId = 'P2093';
         $results = $this->getApi()->searchBy($propId, $query, $lang, $limit);
         $matched = [];
@@ -164,7 +166,7 @@ class WikiMatch extends BaseMatch
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/works/' . $query . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/works/' . $query . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -217,7 +219,7 @@ class WikiMatch extends BaseMatch
             return [];
         }
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/series/' . $entityId . '.' . $lang . '.' . $limit . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/series/' . $entityId . '.' . $lang . '.' . $limit . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -256,7 +258,7 @@ class WikiMatch extends BaseMatch
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/series/' . $query . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/series/' . $query . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -282,7 +284,7 @@ class WikiMatch extends BaseMatch
     {
         $lang ??= $this->lang;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/entities/' . $entityId . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/entities/' . $entityId . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }

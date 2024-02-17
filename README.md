@@ -18,8 +18,9 @@ epub-loader is a utility package for ebooks. It can be used as a stand-alone pro
 
 - CalibreDbLoader class allows create Calibre databases and add ebooks
 - BookExport class allows to export ebooks metadata in csv files
-- WikiMatch class allows to match ebooks and authors with Wikidata
-- GoogleMatch class allows to match ebooks and authors with Google Books
+- WikiDataMatch class allows to match ebooks and authors with Wikidata
+- GoogleBooksMatch class allows to match ebooks and authors with Google Books
+- OpenLibraryMatch class allows to match ebooks and authors with Open Library
 - The app directory contains samples and allows to run actions
 
 ## Installation (stand-alone)

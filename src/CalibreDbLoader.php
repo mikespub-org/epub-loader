@@ -84,7 +84,7 @@ class CalibreDbLoader
             if (count($tab) != 2) {
                 continue;
             }
-            $this->mBookId[$tab[0]] = (int)$tab[1];
+            $this->mBookId[$tab[0]] = (int) $tab[1];
         }
     }
 
@@ -114,7 +114,7 @@ class CalibreDbLoader
     protected function GetBookId($inBookFileName)
     {
         if (isset($this->mBookId[$inBookFileName])) {
-            $res = (int)$this->mBookId[$inBookFileName];
+            $res = (int) $this->mBookId[$inBookFileName];
         } else {
             // Get max book id
             $res = 0;
@@ -677,10 +677,10 @@ class CalibreDbLoader
         }
         switch ($type) {
             case 'google':
-                $url = GoogleMatch::link($value);
+                $url = GoogleBooksMatch::link($value);
                 break;
             case 'wd':
-                $url = WikiMatch::link($value);
+                $url = WikiDataMatch::link($value);
                 break;
             default:
                 $url = '';

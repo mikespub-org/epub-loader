@@ -15,7 +15,7 @@ class RequestHandler
 {
     public const ENDPOINT = './index.php';
     public const APP_NAME = 'Epub Loader';
-    public const VERSION = '2.1.1';
+    public const VERSION = '2.3';
     public const TEMPLATE = 'index.html';
 
     /** @var array<mixed> */
@@ -138,7 +138,7 @@ class RequestHandler
         $dbConfig = $this->gConfig['databases'][$dbNum];
         $dbPath = $dbConfig['db_path'];
         if (!is_dir($dbPath)) {
-            if (!mkdir($dbPath, 0755, true)) {
+            if (!mkdir($dbPath, 0o755, true)) {
                 $this->gErrorArray[$dbPath] = 'Cannot create directory: ' . $dbPath;
                 return null;
             }
@@ -154,6 +154,7 @@ class RequestHandler
             return $result;
         }
         $dbConfig['create_db'] = $this->gConfig['create_db'];
+        /** @var ActionHandler $handler */
         $handler = new $this->handlerClass($dbConfig, $this->cacheDir);
         try {
             $result = $handler->handle($action);

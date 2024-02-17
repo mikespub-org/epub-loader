@@ -13,6 +13,7 @@ use Exception;
 class BaseMatch
 {
     public const ENTITY_URL = 'http://www.wikidata.org/entity/';
+    public const ENTITY_PATTERN = '/^\w+$/';
     public const CACHE_TYPES = [];
 
     /** @var string|null */
@@ -47,7 +48,7 @@ class BaseMatch
     {
         foreach (static::CACHE_TYPES as $cacheType) {
             $makeDir = $this->cacheDir . '/' . $cacheType;
-            if (!is_dir($makeDir) && !mkdir($makeDir, 0755, true)) {
+            if (!is_dir($makeDir) && !mkdir($makeDir, 0o755, true)) {
                 throw new Exception('Cannot create directory: ' . $makeDir);
             }
         }
@@ -92,5 +93,31 @@ class BaseMatch
     public static function entity($link)
     {
         return str_replace(static::ENTITY_URL, '', $link);
+    }
+
+    /**
+     * Summary of isValidEntity
+     * @param string $entityId
+     * @return bool
+     */
+    public static function isValidEntity($entityId)
+    {
+        if (!empty($entityId) && preg_match(static::ENTITY_PATTERN, $entityId)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Summary of isValidLink
+     * @param string $link
+     * @return bool
+     */
+    public static function isValidLink($link)
+    {
+        if (!empty($link) && str_starts_with($link, static::ENTITY_URL)) {
+            return true;
+        }
+        return false;
     }
 }

@@ -33,12 +33,12 @@ require_once($fileName);
 
 // Get the url parameters
 $action = $_GET['action'] ?? null;
-$dbNum = isset($_GET['dbnum']) ? (int)$_GET['dbnum'] : null;
+$dbNum = isset($_GET['dbnum']) ? (int) $_GET['dbnum'] : null;
 
 $data = [
     'endpoint' => $gConfig['endpoint'] ?? './index.php',
     'app_name' => $gConfig['app_name'] ?? 'Epub Loader',
-    'version' => $gConfig['version'] ?? '2.1',
+    'version' => $gConfig['version'] ?? '2.3',
     'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13($gConfig['admin_email']),
 ];
 

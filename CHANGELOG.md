@@ -6,7 +6,12 @@
 1.5.x - 2023xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-2.2.x - 2023xxxx To be continued (PHP >= 8.1)
+2.3.0 - 20240217 Start OpenLibraryMatch
+  * Add OpenLibraryMatch to search in https://openlibrary.org/
+  * Rename GoogleMatch to GoogleBooksMatch
+  * Rename WikiMatch to WikiDataMatch
+
+2.2.1 - 20240205 Update dependencies
   * Update dependencies in composer.json
 
 2.2.0 - 20230925 Expand GoogleMatch + deprecate  (PHP >= 8.1)

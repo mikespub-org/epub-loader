@@ -92,7 +92,7 @@
 		<tr>
 			<td>{{item.volumeInfo.authors|join(', ')}}</td>
 			<td><img src="{{item.volumeInfo.imageLinks.smallThumbnail}}" /></td>
-			<td><a href="{{endpoint}}?action=volume&dbnum={{dbNum}}&lang={{lang}}&matchId={{item.id}}">{{item.volumeInfo.title}}</a> <a href="{{item.selfLink}}">G</a></td>
+			<td><a href="{{endpoint}}?action=gb_volume&dbnum={{dbNum}}&lang={{lang}}&matchId={{item.id}}">{{item.volumeInfo.title}}</a> <a href="{{item.selfLink}}">G</a></td>
 			<td>{{item.volumeInfo.publishedDate}}</td>
 			<td>{{item.volumeInfo.publisher}}</td>
 			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&lang={{lang}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{item.id}}">Match</a></td>

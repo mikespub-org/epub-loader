@@ -41,7 +41,7 @@
 {% block content %}
 <div class="title">
 	<form method="GET" action="{{endpoint}}">
-		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=google&dbnum={{dbNum}}&lang={{lang}}">{{dbConfig.name}}</a>
+		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=gb_books&dbnum={{dbNum}}&lang={{lang}}">{{dbConfig.name}}</a>
 		<input type="hidden" name="action" value="{{action}}" />
 		<input type="hidden" name="dbnum" value="{{dbNum}}" />
 		<input type="hidden" name="lang" value="{{lang}}" />

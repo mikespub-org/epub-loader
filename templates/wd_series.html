@@ -3,7 +3,7 @@
 {% block content %}
 <div class="title">
 	<form method="GET" action="{{endpoint}}">
-		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=books&dbnum={{dbNum}}&authorId={{authorId}}">{{dbConfig.name}}</a>
+		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=wd_books&dbnum={{dbNum}}&authorId={{authorId}}">{{dbConfig.name}}</a>
 		<input type="hidden" name="action" value="{{action}}" />
 		<input type="hidden" name="dbnum" value="{{dbNum}}" />
 		Author <select name="authorId">
@@ -49,7 +49,7 @@
 		</tr>
 		{% for match in matched %}
 		<tr>
-			<td><a href="{{endpoint}}?action=wikidata&dbnum={{dbNum}}&authorId={{authorId}}&seriesId={{seriesId}}&matchId={{match.id}}">{{match.id}}</a></td>
+			<td><a href="{{endpoint}}?action=wd_entity&dbnum={{dbNum}}&authorId={{authorId}}&seriesId={{seriesId}}&matchId={{match.id}}">{{match.id}}</a></td>
 			<td>{{match.label}}</td>
 			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&seriesId={{seriesId}}&matchId={{match.id}}">Match</a></td>
 			<td>{{match.description}}</td>

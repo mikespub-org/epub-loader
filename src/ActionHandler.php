@@ -48,7 +48,7 @@ class ActionHandler
      */
     public function handle($action)
     {
-        $authorId = isset($_GET['authorId']) ? (int)$_GET['authorId'] : null;
+        $authorId = isset($_GET['authorId']) ? (int) $_GET['authorId'] : null;
         $matchId = $_GET['matchId'] ?? null;
         switch($action) {
             case 'csv_export':
@@ -59,39 +59,58 @@ class ActionHandler
                 $result = $this->db_load($createDb);
                 break;
             case 'authors':
-                if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
+                $result = $this->authors($authorId);
+                break;
+            case 'wd_author':
+                if (!WikiDataMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
-                $result = $this->authors($authorId, $matchId);
+                $result = $this->wd_author($authorId, $matchId);
                 break;
-            case 'books':
-                $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
-                if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
+            case 'wd_books':
+                $bookId = isset($_GET['bookId']) ? (int) $_GET['bookId'] : null;
+                if (!WikiDataMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
-                $result = $this->books($authorId, $bookId, $matchId);
+                $result = $this->wd_books($authorId, $bookId, $matchId);
                 break;
-            case 'series':
-                $seriesId = isset($_GET['seriesId']) ? (int)$_GET['seriesId'] : null;
-                if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
+            case 'wd_series':
+                $seriesId = isset($_GET['seriesId']) ? (int) $_GET['seriesId'] : null;
+                if (!WikiDataMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
-                $result = $this->series($authorId, $seriesId, $matchId);
+                $result = $this->wd_series($authorId, $seriesId, $matchId);
                 break;
-            case 'wikidata':
-                if (!empty($matchId) && !preg_match('/^Q\d+$/', $matchId)) {
+            case 'wd_entity':
+                if (!WikiDataMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
-                $result = $this->wikidata($matchId, $authorId);
+                $result = $this->wd_entity($matchId, $authorId);
                 break;
-            case 'google':
-                $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
+            case 'gb_books':
+                $bookId = isset($_GET['bookId']) ? (int) $_GET['bookId'] : null;
                 $lang = $_GET['lang'] ?? 'en';
-                $result = $this->google($authorId, $bookId, $matchId, $lang);
+                $result = $this->gb_books($authorId, $bookId, $matchId, $lang);
                 break;
-            case 'volume':
+            case 'gb_volume':
                 $lang = $_GET['lang'] ?? 'en';
-                $result = $this->volume($matchId, $lang);
+                $result = $this->gb_volume($matchId, $lang);
+                break;
+            case 'ol_author':
+                if (!OpenLibraryMatch::isValidEntity($matchId)) {
+                    $matchId = null;
+                }
+                $result = $this->ol_author($authorId, $matchId);
+                break;
+            case 'ol_books':
+                $bookId = isset($_GET['bookId']) ? (int) $_GET['bookId'] : null;
+                if (!OpenLibraryMatch::isValidEntity($matchId)) {
+                    $matchId = null;
+                }
+                $result = $this->ol_books($authorId, $bookId, $matchId);
+                break;
+            case 'ol_work':
+                $result = $this->ol_work($matchId);
                 break;
             default:
                 $result = $this->$action();
@@ -170,14 +189,28 @@ class ActionHandler
     /**
      * Summary of authors
      * @param int|null $authorId
+     * @return array<mixed>|null
+     */
+    public function authors($authorId = null)
+    {
+        // List the authors
+        $authors = $this->db->getAuthors($authorId);
+        $matched = null;
+        // Return info
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
+    }
+
+    /**
+     * Summary of wd_author
+     * @param int|null $authorId
      * @param string|null $matchId
      * @return array<mixed>|null
      */
-    public function authors($authorId, $matchId)
+    public function wd_author($authorId, $matchId)
     {
         // Update the author link
         if (!is_null($authorId) && !is_null($matchId)) {
-            $link = WikiMatch::link($matchId);
+            $link = WikiDataMatch::link($matchId);
             if (!$this->db->setAuthorLink($authorId, $link)) {
                 $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
                 return null;
@@ -195,18 +228,25 @@ class ActionHandler
         $matched = null;
         if (!is_null($query)) {
             // Find match on Wikidata
-            $wikimatch = new WikiMatch($this->cacheDir);
+            $wikimatch = new WikiDataMatch($this->cacheDir);
             $matched = $wikimatch->findAuthors($query);
             // Find works from author for 1st match
             if (count($matched) > 0) {
                 $firstId = array_keys($matched)[0];
-                $matched[$firstId]['entries'] = $wikimatch->findWorksByAuthor($author);
+                $matched[$firstId]['entries'] = $wikimatch->findWorksByAuthorProperty($author);
             }
             // https://www.googleapis.com/books/v1/volumes?q=inauthor:%22Anne+Bishop%22&langRestrict=en&startIndex=0&maxResults=40
         }
         foreach ($authors as $id => $author) {
             if (!empty($author['link'])) {
-                $authors[$id]['entityId'] = WikiMatch::entity($author['link']);
+                if (WikiDataMatch::isValidLink($author['link'])) {
+                    $authors[$id]['entityType'] = 'wd_entity';
+                    $authors[$id]['entityId'] = WikiDataMatch::entity($author['link']);
+                }
+                if (OpenLibraryMatch::isValidLink($author['link'])) {
+                    $authors[$id]['entityType'] = 'ol_author';
+                    $authors[$id]['entityId'] = OpenLibraryMatch::entity($author['link']);
+                }
             }
         }
         // Return info
@@ -214,13 +254,13 @@ class ActionHandler
     }
 
     /**
-     * Summary of books
+     * Summary of wd_books
      * @param int|null $authorId
      * @param int|null $bookId
      * @param string|null $matchId
      * @return array<mixed>|null
      */
-    public function books($authorId, $bookId, $matchId)
+    public function wd_books($authorId, $bookId, $matchId)
     {
         $authors = $this->db->getAuthors($authorId);
         if (empty($authorId) && empty($bookId)) {
@@ -241,7 +281,7 @@ class ActionHandler
         }
 
         // Find match on Wikidata
-        $wikimatch = new WikiMatch($this->cacheDir);
+        $wikimatch = new WikiDataMatch($this->cacheDir);
         //$entityId = $wikimatch->findAuthorId($author);
 
         $matched = null;
@@ -262,8 +302,8 @@ class ActionHandler
             $matched = $wikimatch->findWorksByTitle($query);
         } else {
             $books = $this->db->getBooksByAuthor($authorId);
-            $matched = $wikimatch->findWorksByAuthor($author);
-            //$matched = array_merge($matched, $wikimatch->findWorksByName($author));
+            $matched = $wikimatch->findWorksByAuthorProperty($author);
+            //$matched = array_merge($matched, $wikimatch->findWorksByAuthorName($author));
         }
         $authorList = $this->getAuthorList();
 
@@ -278,7 +318,7 @@ class ActionHandler
      * @param string|null $matchId
      * @return array<mixed>|null
      */
-    public function series($authorId, $seriesId, $matchId)
+    public function wd_series($authorId, $seriesId, $matchId)
     {
         $authors = $this->db->getAuthors($authorId);
         if (empty($authorId) && empty($seriesId)) {
@@ -294,7 +334,7 @@ class ActionHandler
         $author = $authors[$authorId];
 
         // Find match on Wikidata
-        $wikimatch = new WikiMatch($this->cacheDir);
+        $wikimatch = new WikiDataMatch($this->cacheDir);
         //$entityId = $wikimatch->findAuthorId($author);
 
         $matched = null;
@@ -315,24 +355,24 @@ class ActionHandler
     }
 
     /**
-     * Summary of wikidata
+     * Summary of wd_entity
      * @param string|null $entityId
      * @param int|null $authorId
      * @param string|null $query
      * @return array<mixed>
      */
-    public function wikidata($entityId = null, $authorId = null, $query = null)
+    public function wd_entity($entityId = null, $authorId = null, $query = null)
     {
         $entity = [];
         // Get entity on Wikidata
         if (!empty($authorId) && empty($entityId)) {
             $authors = $this->db->getAuthors($authorId);
             $author = $authors[$authorId];
-            $wikimatch = new WikiMatch($this->cacheDir);
+            $wikimatch = new WikiDataMatch($this->cacheDir);
             $entityId = $wikimatch->findAuthorId($author);
         }
         if (!empty($entityId)) {
-            $wikimatch = new WikiMatch($this->cacheDir);
+            $wikimatch = new WikiDataMatch($this->cacheDir);
             $entity = $wikimatch->getEntity($entityId);
         }
         $authorList = $this->getAuthorList();
@@ -342,14 +382,14 @@ class ActionHandler
     }
 
     /**
-     * Summary of google
+     * Summary of gb_books
      * @param int|null $authorId
      * @param int|null $bookId
      * @param string|null $matchId
      * @param string $lang
      * @return array<mixed>|null
      */
-    public function google($authorId, $bookId, $matchId, $lang = 'en')
+    public function gb_books($authorId, $bookId, $matchId, $lang = 'en')
     {
         $authors = $this->db->getAuthors($authorId);
         if (empty($authorId) && empty($bookId)) {
@@ -373,7 +413,7 @@ class ActionHandler
         }
 
         // Find match on Google Books
-        $googlematch = new GoogleMatch($this->cacheDir, $lang);
+        $googlematch = new GoogleBooksMatch($this->cacheDir, $lang);
 
         $matched = null;
         if (!empty($bookId)) {
@@ -387,7 +427,7 @@ class ActionHandler
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'lang' => $lang, 'langList' => GoogleMatch::getLanguages()];
+        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'lang' => $lang, 'langList' => GoogleBooksMatch::getLanguages()];
     }
 
     /**
@@ -396,18 +436,148 @@ class ActionHandler
      * @param string $lang
      * @return array<mixed>
      */
-    public function volume($volumeId, $lang)
+    public function gb_volume($volumeId, $lang)
     {
         $volume = [];
 
         // Get volume on Google Books
         if (!empty($volumeId)) {
-            $googlematch = new GoogleMatch($this->cacheDir, $lang);
+            $googlematch = new GoogleBooksMatch($this->cacheDir, $lang);
             $volume = $googlematch->getVolume($volumeId);
         }
 
         // Return info
-        return ['volume' => $volume, 'volumeId' => $volumeId, 'lang' => $lang, 'langList' => GoogleMatch::getLanguages()];
+        return ['volume' => $volume, 'volumeId' => $volumeId, 'lang' => $lang, 'langList' => GoogleBooksMatch::getLanguages()];
+    }
+
+    /**
+     * Summary of ol_author
+     * @param int|null $authorId
+     * @param string|null $matchId
+     * @return array<mixed>|null
+     */
+    public function ol_author($authorId, $matchId)
+    {
+        // Update the author link
+        if (!is_null($authorId) && !is_null($matchId)) {
+            $openlibrary = new OpenLibraryMatch($this->cacheDir);
+            $matched = $openlibrary->findWorksByAuthorId($matchId);
+            var_dump($matched);
+            /**
+            $link = OpenLibraryMatch::link($matchId);
+            if (!$this->db->setAuthorLink($authorId, $link)) {
+                $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
+                return null;
+            }
+            $authorId = null;
+             */
+            // List the authors
+            $authors = $this->db->getAuthors($authorId);
+            // Return info
+            return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['entries']];
+        }
+        // List the authors
+        $authors = $this->db->getAuthors($authorId);
+        $author = null;
+        $query = null;
+        if (!is_null($authorId) && is_null($matchId)) {
+            $author = $authors[$authorId];
+            $query = $author['name'];
+        }
+        $matched = null;
+        if (!is_null($query)) {
+            // Find match on OpenLibrary
+            $openlibrary = new OpenLibraryMatch($this->cacheDir);
+            $matched = $openlibrary->findAuthors($query);
+            usort($matched['docs'], function ($a, $b) {
+                return $b['work_count'] <=> $a['work_count'];
+            });
+            // @todo Find works from author with highest work_count!?
+            //if (count($matched) > 0) {
+            //    $firstId = array_keys($matched)[0];
+            //    $matched[$firstId]['entries'] = $openlibrary->findWorksByAuthor($author);
+            //}
+        }
+        foreach ($authors as $id => $author) {
+            if (!empty($author['link'])) {
+                if (OpenLibraryMatch::isValidLink($author['link'])) {
+                    $authors[$id]['entityType'] = 'ol_author';
+                    $authors[$id]['entityId'] = OpenLibraryMatch::entity($author['link']);
+                }
+            }
+        }
+        // Return info
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['docs']];
+    }
+
+    /**
+     * Summary of ol_books
+     * @param int|null $authorId
+     * @param int|null $bookId
+     * @param string|null $matchId
+     * @return array<mixed>|null
+     */
+    public function ol_books($authorId, $bookId, $matchId)
+    {
+        $authors = $this->db->getAuthors($authorId);
+        if (empty($authorId) && empty($bookId)) {
+            //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
+            //return null;
+            $authorId = array_keys($authors)[0];
+        }
+
+        if (count($authors) < 1) {
+            $this->addError($this->dbFileName, "Please specify a valid authorId");
+            return null;
+        }
+        $author = $authors[$authorId];
+
+        // Update the book identifier
+        if (!is_null($bookId) && !is_null($matchId)) {
+            $this->updateBookIdentifier('olid', $bookId, $matchId);
+        }
+
+        // Find match on OpenLibrary
+        $openlibrary = new OpenLibraryMatch($this->cacheDir);
+
+        $matched = null;
+        if (!empty($bookId)) {
+            $books = $this->db->getBooks($bookId);
+            $query = $books[$bookId]['title'];
+            $matched = $openlibrary->findWorksByTitle($query);
+            // generic search returns 'docs' but author search returns 'entries'
+            $matched['entries'] ??= $matched['docs'];
+        } elseif (!empty($matchId)) {
+            $books = $this->db->getBooksByAuthor($authorId);
+            $matched = $openlibrary->findWorksByAuthorId($matchId);
+        } else {
+            $books = $this->db->getBooksByAuthor($authorId);
+            $olid = $openlibrary->findAuthorId($author);
+            $matched = $openlibrary->findWorksByAuthorId($olid);
+        }
+        $authorList = $this->getAuthorList();
+
+        // Return info
+        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched['entries'], 'authors' => $authorList];
+    }
+
+    /**
+     * Summary of work
+     * @param string $workId
+     * @return array<mixed>
+     */
+    public function ol_work($workId)
+    {
+        $work = [];
+
+        // Get work on OpenLibrary
+        if (!empty($workId)) {
+            $openlibrary = new OpenLibraryMatch($this->cacheDir);
+            $work = $openlibrary->getWork($workId);
+        }
+
+        // Return info
+        return ['work' => $work, 'workId' => $workId];
     }
 
     /**

@@ -83,7 +83,7 @@ class BaseExport
             return '';
         }
         if (is_numeric($inValue)) {
-            return (string)$inValue;
+            return (string) $inValue;
         }
         if (is_array($inValue)) {
             // Recursive call for arrays
