@@ -24,6 +24,9 @@ class OpenLibraryMatch extends BaseMatch
      */
     public function findAuthors($query, $lang = null, $limit = 10)
     {
+        if (empty($query)) {
+            return ['numFound' => 0, 'start' => 0, 'numFoundExact' => true, 'docs' => []];
+        }
         // Find match on Wikidata
         $lang ??= $this->lang;
         $limit ??= $this->limit;
@@ -58,7 +61,7 @@ class OpenLibraryMatch extends BaseMatch
         $query = $author['name'];
         $matched = $this->findAuthors($query, $lang);
         // @todo Find works from author with highest work_count!?
-        if (count($matched['docs']) > 0) {
+        if (!empty($matched) && count($matched['docs']) > 0) {
             usort($matched['docs'], function ($a, $b) {
                 return $b['work_count'] <=> $a['work_count'];
             });
@@ -76,6 +79,9 @@ class OpenLibraryMatch extends BaseMatch
      */
     public function findWorksByAuthorId($matchId, $lang = null, $limit = 100)
     {
+        if (empty($matchId)) {
+            return ['numFound' => 0, 'start' => 0, 'numFoundExact' => true, 'docs' => []];
+        }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
@@ -105,6 +111,9 @@ class OpenLibraryMatch extends BaseMatch
      */
     public function findWorksByTitle($query, $lang = null, $limit = 10)
     {
+        if (empty($query)) {
+            return ['numFound' => 0, 'start' => 0, 'numFoundExact' => true, 'docs' => []];
+        }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {

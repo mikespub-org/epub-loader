@@ -534,6 +534,9 @@ class ActionHandler
             $olid = $openlibrary->findAuthorId($author);
             $matched = $openlibrary->findWorksByAuthorId($olid);
         }
+        usort($matched['docs'], function ($a, $b) {
+            return $b['edition_count'] <=> $a['edition_count'];
+        });
         $authorList = $this->getAuthorList();
 
         // Return info
