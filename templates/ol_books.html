@@ -10,15 +10,20 @@
 			<th>Key</th>
 			<th>Title</th>
 			<th>Action</th>
-			<th>Description</th>
+			<th>Edition Count</th>
+			<th>First Published</th>
+			<th>Authors</th>
 			<th>Link</th>
 		</tr>
 		{% for match in matched %}
+		{% set matchId = match.key|replace({'/works/': ''}) %}
 		<tr>
-			<td><a href="{{endpoint}}?action=ol_work&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.key}}">{{match.key}}</a></td>
+			<td><a href="{{endpoint}}?action=ol_work&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{matchId}}">{{matchId}}</a></td>
 			<td>{{match.title}}</td>
-			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.key}}">Match</a></td>
-			<td>{{match.description}}</td>
+			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{matchId}}">Match</a></td>
+			<td>{{match.edition_count}}</td>
+			<td>{{match.first_publish_year}}</td>
+			<td>{{match.author_name|join(', ')}}</td>
 			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org{{match.key}}">OpenLibrary</a>{% endif %}</td>
 		</tr>
 		{% endfor %}

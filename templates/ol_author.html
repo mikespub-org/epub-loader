@@ -15,13 +15,14 @@
 			<th>Link</th>
 		</tr>
 		{% for match in matched %}
+		{% set matchId = match.key|replace({'/authors/': ''}) %}
 		<tr>
-			<td><a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.key}}">{{match.key}}</a></td>
+			<td><a href="{{endpoint}}?action=ol_work&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{matchId}}">{{matchId}}</a></td>
 			<td>{{match.name}}</td>
-			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{match.key}}">Match</a></td>
+			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{matchId}}">Match</a></td>
 			<td>{{match.work_count}}</td>
 			<td>{{match.top_work}}</td>
-			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org/authors/{{match.key}}">OpenLibrary</a>{% endif %}</td>
+			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org{{match.key}}">OpenLibrary</a>{% endif %}</td>
 		</tr>
 		{% if match.entries %}
 		<tr>

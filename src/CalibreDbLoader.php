@@ -682,6 +682,9 @@ class CalibreDbLoader
             case 'wd':
                 $url = WikiDataMatch::link($value);
                 break;
+            case 'olid':
+                $url = OpenLibraryMatch::link($value);
+                break;
             default:
                 $url = '';
         }

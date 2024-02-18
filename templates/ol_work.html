@@ -44,11 +44,17 @@
 		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=ol_books&dbnum={{dbNum}}">{{dbConfig.name}}</a>
 		<input type="hidden" name="action" value="{{action}}" />
 		<input type="hidden" name="dbnum" value="{{dbNum}}" />
-		Volume <input type="text" name="matchId" value="{{workId}}" />
+		Work <input type="text" name="matchId" value="{{workId}}" />
 		<input type="submit" value="Find"/>
 	</form>
 </div>
 <div><b>Open Library Work {{workId}}</b></div>
+{% if workId ends with 'A' %}
+<img src="https://covers.openlibrary.org/a/olid/{{workId}}-M.jpg"/>
+{% endif %}
+{% if workId ends with 'W' and work.covers %}
+<img src="https://covers.openlibrary.org/b/id/{{work.covers.0}}-M.jpg"/>
+{% endif %}
 <ul>
 {% for key, value in work %}
 	<li>

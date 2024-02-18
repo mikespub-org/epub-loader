@@ -196,6 +196,7 @@ class ActionHandler
         // List the authors
         $authors = $this->db->getAuthors($authorId);
         $matched = null;
+        $authors = $this->addAuthorLinks($authors);
         // Return info
         return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
     }
@@ -237,18 +238,7 @@ class ActionHandler
             }
             // https://www.googleapis.com/books/v1/volumes?q=inauthor:%22Anne+Bishop%22&langRestrict=en&startIndex=0&maxResults=40
         }
-        foreach ($authors as $id => $author) {
-            if (!empty($author['link'])) {
-                if (WikiDataMatch::isValidLink($author['link'])) {
-                    $authors[$id]['entityType'] = 'wd_entity';
-                    $authors[$id]['entityId'] = WikiDataMatch::entity($author['link']);
-                }
-                if (OpenLibraryMatch::isValidLink($author['link'])) {
-                    $authors[$id]['entityType'] = 'ol_author';
-                    $authors[$id]['entityId'] = OpenLibraryMatch::entity($author['link']);
-                }
-            }
-        }
+        $authors = $this->addAuthorLinks($authors);
         // Return info
         return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
     }
@@ -460,21 +450,12 @@ class ActionHandler
     {
         // Update the author link
         if (!is_null($authorId) && !is_null($matchId)) {
-            $openlibrary = new OpenLibraryMatch($this->cacheDir);
-            $matched = $openlibrary->findWorksByAuthorId($matchId);
-            var_dump($matched);
-            /**
             $link = OpenLibraryMatch::link($matchId);
             if (!$this->db->setAuthorLink($authorId, $link)) {
                 $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
                 return null;
             }
-            $authorId = null;
-             */
-            // List the authors
-            $authors = $this->db->getAuthors($authorId);
-            // Return info
-            return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['entries']];
+            //$authorId = null;
         }
         // List the authors
         $authors = $this->db->getAuthors($authorId);
@@ -497,15 +478,13 @@ class ActionHandler
             //    $firstId = array_keys($matched)[0];
             //    $matched[$firstId]['entries'] = $openlibrary->findWorksByAuthor($author);
             //}
+        } elseif (!empty($matchId)) {
+            $openlibrary = new OpenLibraryMatch($this->cacheDir);
+            $matched = ['docs' => []];
+            $matched['docs'][] = $openlibrary->getAuthor($matchId);
+            //var_dump($matched);
         }
-        foreach ($authors as $id => $author) {
-            if (!empty($author['link'])) {
-                if (OpenLibraryMatch::isValidLink($author['link'])) {
-                    $authors[$id]['entityType'] = 'ol_author';
-                    $authors[$id]['entityId'] = OpenLibraryMatch::entity($author['link']);
-                }
-            }
-        }
+        $authors = $this->addAuthorLinks($authors);
         // Return info
         return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['docs']];
     }
@@ -546,7 +525,7 @@ class ActionHandler
             $query = $books[$bookId]['title'];
             $matched = $openlibrary->findWorksByTitle($query);
             // generic search returns 'docs' but author search returns 'entries'
-            $matched['entries'] ??= $matched['docs'];
+            //$matched['entries'] ??= $matched['docs'];
         } elseif (!empty($matchId)) {
             $books = $this->db->getBooksByAuthor($authorId);
             $matched = $openlibrary->findWorksByAuthorId($matchId);
@@ -558,7 +537,7 @@ class ActionHandler
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched['entries'], 'authors' => $authorList];
+        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched['docs'], 'authors' => $authorList];
     }
 
     /**
@@ -613,6 +592,28 @@ class ActionHandler
             $authorList[$authorId] = $author['name'];
         }
         return $authorList;
+    }
+
+    /**
+     * Summary of addAuthorLinks
+     * @param array<mixed> $authors
+     * @return array<mixed>
+     */
+    protected function addAuthorLinks($authors)
+    {
+        foreach ($authors as $id => $author) {
+            if (!empty($author['link'])) {
+                if (WikiDataMatch::isValidLink($author['link'])) {
+                    $authors[$id]['entityType'] = 'wd_entity';
+                    $authors[$id]['entityId'] = WikiDataMatch::entity($author['link']);
+                }
+                if (OpenLibraryMatch::isValidLink($author['link'])) {
+                    $authors[$id]['entityType'] = 'ol_work';
+                    $authors[$id]['entityId'] = OpenLibraryMatch::entity($author['link']);
+                }
+            }
+        }
+        return $authors;
     }
 
     /**
