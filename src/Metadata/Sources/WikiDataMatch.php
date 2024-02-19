@@ -6,7 +6,7 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader;
+namespace Marsender\EPubLoader\Metadata\Sources;
 
 use Wikidata\Wikidata;
 

@@ -9,6 +9,7 @@
 
 namespace Marsender\EPubLoader;
 
+use Marsender\EPubLoader\Metadata\BookInfos;
 use Exception;
 use PDO;
 
@@ -18,7 +19,7 @@ define('PDO_SUCCES_CODE', '00000');
  * Calibre database sql file that comes unmodified from Calibre project:
  * https://raw.githubusercontent.com/kovidgoyal/calibre/master/resources/metadata_sqlite.sql
  */
-define('CalibreCreateDbSql', realpath(__DIR__) . '/metadata_sqlite.sql');
+define('CalibreCreateDbSql', dirname(__DIR__) . '/schema/metadata_sqlite.sql');
 
 /**
  * CalibreDbLoader class allows to open or create a new Calibre database,
@@ -677,13 +678,13 @@ class CalibreDbLoader
         }
         switch ($type) {
             case 'google':
-                $url = GoogleBooksMatch::link($value);
+                $url = Metadata\Sources\GoogleBooksMatch::link($value);
                 break;
             case 'wd':
-                $url = WikiDataMatch::link($value);
+                $url = Metadata\Sources\WikiDataMatch::link($value);
                 break;
             case 'olid':
-                $url = OpenLibraryMatch::link($value);
+                $url = Metadata\Sources\OpenLibraryMatch::link($value);
                 break;
             default:
                 $url = '';

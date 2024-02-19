@@ -6,6 +6,15 @@
 1.5.x - 2023xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
+2.3.2 - 20240219 Reorganize epub-loader namespaces
+  * Use Marsender\EPubLoader\Metadata\Sources namespace
+  * Use Marsender\EPubLoader\Metadata namespace
+  * Use Marsender\EPubLoader\Export namespace
+
+2.3.1 - 20240218 Update OpenLibraryMatch + add notes db
+  * Fix empty matches for OpenLibraryMatch
+  * Add notes_sqlite.sql schema from calibre repo
+
 2.3.0 - 20240217 Start OpenLibraryMatch
   * Add OpenLibraryMatch to search in https://openlibrary.org/
   * Rename GoogleMatch to GoogleBooksMatch

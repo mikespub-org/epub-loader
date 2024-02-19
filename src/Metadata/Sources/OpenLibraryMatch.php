@@ -6,7 +6,7 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader;
+namespace Marsender\EPubLoader\Metadata\Sources;
 
 class OpenLibraryMatch extends BaseMatch
 {
@@ -105,27 +105,30 @@ class OpenLibraryMatch extends BaseMatch
     /**
      * Summary of findWorksByTitle
      * @param string $query
-     * @param string|null $lang Language (default: en)
-     * @param string|int|null $limit Max count of returning items (default: 10)
+     * @param array<mixed> $author
      * @return array<string, mixed>
      */
-    public function findWorksByTitle($query, $lang = null, $limit = 10)
+    public function findWorksByTitle($query, $author)
     {
         if (empty($query)) {
             return ['numFound' => 0, 'start' => 0, 'numFoundExact' => true, 'docs' => []];
         }
-        $lang ??= $this->lang;
-        $limit ??= $this->limit;
+        $authorName = $author['name'];
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/works/' . $query . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/openlibrary/works/' . $query . '.' . $authorName . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
         }
         // https://openlibrary.org/dev/docs/api/search
-        $url = 'https://openlibrary.org/search.json?title=' . rawurlencode($query) . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
+        $url = 'https://openlibrary.org/search.json?title=' . rawurlencode($query) . '&author=' . rawurlencode($authorName) . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
         $results = file_get_contents($url);
         $matched = json_decode($results, true);
+        if (empty($matched) || empty($matched['docs'])) {
+            $url = 'https://openlibrary.org/search.json?title=' . rawurlencode($query) . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
+            $results = file_get_contents($url);
+            $matched = json_decode($results, true);
+        }
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }

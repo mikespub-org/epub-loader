@@ -3,7 +3,7 @@
  * Based on https://jacobdekeizer.github.io/json-to-php-generator/
  */
 
-namespace Marsender\EPubLoader\GoogleBooks;
+namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
 class SearchResult
 {

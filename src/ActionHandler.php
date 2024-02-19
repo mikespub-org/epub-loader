@@ -9,6 +9,11 @@
 
 namespace Marsender\EPubLoader;
 
+use Marsender\EPubLoader\Export\BookExport;
+use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
+use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
+use Marsender\EPubLoader\Metadata\Sources\WikiDataMatch;
+
 class ActionHandler
 {
     /** @var array<mixed> */
@@ -294,6 +299,9 @@ class ActionHandler
             $books = $this->db->getBooksByAuthor($authorId);
             $matched = $wikimatch->findWorksByAuthorProperty($author);
             //$matched = array_merge($matched, $wikimatch->findWorksByAuthorName($author));
+            if (empty($matched)) {
+                $matched = $wikimatch->findWorksByAuthorName($author);
+            }
         }
         $authorList = $this->getAuthorList();
 
@@ -415,9 +423,10 @@ class ActionHandler
             $matched = $googlematch->findWorksByAuthor($author);
         }
         $authorList = $this->getAuthorList();
+        $langList = GoogleBooksMatch::getLanguages();
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'lang' => $lang, 'langList' => GoogleBooksMatch::getLanguages()];
+        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'lang' => $lang, 'langList' => $langList];
     }
 
     /**
@@ -435,9 +444,10 @@ class ActionHandler
             $googlematch = new GoogleBooksMatch($this->cacheDir, $lang);
             $volume = $googlematch->getVolume($volumeId);
         }
+        $langList = GoogleBooksMatch::getLanguages();
 
         // Return info
-        return ['volume' => $volume, 'volumeId' => $volumeId, 'lang' => $lang, 'langList' => GoogleBooksMatch::getLanguages()];
+        return ['volume' => $volume, 'volumeId' => $volumeId, 'lang' => $lang, 'langList' => $langList];
     }
 
     /**
@@ -523,7 +533,7 @@ class ActionHandler
         if (!empty($bookId)) {
             $books = $this->db->getBooks($bookId);
             $query = $books[$bookId]['title'];
-            $matched = $openlibrary->findWorksByTitle($query);
+            $matched = $openlibrary->findWorksByTitle($query, $author['name']);
             // generic search returns 'docs' but author search returns 'entries'
             //$matched['entries'] ??= $matched['docs'];
         } elseif (!empty($matchId)) {
@@ -538,6 +548,20 @@ class ActionHandler
             return $b['edition_count'] <=> $a['edition_count'];
         });
         $authorList = $this->getAuthorList();
+        $titles = [];
+        foreach ($books as $id => $book) {
+            $titles[$book['title']] = $id;
+        }
+        foreach ($matched['docs'] as $match) {
+            // exact match only here - see calibre metadata plugins for more advanced features
+            if (array_key_exists($match['title'], $titles)) {
+                if (!empty($match['author_name']) && in_array($author['name'], $match['author_name'])) {
+                    $id = $titles[$match['title']];
+                    $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* olid', 'value' => str_replace('/works/', '', $match['key'])];
+                    unset($titles[$match['title']]);
+                }
+            }
+        }
 
         // Return info
         return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched['docs'], 'authors' => $authorList];

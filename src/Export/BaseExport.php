@@ -6,7 +6,7 @@
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
 
-namespace Marsender\EPubLoader;
+namespace Marsender\EPubLoader\Export;
 
 use Exception;
 
