@@ -666,6 +666,22 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getBookCount
+     * @return array<mixed>
+     */
+    public function getBookCount()
+    {
+        $sql = 'select author, count(*) as numitems from books_authors_link group by author';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        $count = [];
+        while ($post = $stmt->fetchObject()) {
+            $count[$post->author] = $post->numitems;
+        }
+        return $count;
+    }
+
+    /**
      * Summary of getIdentifierUrl
      * @param string $type
      * @param mixed $value
@@ -770,5 +786,23 @@ class CalibreDbLoader
     public function getSeriesByBook($bookId)
     {
         return $this->getSeries(null, null, $bookId);
+    }
+
+    /**
+     * Summary of getSeriesCount
+     * @return array<mixed>
+     */
+    public function getSeriesCount()
+    {
+        $sql = 'select author, count(distinct series) as numitems from books_series_link, books, books_authors_link
+        where books_series_link.book = books.id and books_authors_link.book = books.id
+        group by author';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        $count = [];
+        while ($post = $stmt->fetchObject()) {
+            $count[$post->author] = $post->numitems;
+        }
+        return $count;
     }
 }

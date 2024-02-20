@@ -24,7 +24,7 @@
 			<td>{{match.edition_count}}</td>
 			<td>{{match.first_publish_year}}</td>
 			<td>{{match.author_name|join(', ')}}</td>
-			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org{{match.key}}">OpenLibrary</a>{% endif %}</td>
+			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org/works/{{matchId}}">OpenLibrary</a>{% endif %}</td>
 		</tr>
 		{% endfor %}
 		</table>

@@ -1,5 +1,12 @@
 {% extends 'authors.html' %}
 
+{% block findlinks %}
+{% if not authorId %}
+ - <a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&findLinks=1">Check WikiData author links</a>
+ - <a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}">Find OpenLibrary authors</a>
+{% endif %}
+{% endblock findlinks %}
+
 {% block lookup %}
 {% if authorId %}
 <div class="part">

@@ -13,21 +13,23 @@ class GoogleBooksMatch extends BaseMatch
     public const ENTITY_URL = 'https://www.googleapis.com/books/v1/volumes/';
     public const ENTITY_PATTERN = '/^w+$/';
     public const CACHE_TYPES = ['google/authors', 'google/titles', 'google/volumes'];
-    public const QUERY_URL = 'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults={limit}&printType=books&projection=full&langRestrict={lang}';
+    public const QUERY_URL = 'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults={limit}&printType=books&projection={full}&langRestrict={lang}';
 
     /**
      * Summary of getResults
      * @param string $query
      * @param string $lang Language (default: en)
      * @param string|int $limit Max count of returning items (default: 10)
+     * @param string $full Projection (default: full)
      * @return string
      */
-    protected function getResults($query, $lang, $limit)
+    protected function getResults($query, $lang, $limit, $full = 'full')
     {
         $replace = [
             '{query}' => rawurlencode($query),
             '{lang}' => $lang,
             '{limit}' => $limit,
+            '{full}' => $full,
         ];
         $url = str_replace(array_keys($replace), array_values($replace), static::QUERY_URL);
         $results = file_get_contents($url);
@@ -72,6 +74,9 @@ class GoogleBooksMatch extends BaseMatch
      */
     public function findWorksByTitle($query, $author = null, $lang = null, $limit = 10)
     {
+        if (empty($query)) {
+            return ['totalItems' => 0, 'items' => []];
+        }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
@@ -95,6 +100,50 @@ class GoogleBooksMatch extends BaseMatch
         if (!empty($author) && (empty($matched) || $matched['totalItems'] == 0)) {
             $query = 'intitle:"' . $query . '"';
             $results = $this->getResults($query, $lang, $limit);
+            $matched = json_decode($results, true);
+        }
+        if ($this->cacheDir) {
+            $this->saveCache($cacheFile, $matched);
+        }
+        return $matched;
+    }
+
+    /**
+     * Summary of findSeriesByName
+     * @param string $query
+     * @param array<mixed> $author
+     * @param string|null $lang Language (default: en)
+     * @param string|int|null $limit Max count of returning items (default: 40)
+     * @return array<string, mixed>
+     */
+    public function findSeriesByName($query, $author, $lang = null, $limit = 40)
+    {
+        if (empty($query)) {
+            return ['totalItems' => 0, 'items' => []];
+        }
+        $lang ??= $this->lang;
+        $limit ??= $this->limit;
+        if ($this->cacheDir) {
+            if (!empty($author)) {
+                $cacheFile = $this->cacheDir . '/google/series/' . $author['name'] . '.' . $query . '.' . $lang . '.json';
+            } else {
+                $cacheFile = $this->cacheDir . '/google/series/' . $query . '.' . $lang . '.json';
+            }
+            if (is_file($cacheFile)) {
+                return $this->loadCache($cacheFile);
+            }
+        }
+        // search by bibliogroup and author first
+        $query = 'bibliogroup:"' . $query . '"';
+        if (!empty($author)) {
+            $query .= ' inauthor:"' . $author['name'] . '"';
+        }
+        $results = $this->getResults($query, $lang, $limit, 'lite');
+        $matched = json_decode($results, true);
+        // fall back to search by bibliogroup alone
+        if (!empty($author) && (empty($matched) || $matched['totalItems'] == 0)) {
+            $query = 'bibliogroup:"' . $query . '"';
+            $results = $this->getResults($query, $lang, $limit, 'lite');
             $matched = json_decode($results, true);
         }
         if ($this->cacheDir) {

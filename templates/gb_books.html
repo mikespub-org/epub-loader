@@ -42,6 +42,12 @@
 			{% endfor %}
 		</select>
 		<input type="submit" value="Find"/>
+		<a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Author">Check</a>
+		<a href="{{endpoint}}?action=wd_books&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Books">Books</a>
+		<a href="{{endpoint}}?action=wd_series&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Series">Series</a>
+		<a href="{{endpoint}}?action=gb_books&dbnum={{dbNum}}&authorId={{authorId}}" title="Google Books">Google</a>
+		<a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{authorId}}" title="OpenLibrary Author">Author</a>
+		<a href="{{endpoint}}?action=ol_books&dbnum={{dbNum}}&authorId={{authorId}}" title="OpenLibrary Works">Works</a>
 	</form>
 </div>
 <form method="POST" action="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&lang={{lang}}">
@@ -73,7 +79,7 @@
 </form>
 {% if authorId %}
 <div class="part">
-	<p>Google:</p>
+	<p>Google Books:</p>
 	{% if matched %}
 	Kind: {{matched.kind}}<br>
 	Total: {{matched.totalItems}}<br>

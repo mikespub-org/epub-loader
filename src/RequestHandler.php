@@ -84,6 +84,8 @@ class RequestHandler
             $result['actionTitle'] = $this->gConfig['actions'][$action];
             $result['dbNum'] = $dbNum;
             $result['dbConfig'] = $this->gConfig['databases'][$dbNum];
+            $result['actions'] = $this->gConfig['actions'];
+            $result['databases'] = $this->gConfig['databases'];
             $result['errors'] = $this->getErrors();
             // check if the template file actually exists in output()
             $this->template = $action . '.html';
@@ -91,7 +93,9 @@ class RequestHandler
         }
         if (!isset($action)) {
             // Display the available actions
-            $result = ['actions' => $this->gConfig['actions']];
+            $result = [];
+            $result['actions'] = $this->gConfig['actions'];
+            $result['databases'] = $this->gConfig['databases'];
             $result['errors'] = $this->getErrors();
             $this->template = 'actions.html';
             return $result;
@@ -99,6 +103,8 @@ class RequestHandler
         if (!array_key_exists($action, $this->gConfig['actions'])) {
             $this->gErrorArray[$action] = 'Invalid action';
             $result = [];
+            $result['actions'] = $this->gConfig['actions'];
+            $result['databases'] = $this->gConfig['databases'];
             $result['errors'] = $this->getErrors();
             return $result;
         }
@@ -106,6 +112,7 @@ class RequestHandler
         $result = [];
         $result['action'] = $action;
         $result['actionTitle'] = $this->gConfig['actions'][$action];
+        $result['actions'] = $this->gConfig['actions'];
         $result['databases'] = $this->gConfig['databases'];
         foreach ($this->gConfig['databases'] as $dbNum => $dbConfig) {
             $dbPath = $dbConfig['db_path'];

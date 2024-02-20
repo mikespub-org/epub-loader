@@ -1,13 +1,19 @@
 {% extends 'index.html' %}
 
 {% block content %}
-<div class="title"><a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">{{dbConfig.name}}</a></div>
+<div class="title">
+	<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">{{dbConfig.name}}</a>
+	{% block findlinks %}
+	{% endblock findlinks %}
+</div>
 <form method="POST" action="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">
 <table width="100%">
 	<tr>
 		<th>Id</th>
 		<th>Name</th>
 		<th>Sort</th>
+		<th>Books</th>
+		<th>Series</th>
 		<th>Action</th>
 		<th>Link</th>
 	</tr>
@@ -18,6 +24,8 @@
 			{{item.name}}
 		</td>
 		<td>{{item.sort}}</td>
+		<td>{{bookcount[item.id]}}</td>
+		<td>{{seriescount[item.id]}}</td>
 		<td>
 			<a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}&authorId={{item.id}}" title="WikiData Author">Check</a>
 			<a href="{{endpoint}}?action=wd_books&dbnum={{dbNum}}&authorId={{item.id}}" title="WikiData Books">Books</a>

@@ -39,6 +39,9 @@ class WikiDataMatch extends BaseMatch
      */
     public function findAuthors($query, $lang = null, $limit = 10)
     {
+        if (empty($query)) {
+            return [];
+        }
         // Find match on Wikidata
         $lang ??= $this->lang;
         $limit ??= $this->limit;
@@ -163,6 +166,9 @@ class WikiDataMatch extends BaseMatch
      */
     public function findWorksByTitle($query, $lang = null, $limit = 10)
     {
+        if (empty($query)) {
+            return [];
+        }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
@@ -247,14 +253,17 @@ class WikiDataMatch extends BaseMatch
     }
 
     /**
-     * Summary of findSeriesByTitle
+     * Summary of findSeriesByName
      * @param string $query
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>
      */
-    public function findSeriesByTitle($query, $lang = null, $limit = 10)
+    public function findSeriesByName($query, $lang = null, $limit = 10)
     {
+        if (empty($query)) {
+            return [];
+        }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {

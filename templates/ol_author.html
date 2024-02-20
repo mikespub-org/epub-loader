@@ -1,5 +1,12 @@
 {% extends 'authors.html' %}
 
+{% block findlinks %}
+{% if not authorId %}
+ - <a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&findLinks=1">Find OpenLibrary author links</a>
+ - <a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}">Check WikiData authors</a>
+{% endif %}
+{% endblock findlinks %}
+
 {% block lookup %}
 {% if authorId %}
 <div class="part">
@@ -22,7 +29,7 @@
 			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{matchId}}">Match</a></td>
 			<td>{{match.work_count}}</td>
 			<td>{{match.top_work}}</td>
-			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org{{match.key}}">OpenLibrary</a>{% endif %}</td>
+			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org/authors/{{matchId}}">OpenLibrary</a>{% endif %}</td>
 		</tr>
 		{% if match.entries %}
 		<tr>
