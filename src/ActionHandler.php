@@ -26,6 +26,8 @@ class ActionHandler
     public $dbFileName;
     /** @var array<mixed> */
     protected $gErrorArray;
+    /** @var RequestHandler */
+    protected $request;
 
     /**
      * Summary of __construct
@@ -49,12 +51,14 @@ class ActionHandler
     /**
      * Summary of handle
      * @param string $action
+     * @param RequestHandler $request
      * @return mixed
      */
-    public function handle($action)
+    public function handle($action, $request)
     {
-        $authorId = isset($_GET['authorId']) ? (int) $_GET['authorId'] : null;
-        $matchId = $_GET['matchId'] ?? null;
+        $this->request = $request;
+        $authorId = $this->request->getId('authorId');
+        $matchId = $this->request->get('matchId');
         switch($action) {
             case 'csv_export':
                 $result = $this->csv_export();
@@ -70,18 +74,18 @@ class ActionHandler
                 if (!WikiDataMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
-                $findLinks = !empty($_GET['findLinks']) ? true : false;
+                $findLinks = $this->request->get('findLinks', false);
                 $result = $this->wd_author($authorId, $matchId, $findLinks);
                 break;
             case 'wd_books':
-                $bookId = isset($_GET['bookId']) ? (int) $_GET['bookId'] : null;
+                $bookId = $this->request->getId('bookId');
                 if (!WikiDataMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
                 $result = $this->wd_books($authorId, $bookId, $matchId);
                 break;
             case 'wd_series':
-                $seriesId = isset($_GET['seriesId']) ? (int) $_GET['seriesId'] : null;
+                $seriesId = $this->request->getId('seriesId');
                 if (!WikiDataMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
@@ -94,23 +98,23 @@ class ActionHandler
                 $result = $this->wd_entity($matchId, $authorId);
                 break;
             case 'gb_books':
-                $bookId = isset($_GET['bookId']) ? (int) $_GET['bookId'] : null;
-                $lang = $_GET['lang'] ?? 'en';
+                $bookId = $this->request->getId('bookId');
+                $lang = $this->request->get('lang', 'en');
                 $result = $this->gb_books($authorId, $bookId, $matchId, $lang);
                 break;
             case 'gb_volume':
-                $lang = $_GET['lang'] ?? 'en';
+                $lang = $this->request->get('lang', 'en');
                 $result = $this->gb_volume($matchId, $lang);
                 break;
             case 'ol_author':
                 if (!OpenLibraryMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
-                $findLinks = !empty($_GET['findLinks']) ? true : false;
+                $findLinks = $this->request->get('findLinks', false);
                 $result = $this->ol_author($authorId, $matchId, $findLinks);
                 break;
             case 'ol_books':
-                $bookId = isset($_GET['bookId']) ? (int) $_GET['bookId'] : null;
+                $bookId = $this->request->getId('bookId');
                 if (!OpenLibraryMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }

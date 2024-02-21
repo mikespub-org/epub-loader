@@ -30,6 +30,8 @@ class RequestHandler
     public $template;
     /** @var array<mixed> */
     protected $gErrorArray;
+    /** @var array<mixed> */
+    protected $urlParams;
 
     /**
      * Summary of __construct
@@ -69,10 +71,12 @@ class RequestHandler
      * Summary of request
      * @param string|null $action
      * @param string|int|null $dbNum
+     * @param array<mixed> $urlParams
      * @return array<mixed>|string|null
      */
-    public function request($action = null, $dbNum = null)
+    public function request($action = null, $dbNum = null, $urlParams = [])
     {
+        $this->urlParams = $urlParams;
         $result = null;
         // Html content
         if (isset($action) && isset($dbNum)) {
@@ -94,6 +98,8 @@ class RequestHandler
         if (!isset($action)) {
             // Display the available actions
             $result = [];
+            $result['action'] = $action;
+            $result['dbNum'] = $dbNum;
             $result['actions'] = $this->gConfig['actions'];
             $result['databases'] = $this->gConfig['databases'];
             $result['errors'] = $this->getErrors();
@@ -103,6 +109,8 @@ class RequestHandler
         if (!array_key_exists($action, $this->gConfig['actions'])) {
             $this->gErrorArray[$action] = 'Invalid action';
             $result = [];
+            $result['action'] = $action;
+            $result['dbNum'] = $dbNum;
             $result['actions'] = $this->gConfig['actions'];
             $result['databases'] = $this->gConfig['databases'];
             $result['errors'] = $this->getErrors();
@@ -111,6 +119,7 @@ class RequestHandler
         // Display databases
         $result = [];
         $result['action'] = $action;
+        $result['dbNum'] = $dbNum;
         $result['actionTitle'] = $this->gConfig['actions'][$action];
         $result['actions'] = $this->gConfig['actions'];
         $result['databases'] = $this->gConfig['databases'];
@@ -123,6 +132,37 @@ class RequestHandler
         $result['errors'] = $this->getErrors();
         $this->template = 'databases.html';
         return $result;
+    }
+
+    /**
+     * Summary of get
+     * @param string $name
+     * @param mixed $default
+     * @param ?string $pattern
+     * @return mixed
+     */
+    public function get($name, $default = null, $pattern = null)
+    {
+        if (!empty($this->urlParams) && isset($this->urlParams[$name]) && $this->urlParams[$name] != '') {
+            if (!isset($pattern) || preg_match($pattern, $this->urlParams[$name])) {
+                return $this->urlParams[$name];
+            }
+        }
+        return $default;
+    }
+
+    /**
+     * Summary of getId
+     * @param string $name
+     * @return ?int
+     */
+    public function getId($name)
+    {
+        $value = $this->get($name, null, '/^\d+$/');
+        if (!is_null($value)) {
+            return (int) $value;
+        }
+        return null;
     }
 
     /**
@@ -164,7 +204,7 @@ class RequestHandler
         /** @var ActionHandler $handler */
         $handler = new $this->handlerClass($dbConfig, $this->cacheDir);
         try {
-            $result = $handler->handle($action);
+            $result = $handler->handle($action, $this);
         } catch (Exception $e) {
             $handler->addError($dbPath, $e->getMessage());
             $result = null;

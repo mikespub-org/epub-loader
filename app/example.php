@@ -30,7 +30,7 @@ class ExtraActions extends ActionHandler
         // you can access the selected database config here (name, db_path, epub_path, ...)
         $dbName = $this->dbConfig['name'];
         // any additional parameters you need to grab yourself
-        $name = $_GET['name'] ?? 'World!';
+        $name = $this->request->get('name', 'World!');
 
         // do the action and build the result
         $result = 'Hello, ' . $name . ' for database ' . $dbName;

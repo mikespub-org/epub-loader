@@ -6,6 +6,12 @@
 1.5.x - 2023xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
+2.4.0 - 20240221 Get rid of superglobals
+  * Use urlParams in request instead of superglobals
+
+2.3.3 - 20240220 Match authors and books
+  * Find author links and match books
+
 2.3.2 - 20240219 Reorganize epub-loader namespaces
   * Use Marsender\EPubLoader\Metadata\Sources namespace
   * Use Marsender\EPubLoader\Metadata namespace

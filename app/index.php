@@ -33,7 +33,9 @@ require_once($fileName);
 
 // Get the url parameters
 $action = $_GET['action'] ?? null;
-$dbNum = isset($_GET['dbnum']) ? (int) $_GET['dbnum'] : null;
+$_GET['dbnum'] ??= '';
+$dbNum = ($_GET['dbnum'] !== '') ? (int) $_GET['dbnum'] : null;
+$urlParams = $_GET;
 
 $data = [
     'endpoint' => $gConfig['endpoint'] ?? './index.php',
@@ -44,7 +46,7 @@ $data = [
 
 // you can define extra actions for your app - see example.php
 $handler = new RequestHandler($gConfig, ExtraActions::class);
-$result = $handler->request($action, $dbNum);
+$result = $handler->request($action, $dbNum, $urlParams);
 
 if (is_array($result)) {
     $data = array_merge($data, $result);
