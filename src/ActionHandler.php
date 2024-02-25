@@ -123,6 +123,12 @@ class ActionHandler
             case 'ol_work':
                 $result = $this->ol_work($matchId);
                 break;
+            case 'notes':
+                $colName = $this->request->get('colName');
+                $itemId = $this->request->getId('itemId');
+                $html = !empty($this->request->get('html')) ? true : false;
+                $result = $this->notes($colName, $itemId, $html);
+                break;
             default:
                 $result = $this->$action();
         }
@@ -338,7 +344,7 @@ class ActionHandler
             if (array_key_exists($match['label'], $titles)) {
                 $id = $titles[$match['label']];
                 $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* wd', 'value' => $match['id']];
-                unset($titles[$match['title']]);
+                unset($titles[$match['label']]);
             }
         }
 
@@ -653,6 +659,27 @@ class ActionHandler
 
         // Return info
         return ['work' => $work, 'workId' => $workId];
+    }
+
+    /**
+     * Summary of notes
+     * @param string|null $colName
+     * @param int|null $itemId
+     * @param bool $html
+     * @return array<mixed>
+     */
+    public function notes($colName = null, $itemId = null, $html = false)
+    {
+        $notescount = $this->db->getNotesCount();
+        $items = [];
+        if (!empty($colName)) {
+            if (!empty($itemId)) {
+                $items = $this->db->getNotes($colName, [$itemId]);
+            } else {
+                $items = $this->db->getNotes($colName);
+            }
+        }
+        return ['notescount' => $notescount, 'colName' => $colName, 'itemId' => $itemId, 'items' => $items, 'html' => $html];
     }
 
     /**

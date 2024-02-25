@@ -70,5 +70,6 @@ $gConfig['actions']['gb_volume'] = 'Search Google Books Volume';
 $gConfig['actions']['ol_author'] = 'Find OpenLibrary author';
 $gConfig['actions']['ol_books'] = 'Find OpenLibrary books';
 $gConfig['actions']['ol_work'] = 'Find OpenLibrary work';
+$gConfig['actions']['notes'] = 'Get Calibre Notes';
 $gConfig['actions']['hello_world'] = 'Example: Hello, World - see app/example.php';
 $gConfig['actions']['goodbye'] = 'Example: Goodbye - see app/example.php';

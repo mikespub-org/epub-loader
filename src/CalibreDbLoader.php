@@ -29,9 +29,12 @@ class CalibreDbLoader
 {
     /** @var PDO|null */
     protected $mDb = null;
-
+    /** @var string|null */
+    protected $mDbFileName = null;
     /** @var array<string, mixed>|null */
     protected $mBookId = null;
+    /** @var PDO|null */
+    protected $notesDb;
 
     protected string $mBookIdFileName = '';
 
@@ -44,6 +47,7 @@ class CalibreDbLoader
      */
     public function __construct($inDbFileName, $inCreate = false, $inBookIdsFileName = '')
     {
+        $this->mDbFileName = $inDbFileName;
         if ($inCreate) {
             $this->CreateDatabase($inDbFileName);
             if (!empty($inBookIdsFileName)) {
@@ -802,6 +806,116 @@ class CalibreDbLoader
         $count = [];
         while ($post = $stmt->fetchObject()) {
             $count[$post->author] = $post->numitems;
+        }
+        return $count;
+    }
+
+    /**
+     * Summary of hasNotes
+     * @return bool
+     */
+    public function hasNotes()
+    {
+        if (file_exists(dirname($this->mDbFileName) . '/.calnotes/notes.db')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Summary of getNotesDb
+     * @return PDO|null
+     */
+    public function getNotesDb()
+    {
+        if (!$this->hasNotes()) {
+            return null;
+        }
+        $notesFileName = dirname($this->mDbFileName) . '/.calnotes/notes.db';
+        try {
+            // Init the Data Source Name
+            $dsn = 'sqlite:' . $notesFileName;
+            // Open the database
+            $this->notesDb = new PDO($dsn); // Send an exception if error
+            $this->notesDb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->notesDb->exec('pragma synchronous = off');
+            return $this->notesDb;
+        } catch (Exception $e) {
+            $error = sprintf('Cannot open database [%s]: %s', $dsn, $e->getMessage());
+            throw new Exception($error);
+        }
+    }
+
+    /**
+     * Summary of getNotes
+     * @param string $colName
+     * @param array<mixed> $itemIdList
+     * @return array<mixed>
+     */
+    public function getNotes($colName, $itemIdList = [])
+    {
+        if (is_null($this->getNotesDb())) {
+            return [];
+        }
+        $sql = 'select item, colname, doc, mtime from notes';
+        $params = [];
+        $sql .= ' where colname = ?';
+        $params[] = $colName;
+        if (!empty($itemIdList)) {
+            $sql .= ' and item in (' . str_repeat('?,', count($itemIdList) - 1) . '?)';
+            $params = array_merge($params, $itemIdList);
+        }
+        $stmt = $this->notesDb->prepare($sql);
+        $stmt->execute($params);
+        $notes = [];
+        while ($post = $stmt->fetchObject()) {
+            $notes[$post->item] = (array) $post;
+        }
+        return $notes;
+    }
+
+    /**
+     * Summary of addNote
+     * @param string $colName
+     * @param int $itemId
+     * @param string $text
+     * @return void
+     */
+    public function addNote($colName, $itemId, $text)
+    {
+        if (is_null($this->getNotesDb())) {
+            return;
+        }
+        $notes = $this->getNotes($colName, [$itemId]);
+        if (!empty($notes)) {
+            $sql = 'update notes set doc = ? where colname = ? and item = ?';
+            $params = [$text, $colName, $itemId];
+            $stmt = $this->notesDb->prepare($sql);
+            $stmt->execute($params);
+            return;
+        }
+        $sql = 'insert into notes(item, colname, doc) values(?, ?, ?)';
+        $params = [$itemId, $colName, $text];
+        $stmt = $this->notesDb->prepare($sql);
+        $stmt->execute($params);
+        return;
+    }
+
+    /**
+     * Summary of getNotesCount
+     * @return array<mixed>
+     */
+    public function getNotesCount()
+    {
+        if (is_null($this->getNotesDb())) {
+            return [];
+        }
+        $sql = 'select colname, count(*) as numitems from notes group by colname';
+        $stmt = $this->notesDb->prepare($sql);
+        $stmt->execute();
+        $count = [];
+        while ($post = $stmt->fetchObject()) {
+            $count[$post->colname] = $post->numitems;
         }
         return $count;
     }
