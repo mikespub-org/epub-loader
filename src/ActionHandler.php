@@ -129,6 +129,10 @@ class ActionHandler
                 $html = !empty($this->request->get('html')) ? true : false;
                 $result = $this->notes($colName, $itemId, $html);
                 break;
+            case 'resource':
+                $hash = $this->request->get('hash');
+                $result = $this->resource($hash);
+                break;
             default:
                 $result = $this->$action();
         }
@@ -675,11 +679,56 @@ class ActionHandler
         if (!empty($colName)) {
             if (!empty($itemId)) {
                 $items = $this->db->getNotes($colName, [$itemId]);
+                if ($html) {
+                    $dbNum = $this->dbConfig['db_num'];
+                    $items[$itemId]['doc'] = str_replace('calres://', '?action=resource&dbnum=' . $dbNum . '&hash=', $items[$itemId]['doc']);
+                    $items[$itemId]['doc'] = str_replace('?placement=', '&placement=', $items[$itemId]['doc']);
+                }
             } else {
                 $items = $this->db->getNotes($colName);
             }
         }
         return ['notescount' => $notescount, 'colName' => $colName, 'itemId' => $itemId, 'items' => $items, 'html' => $html];
+    }
+
+    /**
+     * Summary of resource
+     * @param string|null $hash
+     * @return null
+     */
+    public function resource($hash = null)
+    {
+        if (empty($hash)) {
+            $this->addError($this->dbFileName, "Please specify a resource hash");
+            return null;
+        }
+        [$alg, $digest] = explode('/', $hash);
+        $hash = "{$alg}-{$digest}";
+        $path = $this->db->getResourcePath($hash);
+        if (empty($path)) {
+            $this->addError($this->dbFileName, "Please specify a valid resource hash");
+            return null;
+        }
+        $meta = json_decode(file_get_contents($path . '.metadata'), true);
+        $ext = strtolower(pathinfo($meta['name'], PATHINFO_EXTENSION));
+        $mime = 'application/octet-stream';
+        switch ($ext) {
+            case 'jpg':
+            case 'jpeg':
+                $mime = 'image/jpeg';
+                break;
+            case 'png':
+                $mime = 'image/png';
+                break;
+        }
+        $expires = 60 * 60 * 24 * 14;
+        header('Pragma: public');
+        header('Cache-Control: max-age=' . $expires);
+        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
+        header('Content-Type: ' . $mime);
+
+        readfile($path);
+        exit;
     }
 
     /**

@@ -875,33 +875,6 @@ class CalibreDbLoader
     }
 
     /**
-     * Summary of addNote
-     * @param string $colName
-     * @param int $itemId
-     * @param string $text
-     * @return void
-     */
-    public function addNote($colName, $itemId, $text)
-    {
-        if (is_null($this->getNotesDb())) {
-            return;
-        }
-        $notes = $this->getNotes($colName, [$itemId]);
-        if (!empty($notes)) {
-            $sql = 'update notes set doc = ? where colname = ? and item = ?';
-            $params = [$text, $colName, $itemId];
-            $stmt = $this->notesDb->prepare($sql);
-            $stmt->execute($params);
-            return;
-        }
-        $sql = 'insert into notes(item, colname, doc) values(?, ?, ?)';
-        $params = [$itemId, $colName, $text];
-        $stmt = $this->notesDb->prepare($sql);
-        $stmt->execute($params);
-        return;
-    }
-
-    /**
      * Summary of getNotesCount
      * @return array<mixed>
      */
@@ -918,5 +891,27 @@ class CalibreDbLoader
             $count[$post->colname] = $post->numitems;
         }
         return $count;
+    }
+
+    /**
+     * Summary of getResourcePath
+     * @param string $hash
+     * @return string|null
+     */
+    public function getResourcePath($hash)
+    {
+        if (!$this->hasNotes()) {
+            return null;
+        }
+        $resourceDir = dirname($this->mDbFileName) . '/.calnotes/resources';
+        if (!is_dir($resourceDir)) {
+            return null;
+        }
+        [$alg, $digest] = explode('-', $hash);
+        $path = $resourceDir . '/' . substr($digest, 0, 2) . '/' . $hash;
+        if (!is_file($path)) {
+            return null;
+        }
+        return $path;
     }
 }

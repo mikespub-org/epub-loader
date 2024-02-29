@@ -6,7 +6,8 @@
 1.5.x - 2023xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-2.4.1 - 20240225 Start support for calibre notes
+2.4.1 - 20240229 Start support for calibre notes
+  * Get calibre resource
   * Get calibre notes
 
 2.4.0 - 20240221 Get rid of superglobals

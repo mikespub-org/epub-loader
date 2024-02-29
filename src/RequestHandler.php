@@ -200,6 +200,7 @@ class RequestHandler
             $result = require($fileName);
             return $result;
         }
+        $dbConfig['db_num'] = $dbNum;
         $dbConfig['create_db'] = $this->gConfig['create_db'];
         /** @var ActionHandler $handler */
         $handler = new $this->handlerClass($dbConfig, $this->cacheDir);
