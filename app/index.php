@@ -38,9 +38,9 @@ $dbNum = ($_GET['dbnum'] !== '') ? (int) $_GET['dbnum'] : null;
 $urlParams = $_GET;
 
 $data = [
-    'endpoint' => $gConfig['endpoint'] ?? './index.php',
-    'app_name' => $gConfig['app_name'] ?? 'Epub Loader',
-    'version' => $gConfig['version'] ?? '2.3',
+    'endpoint' => $gConfig['endpoint'] ?? RequestHandler::ENDPOINT,
+    'app_name' => $gConfig['app_name'] ?? RequestHandler::APP_NAME,
+    'version' => $gConfig['version'] ?? RequestHandler::VERSION,
     'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13($gConfig['admin_email']),
 ];
 
