@@ -3,4 +3,4 @@ parameters:
 		-
 			message: "#^If condition is always true\\.$#"
 			count: 1
-			path: src/BookEPub.php
+			path: src/Metadata/BookEPub.php

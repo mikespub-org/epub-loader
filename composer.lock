@@ -467,16 +467,16 @@
         },
         {
             "name": "mikespub/php-epub-meta",
-            "version": "2.2.1",
+            "version": "2.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mikespub-org/php-epub-meta.git",
-                "reference": "ec75d61afcf7bcc3ee008aee5df723fd2f6b324e"
+                "reference": "f137bc1cd5dd91dcc295503cf2327d99bddba0e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/ec75d61afcf7bcc3ee008aee5df723fd2f6b324e",
-                "reference": "ec75d61afcf7bcc3ee008aee5df723fd2f6b324e",
+                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/f137bc1cd5dd91dcc295503cf2327d99bddba0e6",
+                "reference": "f137bc1cd5dd91dcc295503cf2327d99bddba0e6",
                 "shasum": ""
             },
             "require": {
@@ -485,11 +485,11 @@
                 "ext-xml": "*",
                 "ext-zip": "*",
                 "ext-zlib": "*",
-                "maennchen/zipstream-php": "~3.1",
+                "maennchen/zipstream-php": "^3.1",
                 "php": ">=8.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "9.*"
+                "phpunit/phpunit": "^10.5"
             },
             "suggest": {
                 "mikespub/epub-loader": "epub-loader is a utility resource for ebooks",
@@ -533,9 +533,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mikespub-org/php-epub-meta/issues",
-                "source": "https://github.com/mikespub-org/php-epub-meta/tree/2.2.1"
+                "source": "https://github.com/mikespub-org/php-epub-meta/tree/2.2.2"
             },
-            "time": "2024-02-05T12:59:25+00:00"
+            "time": "2024-03-02T13:34:51+00:00"
         },
         {
             "name": "psr/http-client",
