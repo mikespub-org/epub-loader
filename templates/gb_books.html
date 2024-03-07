@@ -17,10 +17,8 @@
 
 {% block content %}
 <div class="title">
-	<form method="GET" action="{{endpoint}}">
-		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=authors&dbnum={{dbNum}}&lang={{lang}}">{{dbConfig.name}}</a>
-		<input type="hidden" name="action" value="{{action}}" />
-		<input type="hidden" name="dbnum" value="{{dbNum}}" />
+	<form method="GET" action="{{endpoint}}/{{action}}/{{dbNum}}">
+		<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/authors/{{dbNum}}?lang={{lang}}">{{dbConfig.name}}</a>
 		Language <select name="lang">
 			<option value=""></option>
 			{% for id, name in langList %}
@@ -42,15 +40,15 @@
 			{% endfor %}
 		</select>
 		<input type="submit" value="Find"/>
-		<a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Author">Check</a>
-		<a href="{{endpoint}}?action=wd_books&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Books">Books</a>
-		<a href="{{endpoint}}?action=wd_series&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Series">Series</a>
-		<a href="{{endpoint}}?action=gb_books&dbnum={{dbNum}}&authorId={{authorId}}" title="Google Books">Google</a>
-		<a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{authorId}}" title="OpenLibrary Author">Author</a>
-		<a href="{{endpoint}}?action=ol_books&dbnum={{dbNum}}&authorId={{authorId}}" title="OpenLibrary Works">Works</a>
+		<a href="{{endpoint}}/wd_author/{{dbNum}}/{{authorId}}" title="WikiData Author">Check</a>
+		<a href="{{endpoint}}/wd_books/{{dbNum}}/{{authorId}}" title="WikiData Books">Books</a>
+		<a href="{{endpoint}}/wd_series/{{dbNum}}/{{authorId}}" title="WikiData Series">Series</a>
+		<a href="{{endpoint}}/gb_books/{{dbNum}}/{{authorId}}" title="Google Books">Google</a>
+		<a href="{{endpoint}}/ol_author/{{dbNum}}/{{authorId}}" title="OpenLibrary Author">Author</a>
+		<a href="{{endpoint}}/ol_books/{{dbNum}}/{{authorId}}" title="OpenLibrary Works">Works</a>
 	</form>
 </div>
-<form method="POST" action="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&lang={{lang}}">
+<form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}?lang={{lang}}">
 <table width="100%">
 	<tr>
 		<th>Id</th>
@@ -62,7 +60,7 @@
 	<tr>
 		<td>{{item.id}}</td>
 		<td>{{item.title}}</td>
-		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&lang={{lang}}&authorId={{item.author}}&bookId={{item.id}}">Search</a>{% endif %}</td>
+		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?lang={{lang}}&bookId={{item.id}}">Search</a>{% endif %}</td>
 		<td>
 			{% for identifier in item.identifiers %}
 				{% if identifier.url %}
@@ -98,10 +96,10 @@
 		<tr>
 			<td>{{item.volumeInfo.authors|join(', ')}}</td>
 			<td><img src="{{item.volumeInfo.imageLinks.smallThumbnail}}" /></td>
-			<td><a href="{{endpoint}}?action=gb_volume&dbnum={{dbNum}}&lang={{lang}}&matchId={{item.id}}">{{item.volumeInfo.title}}</a> <a href="{{item.selfLink}}">G</a></td>
+			<td><a href="{{endpoint}}/gb_volume/{{dbNum}}?lang={{lang}}&matchId={{item.id}}">{{item.volumeInfo.title}}</a> <a href="{{item.selfLink}}">G</a></td>
 			<td>{{item.volumeInfo.publishedDate}}</td>
 			<td>{{item.volumeInfo.publisher}}</td>
-			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&lang={{lang}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{item.id}}">Match</a></td>
+			<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?lang={{lang}}&bookId={{bookId}}&matchId={{item.id}}">Match</a></td>
 			<td>{{item.searchInfo.textSnippet|raw}}</td>
 		</tr>
 		<tr>

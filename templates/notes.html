@@ -8,7 +8,7 @@
 	</tr>
 	{% for colName, numItems in notescount %}
 	<tr>
-		<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&colName={{colName}}">{{colName}}</a></td>
+		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}">{{colName}}</a></td>
 		<td>{{numItems}}</td>
 	</tr>
 	{% endfor %}
@@ -20,12 +20,12 @@
 		{% for id, item in items %}
 		<li>
 			{% set timestamp = (item.mtime)|round(0, 'floor') %}
-			<a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&colName={{colName}}&itemId={{id}}">{{id}}</a>: {{timestamp|date('Y-m-d')}} [{{item.doc|length}}]
+			<a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&itemId={{id}}">{{id}}</a>: {{timestamp|date('Y-m-d')}} [{{item.doc|length}}]
 			{% if itemId == id %}
 				{% if html %}
 					{{item.doc|raw}}
 				{% else %}
-					<a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&colName={{colName}}&itemId={{id}}&html=1">html</a>
+					<a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&itemId={{id}}&html=1">html</a>
 					<pre>{{item.doc}}</pre>
 				{% endif %}
 			{% endif %}

@@ -84,10 +84,8 @@
 
 {% block content %}
 <div class="title">
-	<form method="GET" action="{{endpoint}}">
-		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}">{{dbConfig.name}}</a>
-		<input type="hidden" name="action" value="{{action}}" />
-		<input type="hidden" name="dbnum" value="{{dbNum}}" />
+	<form method="GET" action="{{endpoint}}/{{action}}/{{dbNum}}">
+		<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/wd_author/{{dbNum}}">{{dbConfig.name}}</a>
 		Entity <input type="text" name="matchId" value="{{entityId}}" />
 		Search <input type="text" name="query" value="" />
 		Author <select name="authorId">

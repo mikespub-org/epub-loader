@@ -2,10 +2,8 @@
 
 {% block content %}
 <div class="title">
-	<form method="GET" action="{{endpoint}}">
-		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=wd_books&dbnum={{dbNum}}&authorId={{authorId}}">{{dbConfig.name}}</a>
-		<input type="hidden" name="action" value="{{action}}" />
-		<input type="hidden" name="dbnum" value="{{dbNum}}" />
+	<form method="GET" action="{{endpoint}}/{{action}}/{{dbNum}}">
+		<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/wd_books/{{dbNum}}/{{authorId}}">{{dbConfig.name}}</a>
 		Author <select name="authorId">
 			<option value=""></option>
 			{% for id, name in authors %}
@@ -17,15 +15,15 @@
 			{% endfor %}
 		</select>
 		<input type="submit" value="Find"/>
-		<a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Author">Check</a>
-		<a href="{{endpoint}}?action=wd_books&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Books">Books</a>
-		<a href="{{endpoint}}?action=wd_series&dbnum={{dbNum}}&authorId={{authorId}}" title="WikiData Series">Series</a>
-		<a href="{{endpoint}}?action=gb_books&dbnum={{dbNum}}&authorId={{authorId}}" title="Google Books">Google</a>
-		<a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{authorId}}" title="OpenLibrary Author">Author</a>
-		<a href="{{endpoint}}?action=ol_books&dbnum={{dbNum}}&authorId={{authorId}}" title="OpenLibrary Works">Works</a>
+		<a href="{{endpoint}}/wd_author/{{dbNum}}/{{authorId}}" title="WikiData Author">Check</a>
+		<a href="{{endpoint}}/wd_books/{{dbNum}}/{{authorId}}" title="WikiData Books">Books</a>
+		<a href="{{endpoint}}/wd_series/{{dbNum}}/{{authorId}}" title="WikiData Series">Series</a>
+		<a href="{{endpoint}}/gb_books/{{dbNum}}/{{authorId}}" title="Google Books">Google</a>
+		<a href="{{endpoint}}/ol_author/{{dbNum}}/{{authorId}}" title="OpenLibrary Author">Author</a>
+		<a href="{{endpoint}}/ol_books/{{dbNum}}/{{authorId}}" title="OpenLibrary Works">Works</a>
 	</form>
 </div>
-<form method="POST" action="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">
+<form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}">
 <table width="100%">
 	<tr>
 		<th>Id</th>
@@ -36,7 +34,7 @@
 	<tr>
 		<td>{{item.id}}</td>
 		<td>{{item.name}}</td>
-		<td>{% if seriesId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{item.author}}&seriesId={{item.id}}">Search</a>{% endif %}</td>
+		<td>{% if seriesId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}">Search</a>{% endif %}</td>
 	</tr>
 	{% endfor %}
 </table>

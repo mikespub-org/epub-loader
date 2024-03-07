@@ -681,7 +681,8 @@ class ActionHandler
                 $items = $this->db->getNotes($colName, [$itemId]);
                 if ($html) {
                     $dbNum = $this->dbConfig['db_num'];
-                    $items[$itemId]['doc'] = str_replace('calres://', '?action=resource&dbnum=' . $dbNum . '&hash=', $items[$itemId]['doc']);
+                    $endpoint = $this->request->getEndpoint();
+                    $items[$itemId]['doc'] = str_replace('calres://', $endpoint . '/resource/' . $dbNum . '?hash=', $items[$itemId]['doc']);
                     $items[$itemId]['doc'] = str_replace('?placement=', '&placement=', $items[$itemId]['doc']);
                 }
             } else {

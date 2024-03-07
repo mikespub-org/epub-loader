@@ -15,9 +15,9 @@
 		</tr>
 		{% for match in matched %}
 		<tr>
-			<td><a href="{{endpoint}}?action=wd_entity&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.id}}">{{match.id}}</a></td>
+			<td><a href="{{endpoint}}/wd_entity/{{dbNum}}/{{authorId}}?bookId={{bookId}}&matchId={{match.id}}">{{match.id}}</a></td>
 			<td>{{match.label}}</td>
-			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{match.id}}">Match</a></td>
+			<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?bookId={{bookId}}&matchId={{match.id}}">Match</a></td>
 			<td>{{match.description}}</td>
 			<td>{% if match.wiki_url %}<a rel="external" target="_blank" href="{{match.wiki_url}}">Wikipedia</a>{% endif %}</td>
 		</tr>
@@ -26,7 +26,7 @@
 			<td colspan="5">
 				<ul>
 				{% for entry in match.entries %}
-				<li><a href="{{endpoint}}?action=wd_entity&dbnum={{dbNum}}&authorId={{authorId}}&bookId={{bookId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
+				<li><a href="{{endpoint}}/wd_entity/{{dbNum}}/{{authorId}}?bookId={{bookId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
 				{% endfor %}
 				</ul>
 			</td>

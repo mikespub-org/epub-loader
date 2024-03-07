@@ -40,10 +40,8 @@
 
 {% block content %}
 <div class="title">
-	<form method="GET" action="{{endpoint}}">
-		<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}?action=ol_books&dbnum={{dbNum}}">{{dbConfig.name}}</a>
-		<input type="hidden" name="action" value="{{action}}" />
-		<input type="hidden" name="dbnum" value="{{dbNum}}" />
+	<form method="GET" action="{{endpoint}}/{{action}}/{{dbNum}}">
+		<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/ol_books/{{dbNum}}">{{dbConfig.name}}</a>
 		Work <input type="text" name="matchId" value="{{workId}}" />
 		<input type="submit" value="Find"/>
 	</form>

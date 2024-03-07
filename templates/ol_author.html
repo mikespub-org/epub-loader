@@ -2,8 +2,8 @@
 
 {% block findlinks %}
 {% if not authorId %}
- - <a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&findLinks=1">Find OpenLibrary author links</a>
- - <a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}">Check WikiData authors</a>
+ - <a href="{{endpoint}}/{{action}}/{{dbNum}}?findLinks=1">Find OpenLibrary author links</a>
+ - <a href="{{endpoint}}/wd_author/{{dbNum}}">Check WikiData authors</a>
 {% endif %}
 {% endblock findlinks %}
 
@@ -24,9 +24,9 @@
 		{% for match in matched %}
 		{% set matchId = match.key|replace({'/authors/': ''}) %}
 		<tr>
-			<td><a href="{{endpoint}}?action=ol_work&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{matchId}}">{{matchId}}</a></td>
+			<td><a href="{{endpoint}}/ol_work/{{dbNum}}/{{authorId}}?matchId={{matchId}}">{{matchId}}</a></td>
 			<td>{{match.name}}</td>
-			<td><a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{matchId}}">Match</a></td>
+			<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?matchId={{matchId}}">Match</a></td>
 			<td>{{match.work_count}}</td>
 			<td>{{match.top_work}}</td>
 			<td>{% if match.key %}<a rel="external" target="_blank" href="https://openlibrary.org/authors/{{matchId}}">OpenLibrary</a>{% endif %}</td>
@@ -36,7 +36,7 @@
 			<td colspan="5">
 				<ul>
 				{% for entry in match.entries %}
-				<li><a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
+				<li><a href="{{endpoint}}/ol_author/{{dbNum}}/{{authorId}}?matchId={{entry.id}}">{{entry.id}}</a> {{entry.label}} = {{entry.description}}</li>
 				{% endfor %}
 				</ul>
 			</td>

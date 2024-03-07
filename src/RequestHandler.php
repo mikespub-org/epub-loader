@@ -15,7 +15,7 @@ class RequestHandler
 {
     public const ENDPOINT = './index.php';
     public const APP_NAME = 'Epub Loader';
-    public const VERSION = '2.4';
+    public const VERSION = '2.5';
     public const TEMPLATE = 'index.html';
 
     /** @var array<mixed> */
@@ -163,6 +163,15 @@ class RequestHandler
             return (int) $value;
         }
         return null;
+    }
+
+    /**
+     * Summary of getEndpoint
+     * @return string
+     */
+    public function getEndpoint()
+    {
+        return $this->gConfig['endpoint'];
     }
 
     /**

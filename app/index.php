@@ -27,20 +27,30 @@ $gConfig = [];
 require_once($fileName);
 /** @var array<mixed> $gConfig */
 
+$gConfig['endpoint'] ??= $_SERVER['SCRIPT_NAME'] ?? RequestHandler::ENDPOINT;
+$gConfig['app_name'] ??= RequestHandler::APP_NAME;
+$gConfig['version'] ??= RequestHandler::VERSION;
+
 //------------------------------------------------------------------------------
 // Start application
 //------------------------------------------------------------------------------
 
 // Get the url parameters
-$action = $_GET['action'] ?? null;
-$_GET['dbnum'] ??= '';
-$dbNum = ($_GET['dbnum'] !== '') ? (int) $_GET['dbnum'] : null;
+$path = $_SERVER['PATH_INFO'] ?? '/';
+if (str_starts_with($path, '/')) {
+    $path = substr($path, 1);
+}
+[$action, $dbNum, $itemId, $other] = explode('/', $path . '///', 4);
+$action = $action ?: null;
+$dbNum = ($dbNum !== '') ? (int) $dbNum : null;
 $urlParams = $_GET;
-
+if (!empty($itemId)) {
+    $urlParams['authorId'] = $itemId;
+}
 $data = [
-    'endpoint' => $gConfig['endpoint'] ?? RequestHandler::ENDPOINT,
-    'app_name' => $gConfig['app_name'] ?? RequestHandler::APP_NAME,
-    'version' => $gConfig['version'] ?? RequestHandler::VERSION,
+    'endpoint' => $gConfig['endpoint'],
+    'app_name' => $gConfig['app_name'],
+    'version' => $gConfig['version'],
     'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13($gConfig['admin_email']),
 ];
 

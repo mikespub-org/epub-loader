@@ -2,11 +2,11 @@
 
 {% block content %}
 <div class="title">
-	<a href="{{endpoint}}?action={{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">{{dbConfig.name}}</a>
+	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
 	{% block findlinks %}
 	{% endblock findlinks %}
 </div>
-<form method="POST" action="{{endpoint}}?action={{action}}&dbnum={{dbNum}}">
+<form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}">
 <table width="100%">
 	<tr>
 		<th>Id</th>
@@ -27,14 +27,14 @@
 		<td>{{bookcount[item.id]}}</td>
 		<td>{{seriescount[item.id]}}</td>
 		<td>
-			<a href="{{endpoint}}?action=wd_author&dbnum={{dbNum}}&authorId={{item.id}}" title="WikiData Author">Check</a>
-			<a href="{{endpoint}}?action=wd_books&dbnum={{dbNum}}&authorId={{item.id}}" title="WikiData Books">Books</a>
-			<a href="{{endpoint}}?action=wd_series&dbnum={{dbNum}}&authorId={{item.id}}" title="WikiData Series">Series</a>
-			<a href="{{endpoint}}?action=gb_books&dbnum={{dbNum}}&authorId={{item.id}}" title="Google Books">Google</a>
-			<a href="{{endpoint}}?action=ol_author&dbnum={{dbNum}}&authorId={{item.id}}" title="OpenLibrary Author">Author</a>
-			<a href="{{endpoint}}?action=ol_books&dbnum={{dbNum}}&authorId={{item.id}}" title="OpenLibrary Works">Works</a>
+			<a href="{{endpoint}}/wd_author/{{dbNum}}/{{item.id}}" title="WikiData Author">Check</a>
+			<a href="{{endpoint}}/wd_books/{{dbNum}}/{{item.id}}" title="WikiData Books">Books</a>
+			<a href="{{endpoint}}/wd_series/{{dbNum}}/{{item.id}}" title="WikiData Series">Series</a>
+			<a href="{{endpoint}}/gb_books/{{dbNum}}/{{item.id}}" title="Google Books">Google</a>
+			<a href="{{endpoint}}/ol_author/{{dbNum}}/{{item.id}}" title="OpenLibrary Author">Author</a>
+			<a href="{{endpoint}}/ol_books/{{dbNum}}/{{item.id}}" title="OpenLibrary Works">Works</a>
 		</td>
-		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}?action={{item.entityType}}&dbnum={{dbNum}}&authorId={{authorId}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
+		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{authorId}}?matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>
 	{% endfor %}
 </table>
