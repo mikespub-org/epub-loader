@@ -467,16 +467,16 @@
         },
         {
             "name": "mikespub/php-epub-meta",
-            "version": "2.2.2",
+            "version": "2.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mikespub-org/php-epub-meta.git",
-                "reference": "f137bc1cd5dd91dcc295503cf2327d99bddba0e6"
+                "reference": "9cddc389aa29415caa0d8f8cf9fb3e375f8a4130"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/f137bc1cd5dd91dcc295503cf2327d99bddba0e6",
-                "reference": "f137bc1cd5dd91dcc295503cf2327d99bddba0e6",
+                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/9cddc389aa29415caa0d8f8cf9fb3e375f8a4130",
+                "reference": "9cddc389aa29415caa0d8f8cf9fb3e375f8a4130",
                 "shasum": ""
             },
             "require": {
@@ -533,9 +533,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mikespub-org/php-epub-meta/issues",
-                "source": "https://github.com/mikespub-org/php-epub-meta/tree/2.2.2"
+                "source": "https://github.com/mikespub-org/php-epub-meta/tree/2.2.3"
             },
-            "time": "2024-03-02T13:34:51+00:00"
+            "time": "2024-03-11T17:20:14+00:00"
         },
         {
             "name": "psr/http-client",
