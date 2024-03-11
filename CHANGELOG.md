@@ -1,10 +1,13 @@
 # Change Log for epub-loader (this fork)
 
-2.2.x - 2023xxxx To be continued (PHP >= 8.1)
+1.5.x - 2024xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-1.5.x - 2023xxxx Maintenance release for 1.x (PHP >= 7.4)
-  * ...
+2.5.x - 2024xxxx 
+  * Add calibre users schema
+
+2.5.0 - 20240307 Change URLs to use path_info
+  * Use path_info for route urls
 
 2.4.1 - 20240229 Start support for calibre notes
   * Get calibre resource
