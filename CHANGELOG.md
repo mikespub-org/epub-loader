@@ -3,7 +3,9 @@
 1.5.x - 2024xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-2.5.x - 2024xxxx 
+3.0.x - 2024xxxx (PHP >= 8.2)
+  * Add app index tests
+  * Upgrade freearhey/wikidata 3.6 to forked survos/wikidata 4.x (PHP >= 8.2)
   * Add calibre users schema
 
 2.5.0 - 20240307 Change URLs to use path_info

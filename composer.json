@@ -16,14 +16,14 @@
     "type": "project",
     "license": "GPL-2.0-or-later",
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.2",
         "ext-dom": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-xml": "*",
         "ext-zip": "*",
         "ext-zlib": "*",
-        "freearhey/wikidata": "^3.6",
+        "survos/wikidata": "^4.0",
         "mikespub/php-epub-meta": "^2.2",
         "twig/twig": "^3.8"
     },

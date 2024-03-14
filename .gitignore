@@ -1,3 +1,5 @@
 cache
 vendor/
 *.cache
+clover.xml
+coverage/

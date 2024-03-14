@@ -8,7 +8,7 @@
  */
 
 if (PHP_SAPI === 'cli') {
-    parse_str(implode('&', array_slice($argv, 1)), $_GET);
+    parse_str(implode('&', array_slice($argv ?? ['phpunit'], 1)), $_GET);
 }
 
 $gConfig = [];
@@ -50,6 +50,7 @@ $gConfig['create_db'] = true;
  *   epub_path: The relative path from db_path where to look for the epub files
  */
 $gConfig['databases'] = [];
+$gConfig['databases'][] = ['name' => 'Some Books', 'db_path' => dirname(__DIR__, 2) . '/seblucas-cops/test/BaseWithSomeBooks', 'epub_path' => '.'];
 $gConfig['databases'][] = ['name' => 'Littérature classique', 'db_path' => '/opt/ebooks/calibre/demo', 'epub_path' => 'epub'];
 $gConfig['databases'][] = ['name' => 'Bibliothèque numérique romande', 'db_path' => '/opt/ebooks/calibre/bnr', 'epub_path' => 'epub'];
 $gConfig['databases'][] = ['name' => 'La Bibliothèque d\'Ebooks', 'db_path' => '/opt/ebooks/calibre/bibebook', 'epub_path' => 'epub'];
