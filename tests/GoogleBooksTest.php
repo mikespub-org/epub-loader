@@ -10,7 +10,7 @@ namespace Marsender\EPubLoader\Tests;
 
 use PHPUnit\Framework\TestCase;
 
-class AppIndexTest extends TestCase
+class GoogleBooksTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
@@ -21,31 +21,13 @@ class AppIndexTest extends TestCase
     }
 
     /**
-     * Summary of testAppIndex
+     * Summary of testAppSearchBooks
      * @runInSeparateProcess
      * @return void
      */
-    public function testAppIndex(): void
+    public function testAppSearchBooks(): void
     {
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>Epub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<div><b>Select action</b></div>';
-        $this->assertStringContainsString($expected, $output);
-    }
-
-    /**
-     * Summary of testAppUnknown
-     * @runInSeparateProcess
-     * @return void
-     */
-    public function testAppUnknown(): void
-    {
-        $_SERVER['PATH_INFO'] = '/unknown/';
+        $_SERVER['PATH_INFO'] = '/gb_books/0/1';
 
         ob_start();
         $headers = headers_list();
@@ -54,20 +36,24 @@ class AppIndexTest extends TestCase
 
         $expected = '<title>Epub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = 'Invalid action';
+        $expected = '<a href="/phpunit/gb_books/0/1?lang=en&bookId=11">Search</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'A Study in Scarlet';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
     }
 
     /**
-     * Summary of testAppSelectDatabase
+     * Summary of testAppSearchBookSearch
      * @runInSeparateProcess
      * @return void
      */
-    public function testAppSelectDatabase(): void
+    public function testAppSearchBookSearch(): void
     {
-        $_SERVER['PATH_INFO'] = '/authors/';
+        $_SERVER['PATH_INFO'] = '/gb_books/0/1';
+        $_GET['bookId'] = '11';
+        $_GET['lang'] = 'en';
 
         ob_start();
         $headers = headers_list();
@@ -76,22 +62,26 @@ class AppIndexTest extends TestCase
 
         $expected = '<title>Epub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<th>Db num</th>';
+        $expected = '<a href="/phpunit/gb_volume/0?lang=en&matchId=2BrZDQAAQBAJ">A Study in Scarlet</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<td>Some Books</td>';
+        $expected = 'This first Holmes novel became the basis of the pilot episode of the extremely popular BBC show';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
+        unset($_GET['bookId']);
+        unset($_GET['lang']);
     }
 
     /**
-     * Summary of testAppCsvExport
+     * Summary of testAppSearchVolume
      * @runInSeparateProcess
      * @return void
      */
-    public function testAppCsvExport(): void
+    public function testAppSearchVolume(): void
     {
-        $_SERVER['PATH_INFO'] = '/csv_export/0';
+        $_SERVER['PATH_INFO'] = '/gb_volume/0';
+        $_GET['matchId'] = '2BrZDQAAQBAJ';
+        $_GET['lang'] = 'en';
 
         ob_start();
         $headers = headers_list();
@@ -100,35 +90,13 @@ class AppIndexTest extends TestCase
 
         $expected = '<title>Epub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/csv_export">Csv export</a>';
+        $expected = 'selfLink: https://www.googleapis.com/books/v1/volumes/2BrZDQAAQBAJ';
         $this->assertStringContainsString($expected, $output);
-        $expected = '/test/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 1 files OK - 0 files Error';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    /**
-     * Summary of testAppListAuthors
-     * @runInSeparateProcess
-     * @return void
-     */
-    public function testAppListAuthors(): void
-    {
-        $_SERVER['PATH_INFO'] = '/authors/0';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>Epub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/authors/0">Some Books</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = 'Arthur Conan Doyle';
+        $expected = 'title: A Study in Scarlet';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
+        unset($_GET['matchId']);
+        unset($_GET['lang']);
     }
 }

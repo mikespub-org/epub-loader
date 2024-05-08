@@ -7,16 +7,12 @@
  * @author     mikespub
  */
 
-if (PHP_SAPI === 'cli') {
-    parse_str(implode('&', array_slice($argv ?? ['phpunit'], 1)), $_GET);
-}
-
 $gConfig = [];
 
 /**
  * URL endpoint for your application
  */
-$gConfig['endpoint'] = $_SERVER['SCRIPT_NAME'];
+$gConfig['endpoint'] = $_SERVER['SCRIPT_NAME'] ?? null;
 
 /**
  * Application name
@@ -26,7 +22,7 @@ $gConfig['app_name'] = 'Epub Loader';
 /**
  * Application version
  */
-$gConfig['version'] = '2.5';
+$gConfig['version'] = '3.0';
 
 /**
  * Admin email
@@ -75,3 +71,5 @@ $gConfig['actions']['notes'] = 'Get Calibre Notes';
 $gConfig['actions']['resource'] = 'Get Calibre Resource';
 $gConfig['actions']['hello_world'] = 'Example: Hello, World - see app/example.php';
 $gConfig['actions']['goodbye'] = 'Example: Goodbye - see app/example.php';
+
+return $gConfig;

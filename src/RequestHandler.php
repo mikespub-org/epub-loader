@@ -32,6 +32,8 @@ class RequestHandler
     protected $gErrorArray;
     /** @var array<mixed> */
     protected $urlParams;
+    /** @var bool */
+    protected $handled = false;
 
     /**
      * Summary of __construct
@@ -81,6 +83,10 @@ class RequestHandler
         // Html content
         if (isset($action) && isset($dbNum)) {
             $result = $this->doAction($action, $dbNum);
+            if (is_null($result) && empty($this->getErrors()) && !empty(getenv('PHPUNIT_TESTING'))) {
+                $this->handled = true;
+                return $result;
+            }
             if (!is_array($result)) {
                 $result = ['result' => $result];
             }
@@ -230,6 +236,15 @@ class RequestHandler
     public function getErrors()
     {
         return $this->gErrorArray;
+    }
+
+    /**
+     * Summary of isDone
+     * @return bool
+     */
+    public function isDone()
+    {
+        return $this->handled && empty($this->gErrorArray);
     }
 
     /**

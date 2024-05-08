@@ -3,7 +3,12 @@
 1.5.x - 2024xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-3.0.x - 2024xxxx (PHP >= 8.2)
+3.1.x - 2024xxxx
+  * ...
+  * Update dependencies + add more tests
+  * Return config array from config.php
+
+3.0.0 - 20240314 Switch to survos/wikidata package (PHP >= 8.2)
   * Add app index tests
   * Upgrade freearhey/wikidata 3.6 to forked survos/wikidata 4.x (PHP >= 8.2)
   * Add calibre users schema

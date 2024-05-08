@@ -1,0 +1,224 @@
+<?php
+/**
+ * Epub loader application test
+ *
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     mikespub
+ */
+
+namespace Marsender\EPubLoader\Tests;
+
+use PHPUnit\Framework\TestCase;
+
+class WikiDataTest extends TestCase
+{
+    public static function setUpBeforeClass(): void
+    {
+        if (!file_exists(dirname(__DIR__) . '/app/config.php')) {
+            copy(dirname(__DIR__) . '/app/config.php.example', dirname(__DIR__) . '/app/config.php');
+        }
+        $_SERVER['SCRIPT_NAME'] = '/phpunit';
+    }
+
+    /**
+     * Summary of testAppCheckAuthors
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppCheckAuthors(): void
+    {
+        $_SERVER['PATH_INFO'] = '/wd_author/0';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/wd_author/0">Some Books</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'Arthur Conan Doyle';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    /**
+     * Summary of testAppCheckAuthorLinks
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppCheckAuthorLinks(): void
+    {
+        $_SERVER['PATH_INFO'] = '/wd_author/0';
+        $_GET['findLinks'] = '1';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/wd_entity/0/?matchId=Q42511">Q42511</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'H. G. Wells';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+        unset($_GET['findLinks']);
+    }
+
+    /**
+     * Summary of testAppCheckAuthor
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppCheckAuthor(): void
+    {
+        $_SERVER['PATH_INFO'] = '/wd_author/0/1';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/wd_entity/0/1?matchId=Q35610">Q35610</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'Arthur Conan Doyle';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    /**
+     * Summary of testAppCheckBooks
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppCheckBooks(): void
+    {
+        $_SERVER['PATH_INFO'] = '/wd_books/0/1';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/wd_books/0/1?bookId=11">Search</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'A Study in Scarlet';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    /**
+     * Summary of testAppCheckBookSearch
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppCheckBookSearch(): void
+    {
+        $_SERVER['PATH_INFO'] = '/wd_books/0/1';
+        $_GET['bookId'] = '11';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/wd_entity/0/1?bookId=11&matchId=Q223131">Q223131</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'first Sherlock Holmes novel by Sir Arthur Conan Doyle';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+        unset($_GET['bookId']);
+    }
+
+    /**
+     * Summary of testAppCheckSeries
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppCheckSeries(): void
+    {
+        $_SERVER['PATH_INFO'] = '/wd_series/0/1';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/wd_series/0/1?seriesId=1">Search</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'Sherlock Holmes';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    /**
+     * Summary of testAppCheckBookSearch
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppCheckSeriesSearch(): void
+    {
+        $_SERVER['PATH_INFO'] = '/wd_series/0/1';
+        $_GET['seriesId'] = '1';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/wd_entity/0/1?seriesId=1&matchId=Q4653">Q4653</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'fictional character (consulting detective) created by Sir Arthur Conan Doyle';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+        unset($_GET['seriesId']);
+    }
+
+    /**
+     * Summary of testAppCheckEntity
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppCheckEntity(): void
+    {
+        $_SERVER['PATH_INFO'] = '/wd_entity/0/1';
+        $_GET['bookId'] = '11';
+        $_GET['matchId'] = 'Q223131';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="https://en.wikipedia.org/wiki/A_Study_in_Scarlet">Wikipedia</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'description: first Sherlock Holmes novel by Sir Arthur Conan Doyle';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+        unset($_GET['bookId']);
+        unset($_GET['matchId']);
+    }
+}

@@ -544,7 +544,7 @@ class ActionHandler
         // Find match on OpenLibrary
         $openlibrary = new OpenLibraryMatch($this->cacheDir);
 
-        $matched = null;
+        $matched = ['docs' => []];
         if (!empty($query)) {
             $matched = $openlibrary->findAuthors($query);
             usort($matched['docs'], function ($a, $b) {
@@ -556,7 +556,6 @@ class ActionHandler
             //    $matched[$firstId]['entries'] = $openlibrary->findWorksByAuthor($author);
             //}
         } elseif (!empty($matchId)) {
-            $matched = ['docs' => []];
             $matched['docs'][] = $openlibrary->getAuthor($matchId);
             //var_dump($matched);
         } elseif ($findLinks) {
@@ -729,6 +728,9 @@ class ActionHandler
         header('Content-Type: ' . $mime);
 
         readfile($path);
+        if (!empty(getenv('PHPUNIT_TESTING'))) {
+            return null;
+        }
         exit;
     }
 

@@ -10,7 +10,7 @@ namespace Marsender\EPubLoader\Tests;
 
 use PHPUnit\Framework\TestCase;
 
-class AppIndexTest extends TestCase
+class CalibreNotesTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
@@ -21,31 +21,13 @@ class AppIndexTest extends TestCase
     }
 
     /**
-     * Summary of testAppIndex
+     * Summary of testAppListNotesTypes
      * @runInSeparateProcess
      * @return void
      */
-    public function testAppIndex(): void
+    public function testAppListNotesTypes(): void
     {
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>Epub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<div><b>Select action</b></div>';
-        $this->assertStringContainsString($expected, $output);
-    }
-
-    /**
-     * Summary of testAppUnknown
-     * @runInSeparateProcess
-     * @return void
-     */
-    public function testAppUnknown(): void
-    {
-        $_SERVER['PATH_INFO'] = '/unknown/';
+        $_SERVER['PATH_INFO'] = '/notes/0';
 
         ob_start();
         $headers = headers_list();
@@ -54,20 +36,23 @@ class AppIndexTest extends TestCase
 
         $expected = '<title>Epub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = 'Invalid action';
+        $expected = '<a href="/phpunit/notes/0?colName=authors">authors</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'Notes';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
     }
 
     /**
-     * Summary of testAppSelectDatabase
+     * Summary of testAppListAuthorNotes
      * @runInSeparateProcess
      * @return void
      */
-    public function testAppSelectDatabase(): void
+    public function testAppListAuthorNotes(): void
     {
-        $_SERVER['PATH_INFO'] = '/authors/';
+        $_SERVER['PATH_INFO'] = '/notes/0';
+        $_GET['colName'] = 'authors';
 
         ob_start();
         $headers = headers_list();
@@ -76,22 +61,25 @@ class AppIndexTest extends TestCase
 
         $expected = '<title>Epub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<th>Db num</th>';
+        $expected = '<a href="/phpunit/notes/0?colName=authors&itemId=3">3</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<td>Some Books</td>';
+        $expected = 'authors notes';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
+        unset($_GET['colName']);
     }
 
     /**
-     * Summary of testAppCsvExport
+     * Summary of testAppGetAuthorNote
      * @runInSeparateProcess
      * @return void
      */
-    public function testAppCsvExport(): void
+    public function testAppGetAuthorNote(): void
     {
-        $_SERVER['PATH_INFO'] = '/csv_export/0';
+        $_SERVER['PATH_INFO'] = '/notes/0';
+        $_GET['colName'] = 'authors';
+        $_GET['itemId'] = '3';
 
         ob_start();
         $headers = headers_list();
@@ -100,22 +88,29 @@ class AppIndexTest extends TestCase
 
         $expected = '<title>Epub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/csv_export">Csv export</a>';
+        $expected = '<a href="/phpunit/notes/0?colName=authors&itemId=3&html=1">html</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '/test/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 1 files OK - 0 files Error';
+        $expected = '&lt;p&gt;This is a &lt;strong&gt;note&lt;/strong&gt; for Lewis Carroll&lt;/p&gt;';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '&lt;img src=&quot;calres://xxh64/7c301792c52eebf7?placement=kUxDpm6orDperFNdIqiU9A&quot;&gt;';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
+        unset($_GET['colName']);
+        unset($_GET['itemId']);
     }
 
     /**
-     * Summary of testAppListAuthors
+     * Summary of testAppGetAuthorNoteHtml
      * @runInSeparateProcess
      * @return void
      */
-    public function testAppListAuthors(): void
+    public function testAppGetAuthorNoteHtml(): void
     {
-        $_SERVER['PATH_INFO'] = '/authors/0';
+        $_SERVER['PATH_INFO'] = '/notes/0';
+        $_GET['colName'] = 'authors';
+        $_GET['itemId'] = '3';
+        $_GET['html'] = '1';
 
         ob_start();
         $headers = headers_list();
@@ -124,11 +119,42 @@ class AppIndexTest extends TestCase
 
         $expected = '<title>Epub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/authors/0">Some Books</a>';
+        $expected = '<a href="/phpunit/notes/0?colName=authors&itemId=3">3</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = 'Arthur Conan Doyle';
+        $expected = '<p>This is a <strong>note</strong> for Lewis Carroll</p>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<img src="/phpunit/resource/0?hash=xxh64/7c301792c52eebf7&placement=kUxDpm6orDperFNdIqiU9A">';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
+        unset($_GET['colName']);
+        unset($_GET['itemId']);
+        unset($_GET['html']);
+    }
+
+    /**
+     * Summary of testAppGetResource
+     * @runInSeparateProcess
+     * @return void
+     */
+    public function testAppGetResource(): void
+    {
+        $_SERVER['PATH_INFO'] = '/resource/0';
+        $_GET['hash'] = 'xxh64/7c301792c52eebf7';
+        $_GET['placement'] = 'kUxDpm6orDperFNdIqiU9A';
+        putenv('PHPUNIT_TESTING=1');
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = 37341;
+        $this->assertEquals($expected, strlen($output));
+
+        unset($_SERVER['PATH_INFO']);
+        unset($_GET['hash']);
+        unset($_GET['placement']);
+        putenv('PHPUNIT_TESTING=');
     }
 }

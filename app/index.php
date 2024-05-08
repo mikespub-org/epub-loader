@@ -22,18 +22,20 @@ $fileName = __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 if (!file_exists($fileName)) {
     die('Missing configuration file: ' . $fileName);
 }
-// Global vars
-$gConfig = [];
-require_once($fileName);
 /** @var array<mixed> $gConfig */
+$gConfig = require($fileName);
 
-$gConfig['endpoint'] ??= $_SERVER['SCRIPT_NAME'] ?? RequestHandler::ENDPOINT;
+$gConfig['endpoint'] ??= RequestHandler::ENDPOINT;
 $gConfig['app_name'] ??= RequestHandler::APP_NAME;
 $gConfig['version'] ??= RequestHandler::VERSION;
 
 //------------------------------------------------------------------------------
 // Start application
 //------------------------------------------------------------------------------
+
+if (PHP_SAPI === 'cli' && empty($_GET)) {
+    parse_str(implode('&', array_slice($argv ?? ['phpunit'], 1)), $_GET);
+}
 
 // Get the url parameters
 $path = $_SERVER['PATH_INFO'] ?? '/';
@@ -58,6 +60,9 @@ $data = [
 $handler = new RequestHandler($gConfig, ExtraActions::class);
 $result = $handler->request($action, $dbNum, $urlParams);
 
+if ($handler->isDone()) {
+    return;
+}
 if (is_array($result)) {
     $data = array_merge($data, $result);
 } else {

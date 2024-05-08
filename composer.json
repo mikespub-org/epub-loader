@@ -24,8 +24,8 @@
         "ext-zip": "*",
         "ext-zlib": "*",
         "survos/wikidata": "^4.0",
-        "mikespub/php-epub-meta": "^2.2",
-        "twig/twig": "^3.8"
+        "mikespub/php-epub-meta": "^2.3",
+        "twig/twig": "^3.9"
     },
     "autoload": {
         "classmap": ["src/", "app/"]

@@ -220,6 +220,9 @@ class BaseExport
         // Send file content to download
         echo $content;
 
+        if (!empty(getenv('PHPUNIT_TESTING'))) {
+            return;
+        }
         exit;
     }
 
