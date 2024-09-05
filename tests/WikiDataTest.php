@@ -22,9 +22,9 @@ class WikiDataTest extends TestCase
 
     /**
      * Summary of testAppCheckAuthors
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCheckAuthors(): void
     {
         $_SERVER['PATH_INFO'] = '/wd_author/0';
@@ -46,9 +46,9 @@ class WikiDataTest extends TestCase
 
     /**
      * Summary of testAppCheckAuthorLinks
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCheckAuthorLinks(): void
     {
         $_SERVER['PATH_INFO'] = '/wd_author/0';
@@ -72,9 +72,9 @@ class WikiDataTest extends TestCase
 
     /**
      * Summary of testAppCheckAuthor
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCheckAuthor(): void
     {
         $_SERVER['PATH_INFO'] = '/wd_author/0/1';
@@ -96,9 +96,9 @@ class WikiDataTest extends TestCase
 
     /**
      * Summary of testAppCheckBooks
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCheckBooks(): void
     {
         $_SERVER['PATH_INFO'] = '/wd_books/0/1';
@@ -120,9 +120,9 @@ class WikiDataTest extends TestCase
 
     /**
      * Summary of testAppCheckBookSearch
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCheckBookSearch(): void
     {
         $_SERVER['PATH_INFO'] = '/wd_books/0/1';
@@ -146,9 +146,9 @@ class WikiDataTest extends TestCase
 
     /**
      * Summary of testAppCheckSeries
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCheckSeries(): void
     {
         $_SERVER['PATH_INFO'] = '/wd_series/0/1';
@@ -170,9 +170,9 @@ class WikiDataTest extends TestCase
 
     /**
      * Summary of testAppCheckBookSearch
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCheckSeriesSearch(): void
     {
         $_SERVER['PATH_INFO'] = '/wd_series/0/1';
@@ -196,9 +196,9 @@ class WikiDataTest extends TestCase
 
     /**
      * Summary of testAppCheckEntity
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCheckEntity(): void
     {
         $_SERVER['PATH_INFO'] = '/wd_entity/0/1';

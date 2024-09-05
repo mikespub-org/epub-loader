@@ -22,9 +22,9 @@ class OpenLibraryTest extends TestCase
 
     /**
      * Summary of testAppFindAuthors
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppFindAuthors(): void
     {
         $_SERVER['PATH_INFO'] = '/ol_author/0';
@@ -46,9 +46,9 @@ class OpenLibraryTest extends TestCase
 
     /**
      * Summary of testAppFindAuthorLinks
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppFindAuthorLinks(): void
     {
         $_SERVER['PATH_INFO'] = '/ol_author/0';
@@ -72,9 +72,9 @@ class OpenLibraryTest extends TestCase
 
     /**
      * Summary of testAppFindBooks
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppFindBooks(): void
     {
         $_SERVER['PATH_INFO'] = '/ol_books/0/1';
@@ -96,9 +96,9 @@ class OpenLibraryTest extends TestCase
 
     /**
      * Summary of testAppFindBookSearch
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppFindBookSearch(): void
     {
         $_SERVER['PATH_INFO'] = '/ol_books/0/1';
@@ -122,9 +122,9 @@ class OpenLibraryTest extends TestCase
 
     /**
      * Summary of testAppFindAuthor
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppFindAuthor(): void
     {
         $_SERVER['PATH_INFO'] = '/ol_author/0/1';
@@ -146,9 +146,9 @@ class OpenLibraryTest extends TestCase
 
     /**
      * Summary of testAppFindWorkAuthor
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppFindWorkAuthor(): void
     {
         $_SERVER['PATH_INFO'] = '/ol_work/0/1';
@@ -172,9 +172,9 @@ class OpenLibraryTest extends TestCase
 
     /**
      * Summary of testAppFindWork
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppFindWork(): void
     {
         $_SERVER['PATH_INFO'] = '/ol_work/0/1';

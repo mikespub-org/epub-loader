@@ -2,6 +2,7 @@
 
 ## Prerequisites for this fork
 -	PHP 8.x with DOM, GD, Intl, Json, PDO SQLite, SQLite3, XML, XMLWriter and ZLib support (PHP 8.1 or later recommended)
+- Release 3.x.x will only work with PHP >= 8.2 - typical for most source code & docker image installs in 2024 and later
 - Release 2.x.x will only work with PHP >= 8.1 - typical for most source code & docker image installs in 2023 and later
 - Release 1.x.x still works with PHP 7.4 if necessary - earlier PHP 7.x (or 5.x) versions are *not* supported with this fork
 

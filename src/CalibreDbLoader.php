@@ -172,18 +172,18 @@ class CalibreDbLoader
                 }
                 $sql = 'CREATE ' . $sql;
                 $str = strtolower($sql);
-                if (strpos($str, 'create view') !== false) {
+                if (str_contains($str, 'create view')) {
                     continue;
                 }
-                if (strpos($str, 'title_sort') !== false) {
+                if (str_contains($str, 'title_sort')) {
                     continue;
                 }
                 // Add 'calibre_database_field_cover' field
-                if (strpos($sql, 'has_cover BOOL DEFAULT 0,') !== false) {
+                if (str_contains($sql, 'has_cover BOOL DEFAULT 0,')) {
                     $sql = str_replace('has_cover BOOL DEFAULT 0,', 'has_cover BOOL DEFAULT 0,' . ' cover TEXT NOT NULL DEFAULT "",', $sql);
                 }
                 // Add 'calibre_database_field_sort' field
-                if (strpos($sql, 'CREATE TABLE tags ') !== false) {
+                if (str_contains($sql, 'CREATE TABLE tags ')) {
                     $sql = str_replace('name TEXT NOT NULL COLLATE NOCASE,', 'name TEXT NOT NULL COLLATE NOCASE,' . ' sort TEXT COLLATE NOCASE,', $sql);
                 }
                 $stmt = $this->mDb->prepare($sql);
@@ -696,19 +696,12 @@ class CalibreDbLoader
         if (empty($value)) {
             return '';
         }
-        switch ($type) {
-            case 'google':
-                $url = Metadata\Sources\GoogleBooksMatch::link($value);
-                break;
-            case 'wd':
-                $url = Metadata\Sources\WikiDataMatch::link($value);
-                break;
-            case 'olid':
-                $url = Metadata\Sources\OpenLibraryMatch::link($value);
-                break;
-            default:
-                $url = '';
-        }
+        $url = match ($type) {
+            'google' => Metadata\Sources\GoogleBooksMatch::link($value),
+            'wd' => Metadata\Sources\WikiDataMatch::link($value),
+            'olid' => Metadata\Sources\OpenLibraryMatch::link($value),
+            default => '',
+        };
         return $url;
     }
 
@@ -816,7 +809,7 @@ class CalibreDbLoader
      */
     public function hasNotes()
     {
-        if (file_exists(dirname($this->mDbFileName) . '/.calnotes/notes.db')) {
+        if (file_exists(dirname((string) $this->mDbFileName) . '/.calnotes/notes.db')) {
             return true;
         }
         return false;
@@ -831,7 +824,7 @@ class CalibreDbLoader
         if (!$this->hasNotes()) {
             return null;
         }
-        $notesFileName = dirname($this->mDbFileName) . '/.calnotes/notes.db';
+        $notesFileName = dirname((string) $this->mDbFileName) . '/.calnotes/notes.db';
         try {
             // Init the Data Source Name
             $dsn = 'sqlite:' . $notesFileName;
@@ -903,7 +896,7 @@ class CalibreDbLoader
         if (!$this->hasNotes()) {
             return null;
         }
-        $resourceDir = dirname($this->mDbFileName) . '/.calnotes/resources';
+        $resourceDir = dirname((string) $this->mDbFileName) . '/.calnotes/resources';
         if (!is_dir($resourceDir)) {
             return null;
         }

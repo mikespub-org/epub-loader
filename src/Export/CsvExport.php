@@ -45,7 +45,7 @@ class CsvExport extends BaseExport
             if (is_array($value)) {
                 foreach ($value as $value1) {
                     // Escape quotes
-                    if (strpos($value1, '\'') !== false) {
+                    if (str_contains((string) $value1, '\'')) {
                         $value1 = '\'' . str_replace('\'', '\'\'', $value1) . '\'';
                     }
                     $text .= $value1 . static::CsvSeparator;
@@ -53,7 +53,7 @@ class CsvExport extends BaseExport
                 continue;
             } else {
                 // Escape quotes
-                if (strpos($value, '\'') !== false) {
+                if (str_contains((string) $value, '\'')) {
                     $value = '\'' . str_replace('\'', '\'\'', $value) . '\'';
                 }
                 $info = $value;

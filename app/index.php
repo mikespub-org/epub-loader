@@ -39,8 +39,8 @@ if (PHP_SAPI === 'cli' && empty($_GET)) {
 
 // Get the url parameters
 $path = $_SERVER['PATH_INFO'] ?? '/';
-if (str_starts_with($path, '/')) {
-    $path = substr($path, 1);
+if (str_starts_with((string) $path, '/')) {
+    $path = substr((string) $path, 1);
 }
 [$action, $dbNum, $itemId, $other] = explode('/', $path . '///', 4);
 $action = $action ?: null;
@@ -53,7 +53,7 @@ $data = [
     'endpoint' => $gConfig['endpoint'],
     'app_name' => $gConfig['app_name'],
     'version' => $gConfig['version'],
-    'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13($gConfig['admin_email']),
+    'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13((string) $gConfig['admin_email']),
 ];
 
 // you can define extra actions for your app - see example.php

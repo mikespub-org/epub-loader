@@ -10,6 +10,7 @@ namespace Marsender\EPubLoader\Tests;
 
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\CoversClass(\Marsender\EPubLoader\App\ExtraActions::class)]
 class ExtraActionsTest extends TestCase
 {
     public static function setUpBeforeClass(): void
@@ -22,10 +23,9 @@ class ExtraActionsTest extends TestCase
 
     /**
      * Summary of testAppHelloWorld
-     * @covers \Marsender\EPubLoader\App\ExtraActions
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppHelloWorld(): void
     {
         $_SERVER['PATH_INFO'] = '/hello_world/0';
@@ -47,10 +47,9 @@ class ExtraActionsTest extends TestCase
 
     /**
      * Summary of testAppGoodbye
-     * @covers \Marsender\EPubLoader\App\ExtraActions
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppGoodbye(): void
     {
         $_SERVER['PATH_INFO'] = '/goodbye/0';

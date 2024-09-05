@@ -147,7 +147,7 @@ class ActionHandler
     {
         // Init csv file
         $dbPath = $this->dbConfig['db_path'];
-        $fileName = $dbPath . DIRECTORY_SEPARATOR . basename($dbPath) . '_metadata.csv';
+        $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
         // Open or create the export file
         $export = new BookExport($fileName, BookExport::eExportTypeCsv, true);
         // Add the epub files into the export file
@@ -157,7 +157,7 @@ class ActionHandler
         if (!empty($epubPath)) {
             $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             foreach ($fileList as $file) {
-                $filePath = substr($file, strlen($dbPath) + 1);
+                $filePath = substr($file, strlen((string) $dbPath) + 1);
                 $error = $export->AddEpub($dbPath, $filePath);
                 if (!empty($error)) {
                     $this->addError($file, $error);
@@ -193,7 +193,7 @@ class ActionHandler
         if (!empty($epubPath)) {
             $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             foreach ($fileList as $file) {
-                $filePath = substr($file, strlen($dbPath) + 1);
+                $filePath = substr($file, strlen((string) $dbPath) + 1);
                 $error = $db->AddEpub($dbPath, $filePath);
                 if (!empty($error)) {
                     $this->addError($file, $error);
@@ -710,7 +710,7 @@ class ActionHandler
             return null;
         }
         $meta = json_decode(file_get_contents($path . '.metadata'), true);
-        $ext = strtolower(pathinfo($meta['name'], PATHINFO_EXTENSION));
+        $ext = strtolower(pathinfo((string) $meta['name'], PATHINFO_EXTENSION));
         $mime = 'application/octet-stream';
         switch ($ext) {
             case 'jpg':

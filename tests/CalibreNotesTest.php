@@ -22,9 +22,9 @@ class CalibreNotesTest extends TestCase
 
     /**
      * Summary of testAppListNotesTypes
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppListNotesTypes(): void
     {
         $_SERVER['PATH_INFO'] = '/notes/0';
@@ -46,9 +46,9 @@ class CalibreNotesTest extends TestCase
 
     /**
      * Summary of testAppListAuthorNotes
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppListAuthorNotes(): void
     {
         $_SERVER['PATH_INFO'] = '/notes/0';
@@ -72,9 +72,9 @@ class CalibreNotesTest extends TestCase
 
     /**
      * Summary of testAppGetAuthorNote
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppGetAuthorNote(): void
     {
         $_SERVER['PATH_INFO'] = '/notes/0';
@@ -102,9 +102,9 @@ class CalibreNotesTest extends TestCase
 
     /**
      * Summary of testAppGetAuthorNoteHtml
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppGetAuthorNoteHtml(): void
     {
         $_SERVER['PATH_INFO'] = '/notes/0';
@@ -134,9 +134,9 @@ class CalibreNotesTest extends TestCase
 
     /**
      * Summary of testAppGetResource
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppGetResource(): void
     {
         $_SERVER['PATH_INFO'] = '/resource/0';

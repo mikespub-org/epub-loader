@@ -150,7 +150,7 @@ class RequestHandler
     public function get($name, $default = null, $pattern = null)
     {
         if (!empty($this->urlParams) && isset($this->urlParams[$name]) && $this->urlParams[$name] != '') {
-            if (!isset($pattern) || preg_match($pattern, $this->urlParams[$name])) {
+            if (!isset($pattern) || preg_match($pattern, (string) $this->urlParams[$name])) {
                 return $this->urlParams[$name];
             }
         }

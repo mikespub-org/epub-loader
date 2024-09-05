@@ -22,9 +22,9 @@ class AppIndexTest extends TestCase
 
     /**
      * Summary of testAppIndex
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppIndex(): void
     {
         ob_start();
@@ -40,9 +40,9 @@ class AppIndexTest extends TestCase
 
     /**
      * Summary of testAppUnknown
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppUnknown(): void
     {
         $_SERVER['PATH_INFO'] = '/unknown/';
@@ -62,9 +62,9 @@ class AppIndexTest extends TestCase
 
     /**
      * Summary of testAppSelectDatabase
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppSelectDatabase(): void
     {
         $_SERVER['PATH_INFO'] = '/authors/';
@@ -86,9 +86,9 @@ class AppIndexTest extends TestCase
 
     /**
      * Summary of testAppCsvExport
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppCsvExport(): void
     {
         $_SERVER['PATH_INFO'] = '/csv_export/0';
@@ -102,7 +102,7 @@ class AppIndexTest extends TestCase
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/csv_export">Csv export</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '/test/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 1 files OK - 0 files Error';
+        $expected = '/test/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
@@ -110,9 +110,9 @@ class AppIndexTest extends TestCase
 
     /**
      * Summary of testAppListAuthors
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppListAuthors(): void
     {
         $_SERVER['PATH_INFO'] = '/authors/0';

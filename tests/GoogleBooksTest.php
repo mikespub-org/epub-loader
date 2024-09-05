@@ -22,9 +22,9 @@ class GoogleBooksTest extends TestCase
 
     /**
      * Summary of testAppSearchBooks
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppSearchBooks(): void
     {
         $_SERVER['PATH_INFO'] = '/gb_books/0/1';
@@ -46,9 +46,9 @@ class GoogleBooksTest extends TestCase
 
     /**
      * Summary of testAppSearchBookSearch
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppSearchBookSearch(): void
     {
         $_SERVER['PATH_INFO'] = '/gb_books/0/1';
@@ -74,9 +74,9 @@ class GoogleBooksTest extends TestCase
 
     /**
      * Summary of testAppSearchVolume
-     * @runInSeparateProcess
      * @return void
      */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppSearchVolume(): void
     {
         $_SERVER['PATH_INFO'] = '/gb_volume/0';

@@ -104,7 +104,7 @@ class BaseExport
         }
 
         // Strip double spaces
-        while (strpos($str, '  ') !== false) {
+        while (str_contains($str, '  ')) {
             $str = str_replace('  ', ' ', $str);
         }
 

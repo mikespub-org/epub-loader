@@ -121,7 +121,7 @@ class OpenLibraryMatch extends BaseMatch
             }
         }
         // https://openlibrary.org/dev/docs/api/search
-        $url = 'https://openlibrary.org/search.json?title=' . rawurlencode($query) . '&author=' . rawurlencode($authorName) . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
+        $url = 'https://openlibrary.org/search.json?title=' . rawurlencode($query) . '&author=' . rawurlencode((string) $authorName) . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
         $results = file_get_contents($url);
         $matched = json_decode($results, true);
         if (empty($matched) || empty($matched['docs'])) {
@@ -221,7 +221,7 @@ class OpenLibraryMatch extends BaseMatch
      */
     public static function isValidLink($link)
     {
-        if (!empty($link) && (str_starts_with($link, static::ENTITY_URL) || str_starts_with($link, static::AUTHOR_URL))) {
+        if (!empty($link) && (str_starts_with($link, (string) static::ENTITY_URL) || str_starts_with($link, (string) static::AUTHOR_URL))) {
             return true;
         }
         return false;

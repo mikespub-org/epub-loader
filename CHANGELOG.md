@@ -3,8 +3,10 @@
 1.5.x - 2024xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-3.1.x - 2024xxxx
-  * ...
+3.2.0 - 20240905 Update tests + upgrade code
+  * Update phpunit tests + upgrade code with rector
+
+3.1.1 - 20240508 Update tests
   * Update dependencies + add more tests
   * Return config array from config.php
 

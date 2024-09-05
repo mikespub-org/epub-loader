@@ -115,7 +115,7 @@ class BaseMatch
      */
     public static function isValidLink($link)
     {
-        if (!empty($link) && str_starts_with($link, static::ENTITY_URL)) {
+        if (!empty($link) && str_starts_with($link, (string) static::ENTITY_URL)) {
             return true;
         }
         return false;

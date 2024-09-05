@@ -24,13 +24,14 @@
         "ext-zip": "*",
         "ext-zlib": "*",
         "survos/wikidata": "^4.0||^5.0",
-        "mikespub/php-epub-meta": "^2.3",
-        "twig/twig": "^3.11"
+        "mikespub/php-epub-meta": "^2.3||^3.0",
+        "twig/twig": "^3.12"
     },
     "autoload": {
         "classmap": ["src/", "app/"]
     },
     "require-dev": {
+        "phpunit/phpunit": "^11.3"
     },
     "suggest": {
         "mikespub/seblucas-cops": "COPS - Calibre OPDS (and HTML) PHP Server"

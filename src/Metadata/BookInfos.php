@@ -107,7 +107,7 @@ class BookInfos
             // Remove meta base path
             $meta = $ePub->meta();
             $len = strlen($meta) - strlen(pathinfo($meta, PATHINFO_BASENAME));
-            $this->mCover = substr($cover, $len);
+            $this->mCover = substr((string) $cover, $len);
         }
         $this->mIsbn = $ePub->getIsbn();
         $this->mRights = $ePub->getCopyright();
@@ -118,8 +118,8 @@ class BookInfos
         // Tag sample in opf file:
         //   <meta content="7" name="calibre:series_index"/>
         $this->mSerieIndex = $ePub->getSeriesIndex();
-        $this->mCreationDate = $this->GetSqlDate($ePub->getCreationDate()) ?? '';
-        $this->mModificationDate = $this->GetSqlDate($ePub->getModificationDate()) ?? '';
+        $this->mCreationDate = static::GetSqlDate($ePub->getCreationDate()) ?? '';
+        $this->mModificationDate = static::GetSqlDate($ePub->getModificationDate()) ?? '';
         // Timestamp is used to get latest ebooks
         $this->mTimeStamp = $this->mCreationDate;
     }
@@ -198,11 +198,11 @@ class BookInfos
         $res = preg_replace($search, $replace, $inStr);
 
         // Remove double white spaces
-        while (strpos($res, '  ') !== false) {
+        while (str_contains((string) $res, '  ')) {
             $res = str_replace('  ', ' ', $res);
         }
 
-        $res = trim($res, ' -.');
+        $res = trim((string) $res, ' -.');
 
         return $res;
     }
