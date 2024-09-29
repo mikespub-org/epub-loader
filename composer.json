@@ -23,7 +23,7 @@
         "ext-xml": "*",
         "ext-zip": "*",
         "ext-zlib": "*",
-        "survos/wikidata": "^4.0||^5.0",
+        "mikespub/survos-wikidata": "^4.0||^5.0",
         "mikespub/php-epub-meta": "^2.3||^3.0",
         "twig/twig": "^3.14"
     },

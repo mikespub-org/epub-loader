@@ -4,6 +4,8 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Fix tests for renamed COPS tests directory
+  * Replace survos/wikidata with mikespub/survos-wikidata to include PR survos/wikidata#1
   * Update packages + check for vendor directory
 
 3.2.0 - 20240905 Update tests + upgrade code

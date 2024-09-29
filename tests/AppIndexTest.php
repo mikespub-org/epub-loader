@@ -102,7 +102,7 @@ class AppIndexTest extends TestCase
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/csv_export">Csv export</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '/test/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
+        $expected = '/tests/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
