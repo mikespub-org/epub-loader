@@ -11,6 +11,11 @@ namespace Marsender\EPubLoader\App;
 
 use Marsender\EPubLoader\RequestHandler;
 
+if (!empty($_SERVER['SCRIPT_NAME']) && str_contains($_SERVER['SCRIPT_NAME'], '/vendor/')) {
+    echo "Unable to run in /vendor/ directory";
+    return;
+}
+
 //------------------------------------------------------------------------------
 // Include files
 //------------------------------------------------------------------------------
