@@ -159,8 +159,8 @@ class BookInfos
         $this->mPublisher = $inArray[$i++];
         $this->mSerie = $inArray[$i++];
         $this->mSerieIndex = $inArray[$i++];
-        $this->mCreationDate = static::GetSqlDate($inArray[$i++]) ?? '';
-        $this->mModificationDate = static::GetSqlDate($inArray[$i++]) ?? '';
+        $this->mCreationDate = $inArray[$i++] ?? '';
+        $this->mModificationDate = $inArray[$i++] ?? '';
         // Timestamp is used to get latest ebooks
         $this->mTimeStamp = $this->mCreationDate;
     }
