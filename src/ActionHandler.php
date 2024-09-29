@@ -61,7 +61,7 @@ class ActionHandler
         $this->request = $request;
         $authorId = $this->request->getId('authorId');
         $matchId = $this->request->get('matchId');
-        switch($action) {
+        switch ($action) {
             case 'csv_export':
                 $result = $this->csv_export();
                 break;

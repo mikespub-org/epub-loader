@@ -140,7 +140,7 @@ class BookInfos
         $this->mFormat = $inArray[$i++];
         $this->mBasePath = $inBasePath;
         $this->mPath = $inArray[$i++];
-        if (str_starts_with( $this->mPath, $inBasePath)) {
+        if (str_starts_with($this->mPath, $inBasePath)) {
             $this->mPath = substr($this->mPath, strlen($inBasePath) + 1);
         }
         $this->mName = $inArray[$i++];

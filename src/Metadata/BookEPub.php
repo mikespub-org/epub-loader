@@ -14,23 +14,6 @@ use SebLucas\EPubMeta\Dom\Element;
 class BookEPub extends EPub
 {
     /**
-     * Get or set the book author(s)
-     * @deprecated 1.5.0 use getAuthors() or setAuthors() instead
-     * @param array<mixed>|string|false $authors
-     * @return mixed
-     */
-    public function Authors($authors = false)
-    {
-        // set new data
-        if ($authors !== false) {
-            $this->setAuthors($authors);
-        }
-
-        // read current data
-        return $this->getAuthors();
-    }
-
-    /**
      * Set the book author(s)
      *
      * Authors should be given with a "file-as" and a real name. The file as
@@ -161,18 +144,6 @@ class BookEPub extends EPub
     }
 
     /**
-     * Set or get the book's creation date - with fallback to dcterms:created
-     *
-     * @deprecated 2.1.2 use getCreationDate() instead
-     * @param string|false $date Date eg: 2012-05-19T12:54:25Z
-     * @return string
-     */
-    public function CreationDate($date = false)
-    {
-        return $this->getCreationDate($date);
-    }
-
-    /**
      * Get the book's creation date - with fallback to dcterms:created
      *
      * @param string|false $date Date eg: 2012-05-19T12:54:25Z
@@ -202,18 +173,6 @@ class BookEPub extends EPub
         }
 
         return $res;
-    }
-
-    /**
-     * Set or get the book's modification date - with fallback to dcterms:modified
-     *
-     * @deprecated 2.1.2 use getModificationDate() instead
-     * @param string|false $date Date eg: 2012-05-19T12:54:25Z
-     * @return string
-     */
-    public function ModificationDate($date = false)
-    {
-        return $this->getModificationDate($date);
     }
 
     /**
