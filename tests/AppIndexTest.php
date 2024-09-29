@@ -8,6 +8,7 @@
 
 namespace Marsender\EPubLoader\Tests;
 
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 
 class AppIndexTest extends TestCase
@@ -101,6 +102,26 @@ class AppIndexTest extends TestCase
         $expected = '<title>Epub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/csv_export">Csv export</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '/tests/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    #[Depends('testAppCsvExport')]
+    public function testAppCsvImport(): void
+    {
+        $_SERVER['PATH_INFO'] = '/csv_import/0';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/csv_import">Csv import</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = '/tests/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $output);

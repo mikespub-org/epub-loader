@@ -4,6 +4,7 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Add CSV import to create database from CSV export file
   * Fix tests for renamed COPS tests directory
   * Replace survos/wikidata with mikespub/survos-wikidata to include PR survos/wikidata#1
   * Update packages + check for vendor directory

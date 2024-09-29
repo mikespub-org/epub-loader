@@ -10,9 +10,11 @@
 namespace Marsender\EPubLoader;
 
 use Marsender\EPubLoader\Export\BookExport;
+use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
 use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
 use Marsender\EPubLoader\Metadata\Sources\WikiDataMatch;
+use Exception;
 
 class ActionHandler
 {
@@ -62,6 +64,10 @@ class ActionHandler
         switch($action) {
             case 'csv_export':
                 $result = $this->csv_export();
+                break;
+            case 'csv_import':
+                $createDb = $this->dbConfig['create_db'];
+                $result = $this->csv_import($createDb);
                 break;
             case 'db_load':
                 $createDb = $this->dbConfig['create_db'];
@@ -171,6 +177,45 @@ class ActionHandler
         $export->SaveToFile();
         // Display info
         return sprintf('Export ebooks to %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError) . '<br />';
+    }
+
+    /**
+     * Summary of csv_import - @todo fix calibreFileName avoiding overlap with existing metadata.db
+     * @param bool $createDb
+     * @return string
+     */
+    public function csv_import($createDb = false)
+    {
+        // Init database file
+        $dbPath = $this->dbConfig['db_path'];
+        $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
+        $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
+        // Open or create the database
+        $db = new CalibreDbLoader($calibreFileName, $createDb, $bookIdsFileName);
+
+        // Init csv file
+        $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
+        $handle = fopen($fileName, 'r');
+        $headers = fgetcsv($handle, null, BookExport::CsvSeparator, "'");
+        // Add the epub files from the import file
+        $nbOk = 0;
+        $nbError = 0;
+        while (($data = fgetcsv($handle, null, BookExport::CsvSeparator, "'")) !== false) {
+            // Load the book infos
+            $bookInfos = new BookInfos();
+            $bookInfos->LoadFromArray($dbPath, $data);
+            try {
+                $db->AddBook($bookInfos, 0);
+            } catch (Exception $e) {
+                $error = $e->getMessage();
+                $this->addError($bookInfos->mPath, $error);
+                $nbError++;
+                continue;
+            }
+            $nbOk++;
+        }
+        // Display info
+        return sprintf('Import ebooks from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError) . '<br />';
     }
 
     /**

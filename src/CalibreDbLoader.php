@@ -257,7 +257,7 @@ class CalibreDbLoader
      *
      * @return void
      */
-    protected function AddBook($inBookInfo, $inBookId, $sortField = 'sort')
+    public function AddBook($inBookInfo, $inBookId, $sortField = 'sort')
     {
         $errors = [];
 
@@ -288,10 +288,12 @@ class CalibreDbLoader
         $lastModified = BookInfos::GetSqlDate(empty($inBookInfo->mModificationDate) ? '2000-01-01 00:00:00' : $inBookInfo->mModificationDate);
         $hasCover = empty($inBookInfo->mCover) ? 0 : 1;
         if (empty($inBookInfo->mCover)) {
-            $error = 'Warning: Cover not found';
-            $errors[] = $error;
+            //$error = 'Warning: Cover not found';
+            //$errors[] = $error;
+            $cover = "";
+        } else {
+            $cover = str_replace('OEBPS/', $inBookInfo->mName . '/', $inBookInfo->mCover);
         }
-        $cover = str_replace('OEBPS/', $inBookInfo->mName . '/', $inBookInfo->mCover);
         $stmt = $this->mDb->prepare($sql);
         if ($inBookId) {
             $stmt->bindParam(':id', $inBookId);

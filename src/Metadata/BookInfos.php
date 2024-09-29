@@ -125,6 +125,47 @@ class BookInfos
     }
 
     /**
+     * Loads book infos from an export/import array
+     *
+     * @param string $inBasePath Epub base directory
+     * @param array<mixed> $inArray CSV import info (one book per line)
+     * @throws Exception if error
+     *
+     * @return void
+     */
+    public function LoadFromArray($inBasePath, $inArray)
+    {
+        // Get the epub infos from array - see BookExport::AddBook()
+        $i = 0;
+        $this->mFormat = $inArray[$i++];
+        $this->mBasePath = $inBasePath;
+        $this->mPath = $inArray[$i++];
+        if (str_starts_with( $this->mPath, $inBasePath)) {
+            $this->mPath = substr($this->mPath, strlen($inBasePath) + 1);
+        }
+        $this->mName = $inArray[$i++];
+        $this->mUuid = $inArray[$i++];
+        $this->mUri = $inArray[$i++];
+        $this->mTitle = $inArray[$i++];
+        $values = explode(' - ', $inArray[$i++]);
+        $keys = explode(' - ', $inArray[$i++]);
+        $this->mAuthors = array_combine($keys, $values);
+        $this->mLanguage = $inArray[$i++];
+        $this->mDescription = $inArray[$i++];
+        $this->mSubjects = explode(' - ', $inArray[$i++]);
+        $this->mCover = $inArray[$i++];
+        $this->mIsbn = $inArray[$i++];
+        $this->mRights = $inArray[$i++];
+        $this->mPublisher = $inArray[$i++];
+        $this->mSerie = $inArray[$i++];
+        $this->mSerieIndex = $inArray[$i++];
+        $this->mCreationDate = static::GetSqlDate($inArray[$i++]) ?? '';
+        $this->mModificationDate = static::GetSqlDate($inArray[$i++]) ?? '';
+        // Timestamp is used to get latest ebooks
+        $this->mTimeStamp = $this->mCreationDate;
+    }
+
+    /**
      * Format an date from a date
      *
      * @param string $inDate
