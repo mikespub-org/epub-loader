@@ -2,8 +2,9 @@
 /**
  * BaseExport class
  *
- * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Export;
@@ -43,10 +44,10 @@ class BaseExport
     }
 
     /**
-     * Summary of ClearProperties
+     * Summary of clearProperties
      * @return void
      */
-    public function ClearProperties()
+    public function clearProperties()
     {
         $this->mProperties = [];
     }
@@ -57,7 +58,7 @@ class BaseExport
      * @param mixed $inValue
      * @return void
      */
-    public function SetProperty($inKey, $inValue)
+    public function setProperty($inKey, $inValue)
     {
         // Don't store empty keys
         if (empty($inKey)) {
@@ -65,7 +66,7 @@ class BaseExport
         }
 
         if ($this->mFormatProperty) {
-            $inValue = $this->FormatProperty($inValue);
+            $inValue = $this->formatProperty($inValue);
         }
 
         $this->mProperties[$inKey] = $inValue;
@@ -77,7 +78,7 @@ class BaseExport
      * @param string|array<mixed>|null $inValue of strings to format
      * @return string|array<mixed> of strings formated
      */
-    protected function FormatProperty($inValue)
+    protected function formatProperty($inValue)
     {
         if (!isset($inValue)) {
             return '';
@@ -88,7 +89,7 @@ class BaseExport
         if (is_array($inValue)) {
             // Recursive call for arrays
             foreach ($inValue as $key => $value) {
-                $inValue[$key] = $this->FormatProperty($value);
+                $inValue[$key] = $this->formatProperty($value);
             }
             return $inValue;
         }
@@ -120,10 +121,10 @@ class BaseExport
      * @throws Exception if error
      * @return void
      */
-    public function SaveToFile()
+    public function saveToFile()
     {
         // Write the file
-        $content = $this->GetContent();
+        $content = $this->getContent();
         if (!file_put_contents($this->mFileName, $content)) {
             $error = sprintf('Cannot save export to file: %s', $this->mFileName);
             throw new Exception($error);
@@ -140,7 +141,7 @@ class BaseExport
      *
      * @return void
      */
-    protected function SendDownloadHeaders($inFileName, $inFileSize = null, $inCodeSet = 'utf-8')
+    protected function sendDownloadHeaders($inFileName, $inFileSize = null, $inCodeSet = 'utf-8')
     {
         // Throws excemtion if http headers have been already sent
         $filename = '';
@@ -209,13 +210,13 @@ class BaseExport
      * Download export and stop further script execution
      * @return void
      */
-    public function Download()
+    public function download()
     {
-        $content = $this->GetContent();
+        $content = $this->getContent();
 
         // Send http download headers
         $size = strlen($content);
-        $this->SendDownloadHeaders($this->mFileName, $size);
+        $this->sendDownloadHeaders($this->mFileName, $size);
 
         // Send file content to download
         echo $content;
@@ -227,10 +228,10 @@ class BaseExport
     }
 
     /**
-     * Summary of GetContent
+     * Summary of getContent
      * @return string
      */
-    protected function GetContent()
+    protected function getContent()
     {
         return '';
     }

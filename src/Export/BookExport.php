@@ -2,8 +2,9 @@
 /**
  * BookExport class
  *
- * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Export;
@@ -49,16 +50,16 @@ class BookExport
      *
      * @return string Empty string or error if any
      */
-    public function AddEpub($inBasePath, $inFileName)
+    public function addEpub($inBasePath, $inFileName)
     {
         $error = '';
 
         try {
             // Load the book infos
             $bookInfos = new BookInfos();
-            $bookInfos->LoadFromEpub($inBasePath, $inFileName);
+            $bookInfos->loadFromEpub($inBasePath, $inFileName);
             // Add the book
-            $this->AddBook($bookInfos);
+            $this->addBook($bookInfos);
         } catch (Exception $e) {
             $error = $e->getMessage();
         }
@@ -68,79 +69,80 @@ class BookExport
 
     /**
      * Add a new book to the export
+     * @see \Marsender\EPubLoader\Metadata\BookInfos::loadFromArray()
      *
      * @param BookInfos $inBookInfo BookInfo object
      * @throws Exception if error
      *
      * @return void
      */
-    protected function AddBook($inBookInfo)
+    protected function addBook($inBookInfo): void
     {
         // Add export header
         if ($this->mNbBook++ == 0) {
             $i = 1;
-            $this->mExport->SetProperty($i++, 'Format');
-            $this->mExport->SetProperty($i++, 'Path');
-            $this->mExport->SetProperty($i++, 'Name');
-            $this->mExport->SetProperty($i++, 'Uuid');
-            $this->mExport->SetProperty($i++, 'Uri');
-            $this->mExport->SetProperty($i++, 'Title');
-            $this->mExport->SetProperty($i++, 'Authors');
-            $this->mExport->SetProperty($i++, 'AuthorsSort');
-            $this->mExport->SetProperty($i++, 'Language');
-            $this->mExport->SetProperty($i++, 'Description');
-            $this->mExport->SetProperty($i++, 'Subjects');
-            $this->mExport->SetProperty($i++, 'Cover');
-            $this->mExport->SetProperty($i++, 'Isbn');
-            $this->mExport->SetProperty($i++, 'Rights');
-            $this->mExport->SetProperty($i++, 'Publisher');
-            $this->mExport->SetProperty($i++, 'Serie');
-            $this->mExport->SetProperty($i++, 'SerieIndex');
-            $this->mExport->SetProperty($i++, 'CreationDate');
-            $this->mExport->SetProperty($i++, 'ModificationDate');
-            $this->mExport->AddContent();
+            $this->mExport->setProperty($i++, 'Format');
+            $this->mExport->setProperty($i++, 'Path');
+            $this->mExport->setProperty($i++, 'Name');
+            $this->mExport->setProperty($i++, 'Uuid');
+            $this->mExport->setProperty($i++, 'Uri');
+            $this->mExport->setProperty($i++, 'Title');
+            $this->mExport->setProperty($i++, 'Authors');
+            $this->mExport->setProperty($i++, 'AuthorsSort');
+            $this->mExport->setProperty($i++, 'Language');
+            $this->mExport->setProperty($i++, 'Description');
+            $this->mExport->setProperty($i++, 'Subjects');
+            $this->mExport->setProperty($i++, 'Cover');
+            $this->mExport->setProperty($i++, 'Isbn');
+            $this->mExport->setProperty($i++, 'Rights');
+            $this->mExport->setProperty($i++, 'Publisher');
+            $this->mExport->setProperty($i++, 'Serie');
+            $this->mExport->setProperty($i++, 'SerieIndex');
+            $this->mExport->setProperty($i++, 'CreationDate');
+            $this->mExport->setProperty($i++, 'ModificationDate');
+            $this->mExport->addContent();
         }
 
         // Add book infos to the export
         $i = 1;
-        $this->mExport->SetProperty($i++, $inBookInfo->mFormat);
-        $this->mExport->SetProperty($i++, $inBookInfo->mBasePath . DIRECTORY_SEPARATOR . $inBookInfo->mPath);
-        $this->mExport->SetProperty($i++, $inBookInfo->mName);
-        $this->mExport->SetProperty($i++, $inBookInfo->mUuid);
-        $this->mExport->SetProperty($i++, $inBookInfo->mUri);
-        $this->mExport->SetProperty($i++, $inBookInfo->mTitle);
-        $this->mExport->SetProperty($i++, implode(' - ', $inBookInfo->mAuthors));
-        $this->mExport->SetProperty($i++, implode(' - ', array_keys($inBookInfo->mAuthors)));
-        $this->mExport->SetProperty($i++, $inBookInfo->mLanguage);
-        $this->mExport->SetProperty($i++, $inBookInfo->mDescription);
-        $this->mExport->SetProperty($i++, implode(' - ', $inBookInfo->mSubjects));
-        $this->mExport->SetProperty($i++, $inBookInfo->mCover);
-        $this->mExport->SetProperty($i++, $inBookInfo->mIsbn);
-        $this->mExport->SetProperty($i++, $inBookInfo->mRights);
-        $this->mExport->SetProperty($i++, $inBookInfo->mPublisher);
-        $this->mExport->SetProperty($i++, $inBookInfo->mSerie);
-        $this->mExport->SetProperty($i++, $inBookInfo->mSerieIndex);
-        $this->mExport->SetProperty($i++, $inBookInfo->mCreationDate);
-        $this->mExport->SetProperty($i++, $inBookInfo->mModificationDate);
+        $this->mExport->setProperty($i++, $inBookInfo->mFormat);
+        $this->mExport->setProperty($i++, $inBookInfo->mBasePath . DIRECTORY_SEPARATOR . $inBookInfo->mPath);
+        $this->mExport->setProperty($i++, $inBookInfo->mName);
+        $this->mExport->setProperty($i++, $inBookInfo->mUuid);
+        $this->mExport->setProperty($i++, $inBookInfo->mUri);
+        $this->mExport->setProperty($i++, $inBookInfo->mTitle);
+        $this->mExport->setProperty($i++, implode(' - ', $inBookInfo->mAuthors));
+        $this->mExport->setProperty($i++, implode(' - ', array_keys($inBookInfo->mAuthors)));
+        $this->mExport->setProperty($i++, $inBookInfo->mLanguage);
+        $this->mExport->setProperty($i++, $inBookInfo->mDescription);
+        $this->mExport->setProperty($i++, implode(' - ', $inBookInfo->mSubjects));
+        $this->mExport->setProperty($i++, $inBookInfo->mCover);
+        $this->mExport->setProperty($i++, $inBookInfo->mIsbn);
+        $this->mExport->setProperty($i++, $inBookInfo->mRights);
+        $this->mExport->setProperty($i++, $inBookInfo->mPublisher);
+        $this->mExport->setProperty($i++, $inBookInfo->mSerie);
+        $this->mExport->setProperty($i++, $inBookInfo->mSerieIndex);
+        $this->mExport->setProperty($i++, $inBookInfo->mCreationDate);
+        $this->mExport->setProperty($i++, $inBookInfo->mModificationDate);
 
-        $this->mExport->AddContent();
+        $this->mExport->addContent();
     }
 
     /**
      * Download export and stop further script execution
      * @return void
      */
-    public function Download()
+    public function download()
     {
-        $this->mExport->Download();
+        $this->mExport->download();
     }
 
     /**
      * Save export to file
      * @return void
      */
-    public function SaveToFile()
+    public function saveToFile()
     {
-        $this->mExport->SaveToFile();
+        $this->mExport->saveToFile();
     }
 }

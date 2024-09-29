@@ -2,8 +2,9 @@
 /**
  * BookInfos class
  *
- * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Metadata;

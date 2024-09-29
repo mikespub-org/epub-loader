@@ -2,8 +2,9 @@
 /**
  * CsvExport class
  *
- * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Export;
@@ -37,7 +38,7 @@ class CsvExport extends BaseExport
      * and reset the properties
      * @return void
      */
-    public function AddContent()
+    public function addContent()
     {
         $text = '';
         foreach ($this->mProperties as $key => $value) {
@@ -63,14 +64,14 @@ class CsvExport extends BaseExport
 
         $this->mLines[] = $text;
 
-        $this->ClearProperties();
+        $this->clearProperties();
     }
 
     /**
      * Summary of GetContent
      * @return string
      */
-    protected function GetContent()
+    protected function getContent()
     {
         $text = implode("\n", $this->mLines) . "\n";
 

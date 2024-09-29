@@ -2,8 +2,9 @@
 /**
  * BookInfos class
  *
- * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Metadata;
@@ -67,7 +68,7 @@ class BookInfos
      *
      * @return void
      */
-    public function LoadFromEpub($inBasePath, $inFileName)
+    public function loadFromEpub($inBasePath, $inFileName)
     {
         $fullFileName = sprintf('%s%s%s', $inBasePath, DIRECTORY_SEPARATOR, $inFileName);
         // Check file access
@@ -126,6 +127,7 @@ class BookInfos
 
     /**
      * Loads book infos from an export/import array
+     * @see \Marsender\EPubLoader\Export\BookExport::addBook()
      *
      * @param string $inBasePath Epub base directory
      * @param array<mixed> $inArray CSV import info (one book per line)
@@ -133,7 +135,7 @@ class BookInfos
      *
      * @return void
      */
-    public function LoadFromArray($inBasePath, $inArray)
+    public function loadFromArray($inBasePath, $inArray)
     {
         // Get the epub infos from array - see BookExport::AddBook()
         $i = 0;
@@ -172,7 +174,7 @@ class BookInfos
      *
      * @return ?string Sql formated date
      */
-    public static function GetSqlDate($inDate)
+    public static function getSqlDate($inDate)
     {
         if (empty($inDate)) {
             return null;
@@ -191,7 +193,7 @@ class BookInfos
      *
      * @return ?int Timestamp
      */
-    public static function GetTimeStamp($inDate)
+    public static function getTimeStamp($inDate)
     {
         if (empty($inDate)) {
             return null;
@@ -210,7 +212,7 @@ class BookInfos
      *
      * @return string Same string without any accents
      */
-    public static function GetSortString($inStr)
+    public static function getSortString($inStr)
     {
         $search = [
             '@(*UTF8)[éèêëÉÈÊË]@i',
@@ -253,7 +255,7 @@ class BookInfos
      *
      * @return void
      */
-    public function CreateUuid()
+    public function createUuid()
     {
         $data = openssl_random_pseudo_bytes(16);
         $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100

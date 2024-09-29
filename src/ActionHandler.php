@@ -2,7 +2,7 @@
 /**
  * ActionHandler class
  *
- * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  * @author     mikespub
  */
@@ -10,6 +10,7 @@
 namespace Marsender\EPubLoader;
 
 use Marsender\EPubLoader\Export\BookExport;
+use Marsender\EPubLoader\Import\BookImport;
 use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
 use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
@@ -164,7 +165,7 @@ class ActionHandler
             $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             foreach ($fileList as $file) {
                 $filePath = substr($file, strlen((string) $dbPath) + 1);
-                $error = $export->AddEpub($dbPath, $filePath);
+                $error = $export->addEpub($dbPath, $filePath);
                 if (!empty($error)) {
                     $this->addError($file, $error);
                     $nbError++;
@@ -191,21 +192,21 @@ class ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
         // Open or create the database
-        $db = new CalibreDbLoader($calibreFileName, $createDb, $bookIdsFileName);
+        $import = new BookImport($calibreFileName, $createDb, $bookIdsFileName);
 
         // Init csv file
         $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
         $handle = fopen($fileName, 'r');
-        $headers = fgetcsv($handle, null, BookExport::CsvSeparator, "'");
+        $headers = fgetcsv($handle, null, BookImport::CSV_SEPARATOR, "'");
         // Add the epub files from the import file
         $nbOk = 0;
         $nbError = 0;
-        while (($data = fgetcsv($handle, null, BookExport::CsvSeparator, "'")) !== false) {
+        while (($data = fgetcsv($handle, null, BookImport::CSV_SEPARATOR, "'")) !== false) {
             // Load the book infos
             $bookInfos = new BookInfos();
-            $bookInfos->LoadFromArray($dbPath, $data);
+            $bookInfos->loadFromArray($dbPath, $data);
             try {
-                $db->AddBook($bookInfos, 0);
+                $import->addBook($bookInfos, 0);
             } catch (Exception $e) {
                 $error = $e->getMessage();
                 $this->addError($bookInfos->mPath, $error);
@@ -230,7 +231,7 @@ class ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . 'bookids.txt';
         // Open or create the database
-        $db = new CalibreDbLoader($calibreFileName, $createDb, $bookIdsFileName);
+        $import = new BookImport($calibreFileName, $createDb, $bookIdsFileName);
         // Add the epub files into the database
         $nbOk = 0;
         $nbError = 0;
@@ -239,7 +240,7 @@ class ActionHandler
             $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             foreach ($fileList as $file) {
                 $filePath = substr($file, strlen((string) $dbPath) + 1);
-                $error = $db->AddEpub($dbPath, $filePath);
+                $error = $import->addEpub($dbPath, $filePath);
                 if (!empty($error)) {
                     $this->addError($file, $error);
                     $nbError++;
