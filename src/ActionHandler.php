@@ -11,11 +11,10 @@ namespace Marsender\EPubLoader;
 
 use Marsender\EPubLoader\Export\BookExport;
 use Marsender\EPubLoader\Import\BookImport;
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Import\CsvImport;
 use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
 use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
 use Marsender\EPubLoader\Metadata\Sources\WikiDataMatch;
-use Exception;
 
 class ActionHandler
 {
@@ -158,26 +157,17 @@ class ActionHandler
         // Open or create the export file
         $export = new BookExport($fileName, BookExport::eExportTypeCsv, true);
         // Add the epub files into the export file
-        $nbOk = 0;
-        $nbError = 0;
         $epubPath = $this->dbConfig['epub_path'];
-        if (!empty($epubPath)) {
-            $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
-            foreach ($fileList as $file) {
-                $filePath = substr($file, strlen((string) $dbPath) + 1);
-                $error = $export->addEpub($dbPath, $filePath);
-                if (!empty($error)) {
-                    $this->addError($file, $error);
-                    $nbError++;
-                    continue;
-                }
-                $nbOk++;
+        [$message, $errors] = $export->loadFromPath($dbPath, $epubPath);
+        if (!empty($errors)) {
+            foreach ($errors as $file => $error) {
+                $this->addError($file, $error);
             }
         }
         // Save export
         $export->SaveToFile();
         // Display info
-        return sprintf('Export ebooks to %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError) . '<br />';
+        return $message . '<br />';
     }
 
     /**
@@ -192,31 +182,19 @@ class ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
         // Open or create the database
-        $import = new BookImport($calibreFileName, $createDb, $bookIdsFileName);
+        $import = new CsvImport($calibreFileName, $createDb, $bookIdsFileName);
 
         // Init csv file
         $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
-        $handle = fopen($fileName, 'r');
-        $headers = fgetcsv($handle, null, BookImport::CSV_SEPARATOR, "'");
         // Add the epub files from the import file
-        $nbOk = 0;
-        $nbError = 0;
-        while (($data = fgetcsv($handle, null, BookImport::CSV_SEPARATOR, "'")) !== false) {
-            // Load the book infos
-            $bookInfos = new BookInfos();
-            $bookInfos->loadFromArray($dbPath, $data);
-            try {
-                $import->addBook($bookInfos, 0);
-            } catch (Exception $e) {
-                $error = $e->getMessage();
-                $this->addError($bookInfos->mPath, $error);
-                $nbError++;
-                continue;
+        [$message, $errors] = $import->loadFromCsvFile($dbPath, $fileName);
+        if (!empty($errors)) {
+            foreach ($errors as $file => $error) {
+                $this->addError($file, $error);
             }
-            $nbOk++;
         }
         // Display info
-        return sprintf('Import ebooks from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError) . '<br />';
+        return $message . '<br />';
     }
 
     /**
@@ -233,24 +211,15 @@ class ActionHandler
         // Open or create the database
         $import = new BookImport($calibreFileName, $createDb, $bookIdsFileName);
         // Add the epub files into the database
-        $nbOk = 0;
-        $nbError = 0;
         $epubPath = $this->dbConfig['epub_path'];
-        if (!empty($epubPath)) {
-            $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
-            foreach ($fileList as $file) {
-                $filePath = substr($file, strlen((string) $dbPath) + 1);
-                $error = $import->addEpub($dbPath, $filePath);
-                if (!empty($error)) {
-                    $this->addError($file, $error);
-                    $nbError++;
-                    continue;
-                }
-                $nbOk++;
+        [$message, $errors] = $import->loadFromPath($dbPath, $epubPath);
+        if (!empty($errors)) {
+            foreach ($errors as $file => $error) {
+                $this->addError($file, $error);
             }
         }
         // Display info
-        return sprintf('Load database %s - %d files OK - %d files Error', $calibreFileName, $nbOk, $nbError) . '<br />';
+        return $message . '<br />';
     }
 
     /**

@@ -10,6 +10,7 @@
 namespace Marsender\EPubLoader\Export;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\RequestHandler;
 use Exception;
 
 class BookExport
@@ -17,6 +18,7 @@ class BookExport
     /** @var mixed */
     protected $mExport = null;
     protected int $mNbBook = 0;
+    protected string $mFileName = '';
 
     public const eExportTypeCsv = 1;
     public const CsvSeparator = "\t";
@@ -31,6 +33,7 @@ class BookExport
      */
     public function __construct($inFileName, $inExportType, $inCreate = false)
     {
+        $this->mFileName = $inFileName;
         switch ($inExportType) {
             case static::eExportTypeCsv:
                 $this->mExport = new CsvExport($inFileName, $inCreate);
@@ -39,6 +42,34 @@ class BookExport
                 $error = sprintf('Incorrect export type: %d', $inExportType);
                 throw new Exception($error);
         }
+    }
+
+    /**
+     * Summary of loadFromPath
+     * @param string $dbPath
+     * @param string $epubPath relative to $dbPath
+     * @return array{string, array<mixed>}
+     */
+    public function loadFromPath($dbPath, $epubPath)
+    {
+        $errors = [];
+        $nbOk = 0;
+        $nbError = 0;
+        if (!empty($epubPath)) {
+            $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+            foreach ($fileList as $file) {
+                $filePath = substr($file, strlen((string) $dbPath) + 1);
+                $error = $this->addEpub($dbPath, $filePath);
+                if (!empty($error)) {
+                    $errors[$file] = $error;
+                    $nbError++;
+                    continue;
+                }
+                $nbOk++;
+            }
+        }
+        $message = sprintf('Export ebooks to %s - %d files OK - %d files Error', $this->mFileName, $nbOk, $nbError);
+        return [$message, $errors];
     }
 
     /**

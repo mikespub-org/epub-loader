@@ -130,6 +130,31 @@ class AppIndexTest extends TestCase
     }
 
     /**
+     * Summary of testAppDbLoad
+     * @return void
+     */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    public function testAppDbLoad(): void
+    {
+        // @see https://github.com/w3c/epub-tests - files with 2 errors: duplicate uuid + epub version 0
+        $_SERVER['PATH_INFO'] = '/db_load/4';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>Epub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/db_load">Create database</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '/calibre/library/metadata.db - 164 files OK - 2 files Error';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    /**
      * Summary of testAppListAuthors
      * @return void
      */

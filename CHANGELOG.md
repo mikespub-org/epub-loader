@@ -4,6 +4,9 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Clarify license GPL version 2 or later + fix file headers
+  * Split CalibreDbLoader with BookImport and notes (TODO)
+  * Remove deprecated BookEPub() methods for 1.x and 2.x
   * Add CSV import to create database from CSV export file
   * Fix tests for renamed COPS tests directory
   * Replace survos/wikidata with mikespub/survos-wikidata to include PR survos/wikidata#1

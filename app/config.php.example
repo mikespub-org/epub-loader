@@ -50,6 +50,7 @@ $gConfig['databases'][] = ['name' => 'Some Books', 'db_path' => dirname(__DIR__,
 $gConfig['databases'][] = ['name' => 'Littérature classique', 'db_path' => '/opt/ebooks/calibre/demo', 'epub_path' => 'epub'];
 $gConfig['databases'][] = ['name' => 'Bibliothèque numérique romande', 'db_path' => '/opt/ebooks/calibre/bnr', 'epub_path' => 'epub'];
 $gConfig['databases'][] = ['name' => 'La Bibliothèque d\'Ebooks', 'db_path' => '/opt/ebooks/calibre/bibebook', 'epub_path' => 'epub'];
+$gConfig['databases'][] = ['name' => 'EPub Tests', 'db_path' => dirname(__DIR__, 2) . '/calibre/library', 'epub_path' => '.'];
 
 /**
  * Available actions

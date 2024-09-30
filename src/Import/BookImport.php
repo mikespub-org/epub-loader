@@ -10,12 +10,39 @@
 namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\RequestHandler;
 use PDO;
 use Exception;
 
 class BookImport extends BaseImport
 {
-    public const CSV_SEPARATOR = "\t";
+    /**
+     * Summary of loadFromPath
+     * @param string $dbPath
+     * @param string $epubPath relative to $dbPath
+     * @return array{string, array<mixed>}
+     */
+    public function loadFromPath($dbPath, $epubPath)
+    {
+        $errors = [];
+        $nbOk = 0;
+        $nbError = 0;
+        if (!empty($epubPath)) {
+            $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+            foreach ($fileList as $file) {
+                $filePath = substr($file, strlen((string) $dbPath) + 1);
+                $error = $this->addEpub($dbPath, $filePath);
+                if (!empty($error)) {
+                    $errors[$file] = $error;
+                    $nbError++;
+                    continue;
+                }
+                $nbOk++;
+            }
+        }
+        $message = sprintf('Load database %s - %d files OK - %d files Error', $this->mDbFileName, $nbOk, $nbError);
+        return [$message, $errors];
+    }
 
     /**
      * Add an epub to the db
