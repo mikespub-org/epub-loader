@@ -14,7 +14,7 @@ class CsvExport extends BaseExport
     /** @var array<string>|null */
     protected $mLines = null;
 
-    public const CsvSeparator = "\t";
+    public const CSV_SEPARATOR = "\t";
 
     /**
      * Open an export file (or create if file does not exist)
@@ -24,7 +24,7 @@ class CsvExport extends BaseExport
      */
     public function __construct($inFileName, $inCreate = false)
     {
-        $this->mSearch = ["\r", "\n", static::CsvSeparator];
+        $this->mSearch = ["\r", "\n", self::CSV_SEPARATOR];
         $this->mReplace = ['', '<br />', ''];
 
         // Init container
@@ -49,7 +49,7 @@ class CsvExport extends BaseExport
                     if (str_contains((string) $value1, '\'')) {
                         $value1 = '\'' . str_replace('\'', '\'\'', $value1) . '\'';
                     }
-                    $text .= $value1 . static::CsvSeparator;
+                    $text .= $value1 . self::CSV_SEPARATOR;
                 }
                 continue;
             } else {
@@ -59,7 +59,7 @@ class CsvExport extends BaseExport
                 }
                 $info = $value;
             }
-            $text .= $info . static::CsvSeparator;
+            $text .= $info . self::CSV_SEPARATOR;
         }
 
         $this->mLines[] = $text;

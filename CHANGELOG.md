@@ -5,6 +5,7 @@
 
 3.x.x - 2024xxxx
   * Clarify license GPL version 2 or later + fix file headers
+  * Add JsonImport for Google Books API cached files
   * Split CalibreDbLoader with BookImport and notes (TODO)
   * Remove deprecated BookEPub() methods for 1.x and 2.x
   * Add CSV import to create database from CSV export file

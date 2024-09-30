@@ -8,6 +8,7 @@
 
 namespace Marsender\EPubLoader\Tests;
 
+use Marsender\EPubLoader\Import\JsonImport;
 use PHPUnit\Framework\TestCase;
 
 class GoogleBooksTest extends TestCase
@@ -98,5 +99,33 @@ class GoogleBooksTest extends TestCase
         unset($_SERVER['PATH_INFO']);
         unset($_GET['matchId']);
         unset($_GET['lang']);
+    }
+
+    public function testJsonImportFile(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/google';
+        $dbFile = $dbPath . '/metadata.db';
+        $import = new JsonImport($dbFile, true);
+
+        $jsonFile = $dbPath . '/authors/Arthur Conan Doyle.en.40.json';
+        [$message, $errors] = $import->loadFromJsonFile($dbPath, $jsonFile);
+
+        $expected = '/cache/google/authors/Arthur Conan Doyle.en.40.json - 40 files OK - 0 files Error';
+        $this->assertStringContainsString($expected, $message);
+        $this->assertCount(0, $errors);
+    }
+
+    protected function skipTestJsonImportPath(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/google';
+        $dbFile = $dbPath . '/metadata.db';
+        $import = new JsonImport($dbFile, true);
+
+        $jsonPath = 'authors';
+        [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
+
+        $expected = '/cache/google/authors/Arthur Conan Doyle.en.40.json - 40 files OK - 0 files Error';
+        $this->assertStringContainsString($expected, $message);
+        $this->assertCount(0, $errors);
     }
 }

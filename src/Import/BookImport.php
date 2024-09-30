@@ -10,67 +10,15 @@
 namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
-use Marsender\EPubLoader\RequestHandler;
+use Marsender\EPubLoader\Metadata\BookLoadTrait;
 use PDO;
 use Exception;
 
 class BookImport extends BaseImport
 {
-    /**
-     * Summary of loadFromPath
-     * @param string $dbPath
-     * @param string $epubPath relative to $dbPath
-     * @return array{string, array<mixed>}
-     */
-    public function loadFromPath($dbPath, $epubPath)
-    {
-        $errors = [];
-        $nbOk = 0;
-        $nbError = 0;
-        if (!empty($epubPath)) {
-            $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
-            foreach ($fileList as $file) {
-                $filePath = substr($file, strlen((string) $dbPath) + 1);
-                $error = $this->addEpub($dbPath, $filePath);
-                if (!empty($error)) {
-                    $errors[$file] = $error;
-                    $nbError++;
-                    continue;
-                }
-                $nbOk++;
-            }
-        }
-        $message = sprintf('Load database %s - %d files OK - %d files Error', $this->mDbFileName, $nbOk, $nbError);
-        return [$message, $errors];
-    }
+    use BookLoadTrait;
 
-    /**
-     * Add an epub to the db
-     *
-     * @param string $inBasePath Epub base directory
-     * @param string $inFileName Epub file name (from base directory)
-     *
-     * @throws Exception if error
-     *
-     * @return string Empty string or error if any
-     */
-    public function addEpub($inBasePath, $inFileName): string
-    {
-        $error = '';
-
-        try {
-            // Load the book infos
-            $bookInfos = new BookInfos();
-            $bookInfos->loadFromEpub($inBasePath, $inFileName);
-            // Add the book
-            $bookId = $this->getBookId($inFileName);
-            $this->addBook($bookInfos, $bookId);
-        } catch (Exception $e) {
-            $error = $e->getMessage();
-        }
-
-        return $error;
-    }
+    protected string $mLabel = 'Load database';
 
     /**
      * Add a new book into the db
@@ -217,6 +165,9 @@ class BookImport extends BaseImport
             'pdf',
         ];
         foreach ($formats as $format) {
+            if (str_contains($inBookInfo->mPath, '://')) {
+                continue;
+            }
             $fileName = sprintf('%s%s%s%s%s.%s', $inBookInfo->mBasePath, DIRECTORY_SEPARATOR, $inBookInfo->mPath, DIRECTORY_SEPARATOR, $inBookInfo->mName, $format);
             if (!is_readable($fileName)) {
                 if ($format == $inBookInfo->mFormat) {
@@ -267,8 +218,8 @@ class BookImport extends BaseImport
         }
         $sql = 'insert into identifiers(book, type, val) values(:idBook, :type, :value)';
         $identifiers = [];
-        $identifiers['URI'] = $inBookInfo->mUri;
-        $identifiers['ISBN'] = $inBookInfo->mIsbn;
+        $identifiers['url'] = $inBookInfo->mUri;
+        $identifiers['isbn'] = $inBookInfo->mIsbn;
         foreach ($identifiers as $key => $value) {
             if (empty($value)) {
                 continue;
@@ -489,6 +440,9 @@ class BookImport extends BaseImport
      */
     public function addBookTags($inBookInfo, $idBook, $sortField = 'sort')
     {
+        if (empty($inBookInfo->mSubjects)) {
+            return;
+        }
         foreach ($inBookInfo->mSubjects as $subject) {
             $idSubject = $this->addTag($subject, $sortField);
 

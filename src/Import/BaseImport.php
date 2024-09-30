@@ -23,7 +23,7 @@ class BaseImport
     /** @var PDO|null */
     protected $mDb = null;
     /** @var string|null */
-    protected $mDbFileName = null;
+    protected $mFileName = null;
     /** @var array<string, mixed>|null */
     protected $mBookId = null;
     protected string $mBookIdFileName = '';
@@ -37,7 +37,7 @@ class BaseImport
      */
     public function __construct($inDbFileName, $inCreate = false, $inBookIdsFileName = '')
     {
-        $this->mDbFileName = $inDbFileName;
+        $this->mFileName = $inDbFileName;
         if ($inCreate) {
             $this->createDatabase($inDbFileName);
             if (!empty($inBookIdsFileName)) {
@@ -190,7 +190,7 @@ class BaseImport
      * @param string $inBookFileName
      * @return int
      */
-    protected function getBookId($inBookFileName)
+    public function getBookId($inBookFileName)
     {
         if (isset($this->mBookId[$inBookFileName])) {
             $res = (int) $this->mBookId[$inBookFileName];

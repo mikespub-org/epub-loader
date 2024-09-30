@@ -10,18 +10,20 @@
 namespace Marsender\EPubLoader\Export;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
-use Marsender\EPubLoader\RequestHandler;
+use Marsender\EPubLoader\Metadata\BookLoadTrait;
 use Exception;
 
 class BookExport
 {
+    use BookLoadTrait;
+
+    public const EXPORT_TYPE_CSV = 1;
+
+    protected string $mLabel = 'Export ebooks to';
     /** @var mixed */
     protected $mExport = null;
     protected int $mNbBook = 0;
     protected string $mFileName = '';
-
-    public const eExportTypeCsv = 1;
-    public const CsvSeparator = "\t";
 
     /**
      * Open an export file (or create if file does not exist)
@@ -35,7 +37,7 @@ class BookExport
     {
         $this->mFileName = $inFileName;
         switch ($inExportType) {
-            case static::eExportTypeCsv:
+            case self::EXPORT_TYPE_CSV:
                 $this->mExport = new CsvExport($inFileName, $inCreate);
                 break;
             default:
@@ -45,69 +47,26 @@ class BookExport
     }
 
     /**
-     * Summary of loadFromPath
-     * @param string $dbPath
-     * @param string $epubPath relative to $dbPath
-     * @return array{string, array<mixed>}
+     * Summary of getBookId
+     * @param string $inBookFileName
+     * @return int
      */
-    public function loadFromPath($dbPath, $epubPath)
+    public function getBookId($inBookFileName)
     {
-        $errors = [];
-        $nbOk = 0;
-        $nbError = 0;
-        if (!empty($epubPath)) {
-            $fileList = RequestHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
-            foreach ($fileList as $file) {
-                $filePath = substr($file, strlen((string) $dbPath) + 1);
-                $error = $this->addEpub($dbPath, $filePath);
-                if (!empty($error)) {
-                    $errors[$file] = $error;
-                    $nbError++;
-                    continue;
-                }
-                $nbOk++;
-            }
-        }
-        $message = sprintf('Export ebooks to %s - %d files OK - %d files Error', $this->mFileName, $nbOk, $nbError);
-        return [$message, $errors];
-    }
-
-    /**
-     * Add an epub to the export
-     *
-     * @param string $inBasePath Epub base directory
-     * @param string $inFileName Epub file name (from base directory)
-     * @throws Exception if error
-     *
-     * @return string Empty string or error if any
-     */
-    public function addEpub($inBasePath, $inFileName)
-    {
-        $error = '';
-
-        try {
-            // Load the book infos
-            $bookInfos = new BookInfos();
-            $bookInfos->loadFromEpub($inBasePath, $inFileName);
-            // Add the book
-            $this->addBook($bookInfos);
-        } catch (Exception $e) {
-            $error = $e->getMessage();
-        }
-
-        return $error;
+        return 0;
     }
 
     /**
      * Add a new book to the export
-     * @see \Marsender\EPubLoader\Metadata\BookInfos::loadFromArray()
+     * @see \Marsender\EPubLoader\Import\CsvImport::loadFromArray()
      *
      * @param BookInfos $inBookInfo BookInfo object
+     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
      * @throws Exception if error
      *
      * @return void
      */
-    protected function addBook($inBookInfo): void
+    protected function addBook($inBookInfo, $inBookId = 0): void
     {
         // Add export header
         if ($this->mNbBook++ == 0) {

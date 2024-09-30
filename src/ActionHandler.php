@@ -155,7 +155,7 @@ class ActionHandler
         $dbPath = $this->dbConfig['db_path'];
         $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
         // Open or create the export file
-        $export = new BookExport($fileName, BookExport::eExportTypeCsv, true);
+        $export = new BookExport($fileName, BookExport::EXPORT_TYPE_CSV, true);
         // Add the epub files into the export file
         $epubPath = $this->dbConfig['epub_path'];
         [$message, $errors] = $export->loadFromPath($dbPath, $epubPath);

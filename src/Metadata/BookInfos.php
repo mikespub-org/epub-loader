@@ -9,8 +9,6 @@
 
 namespace Marsender\EPubLoader\Metadata;
 
-use Exception;
-
 /**
  * BookInfos class contains informations about a book,
  * and methods to load this informations from multiple sources (eg epub file)
@@ -19,11 +17,11 @@ class BookInfos
 {
     public string $mBasePath = '';
 
+    public string $mFormat = '';
+
     public string $mPath = '';
 
     public string $mName = '';
-
-    public string $mFormat = '';
 
     public string $mUuid = '';
 
@@ -58,114 +56,6 @@ class BookInfos
     public string $mModificationDate = '';
 
     public string $mTimeStamp = '0';
-
-    /**
-     * Loads book infos from an epub file
-     *
-     * @param string $inBasePath Epub base directory
-     * @param string $inFileName Epub file name (from base directory)
-     * @throws Exception if error
-     *
-     * @return void
-     */
-    public function loadFromEpub($inBasePath, $inFileName)
-    {
-        $fullFileName = sprintf('%s%s%s', $inBasePath, DIRECTORY_SEPARATOR, $inFileName);
-        // Check file access
-        if (!is_readable($fullFileName)) {
-            throw new Exception('Cannot read file');
-        }
-
-        // Load the epub file
-        $ePub = new BookEPub($fullFileName);
-
-        // Check epub version
-        $version = $ePub->getEpubVersion();
-        switch ($version) {
-            case 2:
-            case 3:
-                break;
-            default:
-                $error = sprintf('Incorrect ebook epub version=%d', $version);
-                throw new Exception($error);
-        }
-
-        // Get the epub infos
-        $this->mFormat = 'epub';
-        $this->mBasePath = $inBasePath;
-        $this->mPath = pathinfo($inFileName, PATHINFO_DIRNAME);
-        $this->mName = pathinfo($inFileName, PATHINFO_FILENAME);
-        $this->mUuid = $ePub->getUniqueIdentifier() ?: $ePub->getUuid();
-        $this->mUri = $ePub->getUri();
-        $this->mTitle = $ePub->getTitle();
-        $this->mAuthors = $ePub->getAuthors();
-        $this->mLanguage = $ePub->getLanguage();
-        $this->mDescription = $ePub->getDescription();
-        $this->mSubjects = $ePub->getSubjects();
-        $cover = $ePub->getCoverInfo();
-        $cover = $cover['found'];
-        if (($cover !== false)) {
-            // Remove meta base path
-            $meta = $ePub->meta();
-            $len = strlen($meta) - strlen(pathinfo($meta, PATHINFO_BASENAME));
-            $this->mCover = substr((string) $cover, $len);
-        }
-        $this->mIsbn = $ePub->getIsbn();
-        $this->mRights = $ePub->getCopyright();
-        $this->mPublisher = $ePub->getPublisher();
-        // Tag sample in opf file:
-        //   <meta content="Histoire de la Monarchie de Juillet" name="calibre:series"/>
-        $this->mSerie = $ePub->getSeries();
-        // Tag sample in opf file:
-        //   <meta content="7" name="calibre:series_index"/>
-        $this->mSerieIndex = $ePub->getSeriesIndex();
-        $this->mCreationDate = static::GetSqlDate($ePub->getCreationDate()) ?? '';
-        $this->mModificationDate = static::GetSqlDate($ePub->getModificationDate()) ?? '';
-        // Timestamp is used to get latest ebooks
-        $this->mTimeStamp = $this->mCreationDate;
-    }
-
-    /**
-     * Loads book infos from an export/import array
-     * @see \Marsender\EPubLoader\Export\BookExport::addBook()
-     *
-     * @param string $inBasePath Epub base directory
-     * @param array<mixed> $inArray CSV import info (one book per line)
-     * @throws Exception if error
-     *
-     * @return void
-     */
-    public function loadFromArray($inBasePath, $inArray)
-    {
-        // Get the epub infos from array - see BookExport::AddBook()
-        $i = 0;
-        $this->mFormat = $inArray[$i++];
-        $this->mBasePath = $inBasePath;
-        $this->mPath = $inArray[$i++];
-        if (str_starts_with($this->mPath, $inBasePath)) {
-            $this->mPath = substr($this->mPath, strlen($inBasePath) + 1);
-        }
-        $this->mName = $inArray[$i++];
-        $this->mUuid = $inArray[$i++];
-        $this->mUri = $inArray[$i++];
-        $this->mTitle = $inArray[$i++];
-        $values = explode(' - ', $inArray[$i++]);
-        $keys = explode(' - ', $inArray[$i++]);
-        $this->mAuthors = array_combine($keys, $values);
-        $this->mLanguage = $inArray[$i++];
-        $this->mDescription = $inArray[$i++];
-        $this->mSubjects = explode(' - ', $inArray[$i++]);
-        $this->mCover = $inArray[$i++];
-        $this->mIsbn = $inArray[$i++];
-        $this->mRights = $inArray[$i++];
-        $this->mPublisher = $inArray[$i++];
-        $this->mSerie = $inArray[$i++];
-        $this->mSerieIndex = $inArray[$i++];
-        $this->mCreationDate = $inArray[$i++] ?? '';
-        $this->mModificationDate = $inArray[$i++] ?? '';
-        // Timestamp is used to get latest ebooks
-        $this->mTimeStamp = $this->mCreationDate;
-    }
 
     /**
      * Format an date from a date
