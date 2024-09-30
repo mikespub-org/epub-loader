@@ -3,7 +3,7 @@
 1.5.x - 2024xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-3.x.x - 2024xxxx
+3.3.1 - 20240930 Import books from CSV and JSON files (Google Books API)
   * Clarify license GPL version 2 or later + fix file headers
   * Add JsonImport for Google Books API cached files
   * Split CalibreDbLoader with BookImport and notes (TODO)
