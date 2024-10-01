@@ -10,6 +10,7 @@
 namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\GoodReads\BookShowResult;
 use Marsender\EPubLoader\Metadata\GoogleBooks\SearchResult;
 use Marsender\EPubLoader\Metadata\GoogleBooks\Volume;
 use Marsender\EPubLoader\RequestHandler;
@@ -55,6 +56,19 @@ class JsonImport extends BookImport
                 $nbOk++;
             } catch (Exception $e) {
                 $id = $volume->getId() ?? spl_object_hash($volume);
+                $errors[$id] = $e->getMessage();
+                $nbError++;
+            }
+        } elseif (!empty($data["page"]) && $data["page"] == "/book/show/[book_id]") {
+            $book = BookShowResult::fromJson($data);
+            try {
+                // Load the book infos
+                $bookInfos = self::loadFromGoodReadsBook($inBasePath, $book);
+                // Add the book
+                $this->addBook($bookInfos, 0);
+                $nbOk++;
+            } catch (Exception $e) {
+                $id = basename($fileName) ?? spl_object_hash($book);
                 $errors[$id] = $e->getMessage();
                 $nbError++;
             }
@@ -138,6 +152,38 @@ class JsonImport extends BookImport
         $bookInfos->mModificationDate = $bookInfos->mCreationDate;
         // Timestamp is used to get latest ebooks
         $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
+
+        return $bookInfos;
+    }
+
+    /**
+     * Loads book infos from an GoodReads book
+     *
+     * @param string $inBasePath base directory
+     * @param BookShowResult $book GoodReads book
+     * @throws Exception if error
+     *
+     * @return BookInfos
+     */
+    public static function loadFromGoodReadsBook($inBasePath, $book)
+    {
+        $state = $book->getProps()->getPageProps()->getApolloState();
+        if (empty($state)) {
+            throw new Exception('Invalid format for GoodReads book');
+        }
+        $bookRef = $state->getRootQuery()->getGetBookByLegacyId()->getRef();
+        $bookMap = $state->getBookMap();
+        if (empty($bookRef) || empty($bookMap) || empty($bookMap[$bookRef])) {
+            throw new Exception('Invalid format for GoodReads book');
+        }
+        $workRef = $bookMap[$bookRef]->getWork()->getRef();
+        $workMap = $state->getWorkMap();
+        if (empty($workRef) || empty($workMap) || empty($workMap[$workRef])) {
+            throw new Exception('Invalid format for GoodReads book');
+        }
+
+        $bookInfos = new BookInfos();
+        // @todo ...
 
         return $bookInfos;
     }

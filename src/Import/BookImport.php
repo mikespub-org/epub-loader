@@ -308,6 +308,9 @@ class BookImport extends BaseImport
      */
     public function addBookAuthors($inBookInfo, $idBook)
     {
+        if (empty($inBookInfo->mAuthors)) {
+            return;
+        }
         foreach ($inBookInfo->mAuthors as $authorSort => $author) {
             $idAuthor = $this->addAuthor($author, $authorSort);
 
