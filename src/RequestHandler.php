@@ -132,7 +132,13 @@ class RequestHandler
         foreach ($this->gConfig['databases'] as $dbNum => $dbConfig) {
             $dbPath = $dbConfig['db_path'];
             $epubPath = $dbConfig['epub_path'];
-            $fileList = static::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+            if ($action == 'csv_import') {
+                $fileList = static::getFiles($dbPath, '*.csv');
+            } elseif ($action == 'json_import') {
+                $fileList = static::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.json');
+            } else {
+                $fileList = static::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+            }
             $result['databases'][$dbNum]['count'] = count($fileList);
         }
         $result['errors'] = $this->getErrors();

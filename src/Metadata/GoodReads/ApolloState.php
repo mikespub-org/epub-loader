@@ -109,7 +109,7 @@ class ApolloState
             $contributorMap[$key] = ($data[$key] ?? null) !== null ? ContributorMap::fromJson($data[$key]) : null;
         }
         $seriesMap = [];
-        $seriesMapKeys = preg_grep('/^series:/', array_keys($data)) ?: [];
+        $seriesMapKeys = preg_grep('/^Series:/', array_keys($data)) ?: [];
         foreach ($seriesMapKeys as $key) {
             $seriesMap[$key] = ($data[$key] ?? null) !== null ? SeriesMap::fromJson($data[$key]) : null;
         }

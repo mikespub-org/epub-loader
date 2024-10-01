@@ -197,7 +197,7 @@ class BookImport extends BaseImport
      */
     public function addBookComments($inBookInfo, $idBook)
     {
-        $sql = 'insert into comments(book, text) values(:idBook, :text)';
+        $sql = 'replace into comments(book, text) values(:idBook, :text)';
         $stmt = $this->mDb->prepare($sql);
         $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
         $stmt->bindParam(':text', $inBookInfo->mDescription);
@@ -216,7 +216,7 @@ class BookImport extends BaseImport
         if (empty($inBookInfo->mUri)) {
             return;
         }
-        $sql = 'insert into identifiers(book, type, val) values(:idBook, :type, :value)';
+        $sql = 'replace into identifiers(book, type, val) values(:idBook, :type, :value)';
         $identifiers = [];
         $identifiers['url'] = $inBookInfo->mUri;
         $identifiers['isbn'] = $inBookInfo->mIsbn;
@@ -247,7 +247,7 @@ class BookImport extends BaseImport
         $idSerie = $this->addSeries($inBookInfo->mSerie);
 
         // Add the book serie link
-        $sql = 'insert into books_series_link(book, series) values(:idBook, :idSerie)';
+        $sql = 'replace into books_series_link(book, series) values(:idBook, :idSerie)';
         $stmt = $this->mDb->prepare($sql);
         $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
         $stmt->bindParam(':idSerie', $idSerie, PDO::PARAM_INT);
@@ -315,7 +315,7 @@ class BookImport extends BaseImport
             $idAuthor = $this->addAuthor($author, $authorSort);
 
             // Add the book author link
-            $sql = 'insert into books_authors_link(book, author) values(:idBook, :idAuthor)';
+            $sql = 'replace into books_authors_link(book, author) values(:idBook, :idAuthor)';
             $stmt = $this->mDb->prepare($sql);
             $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
             $stmt->bindParam(':idAuthor', $idAuthor, PDO::PARAM_INT);
@@ -382,7 +382,7 @@ class BookImport extends BaseImport
 
         // Add the book language link
         $itemOder = 0;
-        $sql = 'insert into books_languages_link(book, lang_code, item_order) values(:idBook, :idLanguage, :itemOrder)';
+        $sql = 'replace into books_languages_link(book, lang_code, item_order) values(:idBook, :idLanguage, :itemOrder)';
         $stmt = $this->mDb->prepare($sql);
         $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
         $stmt->bindParam(':idLanguage', $idLanguage, PDO::PARAM_INT);
@@ -450,7 +450,7 @@ class BookImport extends BaseImport
             $idSubject = $this->addTag($subject, $sortField);
 
             // Add the book subject link
-            $sql = 'insert into books_tags_link(book, tag) values(:idBook, :idSubject)';
+            $sql = 'replace into books_tags_link(book, tag) values(:idBook, :idSubject)';
             $stmt = $this->mDb->prepare($sql);
             $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
             $stmt->bindParam(':idSubject', $idSubject, PDO::PARAM_INT);

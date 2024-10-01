@@ -12,6 +12,7 @@ namespace Marsender\EPubLoader;
 use Marsender\EPubLoader\Export\BookExport;
 use Marsender\EPubLoader\Import\BookImport;
 use Marsender\EPubLoader\Import\CsvImport;
+use Marsender\EPubLoader\Import\JsonImport;
 use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
 use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
 use Marsender\EPubLoader\Metadata\Sources\WikiDataMatch;
@@ -68,6 +69,10 @@ class ActionHandler
             case 'csv_import':
                 $createDb = $this->dbConfig['create_db'];
                 $result = $this->csv_import($createDb);
+                break;
+            case 'json_import':
+                $createDb = $this->dbConfig['create_db'];
+                $result = $this->json_import($createDb);
                 break;
             case 'db_load':
                 $createDb = $this->dbConfig['create_db'];
@@ -188,6 +193,32 @@ class ActionHandler
         $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
         // Add the epub files from the import file
         [$message, $errors] = $import->loadFromCsvFile($dbPath, $fileName);
+        if (!empty($errors)) {
+            foreach ($errors as $file => $error) {
+                $this->addError($file, $error);
+            }
+        }
+        // Display info
+        return $message . '<br />';
+    }
+
+    /**
+     * Summary of json_import - @todo fix calibreFileName avoiding overlap with existing metadata.db
+     * @param bool $createDb
+     * @return string
+     */
+    public function json_import($createDb = false)
+    {
+        // Init database file
+        $dbPath = $this->dbConfig['db_path'];
+        $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
+        $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
+        // Open or create the database
+        $import = new JsonImport($calibreFileName, $createDb, $bookIdsFileName);
+
+        // Add the json files into the database
+        $jsonPath = $this->dbConfig['json_path'] ?? $this->dbConfig['epub_path'];
+        [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
         if (!empty($errors)) {
             foreach ($errors as $file => $error) {
                 $this->addError($file, $error);
