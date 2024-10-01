@@ -167,19 +167,19 @@ class JsonImport extends BookImport
      */
     public static function loadFromGoodReadsBook($inBasePath, $bookShowResult)
     {
-        $state = $bookShowResult->getProps()->getPageProps()->getApolloState();
+        $state = $bookShowResult->getProps()?->getPageProps()?->getApolloState();
         if (empty($state)) {
-            throw new Exception('Invalid format for GoodReads book');
+            throw new Exception('Invalid state for GoodReads book');
         }
-        $bookRef = $state->getRootQuery()->getGetBookByLegacyId()->getRef();
+        $bookRef = $state->getRootQuery()?->getGetBookByLegacyId()?->getRef();
         $bookMap = $state->getBookMap();
         if (empty($bookRef) || empty($bookMap) || empty($bookMap[$bookRef])) {
-            throw new Exception('Invalid format for GoodReads book');
+            throw new Exception('Invalid bookRef for GoodReads book');
         }
-        $workRef = $bookMap[$bookRef]->getWork()->getRef();
+        $workRef = $bookMap[$bookRef]->getWork()?->getRef();
         $workMap = $state->getWorkMap();
         if (empty($workRef) || empty($workMap) || empty($workMap[$workRef])) {
-            throw new Exception('Invalid format for GoodReads book');
+            throw new Exception('Invalid workRef for GoodReads book');
         }
 
         $bookInfos = new BookInfos();
@@ -204,10 +204,10 @@ class JsonImport extends BookImport
         $fileList = RequestHandler::getFiles($inBasePath . DIRECTORY_SEPARATOR . $jsonPath, '*.json');
         foreach ($fileList as $file) {
             [$message, $errors] = $this->loadFromJsonFile($inBasePath, $file);
-            //$allMessages .= $message . '<br />';
-            //$allErrors = array_merge($allErrors, $errors);
-            $allMessages = $message;
-            $allErrors = $errors;
+            $allMessages .= $message . '<br />';
+            $allErrors = array_merge($allErrors, $errors);
+            //$allMessages = $message;
+            //$allErrors = $errors;
         }
         return [$allMessages, $allErrors];
     }

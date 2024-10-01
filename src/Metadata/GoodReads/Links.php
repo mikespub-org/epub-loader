@@ -84,7 +84,7 @@ class Links
                 return LibraryLinks::fromJson($data);
             }, $data['libraryLinks']) : null,
             $data['overflowPageUrl'] ?? null,
-            $data['seriesLink'] ?? null
+            ($data['seriesLink'] ?? null) !== null ? SeriesLink::fromJson($data['seriesLink']) : null
         );
     }
 }
