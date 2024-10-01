@@ -19,6 +19,8 @@ class BookImport extends BaseImport
     use BookLoadTrait;
 
     protected string $mLabel = 'Load database';
+    /** @var array<int, int> */
+    protected $mRatingIndex = [];
 
     /**
      * Add a new book into the db
@@ -62,6 +64,8 @@ class BookImport extends BaseImport
         $this->addBookLanguage($inBookInfo, $idBook);
         // Add the book tags (subjects)
         $this->addBookTags($inBookInfo, $idBook, $sortField);
+        // Add the book rating (if any)
+        $this->addBookRating($inBookInfo, $idBook);
         // Send warnings
         if (count($errors)) {
             $error = implode(' - ', $errors);
@@ -213,13 +217,16 @@ class BookImport extends BaseImport
      */
     public function addBookIdentifiers($inBookInfo, $idBook)
     {
-        if (empty($inBookInfo->mUri)) {
+        if (empty($inBookInfo->mUri) && empty($inBookInfo->mIsbn) && empty($inBookInfo->mIdentifiers)) {
             return;
         }
         $sql = 'replace into identifiers(book, type, val) values(:idBook, :type, :value)';
         $identifiers = [];
         $identifiers['url'] = $inBookInfo->mUri;
         $identifiers['isbn'] = $inBookInfo->mIsbn;
+        if (!empty($inBookInfo->mIdentifiers)) {
+            $identifiers = array_merge($identifiers, $inBookInfo->mIdentifiers);
+        }
         foreach ($identifiers as $key => $value) {
             if (empty($value)) {
                 continue;
@@ -509,5 +516,89 @@ class BookImport extends BaseImport
             throw new Exception($error);
         }
         return $idSubject;
+    }
+
+    /**
+     * Summary of addBookRating
+     * @param BookInfos $inBookInfo BookInfo object
+     * @param int $idBook Book id in the calibre db
+     * @throws \Exception
+     * @return void
+     */
+    public function addBookRating($inBookInfo, $idBook)
+    {
+        $idRating = $this->getRatingIndex($inBookInfo->mRating);
+        if (empty($idRating)) {
+            return;
+        }
+
+        // Add the book rating link
+        $sql = 'replace into books_ratings_link(book, rating) values(:idBook, :idRating)';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
+        $stmt->bindParam(':idRating', $idRating, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    /**
+     * Summary of getRatingIndex
+     * @param float|int|null $rating
+     * @return int
+     */
+    public function getRatingIndex($rating)
+    {
+        if (empty($rating)) {
+            return 0;
+        }
+        // load mapping of rating to index
+        if (count($this->mRatingIndex) < 10) {
+            $this->loadRatingIndex();
+        }
+        // switch to 0-10 rating
+        $rating = (int) round($rating * 2.0);
+        if (!isset($this->mRatingIndex[$rating])) {
+            return 0;
+        }
+        return $this->mRatingIndex[$rating];
+    }
+
+    /**
+     * Summary of loadRatingIndex
+     * @throws \Exception
+     * @return void
+     */
+    public function loadRatingIndex()
+    {
+        // load mapping of rating to index
+        $sql = 'select id, rating from ratings';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        while ($post = $stmt->fetchObject()) {
+            $this->mRatingIndex[$post->rating] = $post->id;
+        }
+        if (count($this->mRatingIndex) == 10) {
+            return;
+        }
+        // add missing ratings (if any)
+        $sql = 'insert into ratings(rating) values(:idRating)';
+        $range = range(1, 10);
+        foreach ($range as $rating) {
+            if (isset($this->mRatingIndex[$rating])) {
+                continue;
+            }
+            $stmt = $this->mDb->prepare($sql);
+            $stmt->bindParam(':idRating', $rating, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+        // load mapping of rating to index
+        $sql = 'select id, rating from ratings';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        while ($post = $stmt->fetchObject()) {
+            $this->mRatingIndex[$post->rating] = $post->id;
+        }
+        if (count($this->mRatingIndex) != 10) {
+            throw new Exception('Cannot create mapping of rating to index');
+        }
     }
 }

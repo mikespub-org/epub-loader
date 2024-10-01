@@ -57,6 +57,11 @@ class BookInfos
 
     public string $mTimeStamp = '0';
 
+    public float|int|null $mRating = null;
+
+    /** @var array<mixed>|null */
+    public $mIdentifiers = null;
+
     /**
      * Format an date from a date
      *

@@ -393,7 +393,7 @@ class ActionHandler
         foreach ($matched as $match) {
             if (array_key_exists($match['label'], $titles)) {
                 $id = $titles[$match['label']];
-                $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* wd', 'value' => $match['id']];
+                $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* wd', 'value' => $match['id'], 'url' => WikiDataMatch::link($match['id'])];
                 unset($titles[$match['label']]);
             }
         }
@@ -527,7 +527,7 @@ class ActionHandler
             if (array_key_exists($match['volumeInfo']['title'], $titles)) {
                 if (!empty($match['volumeInfo']['authors']) && in_array($author['name'], $match['volumeInfo']['authors'])) {
                     $id = $titles[$match['volumeInfo']['title']];
-                    $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* google', 'value' => $match['id']];
+                    $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* google', 'value' => $match['id'], 'url' => GoogleBooksMatch::link($match['id'])];
                     unset($titles[$match['volumeInfo']['title']]);
                 }
             }
@@ -681,7 +681,8 @@ class ActionHandler
             if (array_key_exists($match['title'], $titles)) {
                 if (!empty($match['author_name']) && in_array($author['name'], $match['author_name'])) {
                     $id = $titles[$match['title']];
-                    $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* olid', 'value' => str_replace('/works/', '', $match['key'])];
+                    $value = str_replace('/works/', '', $match['key']);
+                    $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* olid', 'value' => $value, 'url' => OpenLibraryMatch::link($value)];
                     unset($titles[$match['title']]);
                 }
             }

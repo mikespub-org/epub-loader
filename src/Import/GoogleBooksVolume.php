@@ -115,6 +115,8 @@ class GoogleBooksVolume
         $bookInfos->mModificationDate = $bookInfos->mCreationDate;
         // Timestamp is used to get latest ebooks
         $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
+        $bookInfos->mRating = $volumeInfo->getAverageRating();
+        $bookInfos->mIdentifiers = ['google' => $bookInfos->mName];
 
         return $bookInfos;
     }

@@ -129,7 +129,8 @@ class GoodReadsBook
         $bookInfos->mModificationDate = $bookInfos->mCreationDate;
         // Timestamp is used to get latest ebooks
         $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
-        // @todo add ratings from $work->getStats()
+        $bookInfos->mRating = $work->getStats()?->getAverageRating();
+        $bookInfos->mIdentifiers = ['goodreads' => $bookInfos->mName];
 
         return $bookInfos;
     }

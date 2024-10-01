@@ -64,7 +64,7 @@
 		<td>
 			{% for identifier in item.identifiers %}
 				{% if identifier.url %}
-					{{identifier.type}}: <a href="{{identifier.url}}">{{identifier.value}}</a>
+					{{identifier.type}}: <a rel="external" target="_blank" href="{{identifier.url}}">{{identifier.value}}</a>
 				{% else %}
 					{{identifier.type}}: {{identifier.value}}
 				{% endif %}

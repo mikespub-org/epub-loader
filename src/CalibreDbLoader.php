@@ -9,6 +9,7 @@
 
 namespace Marsender\EPubLoader;
 
+use Marsender\EPubLoader\Metadata\Sources\BaseMatch;
 use Exception;
 use PDO;
 
@@ -188,16 +189,7 @@ class CalibreDbLoader
      */
     public function getIdentifierUrl($type, $value)
     {
-        if (empty($value)) {
-            return '';
-        }
-        $url = match ($type) {
-            'google' => Metadata\Sources\GoogleBooksMatch::link($value),
-            'wd' => Metadata\Sources\WikiDataMatch::link($value),
-            'olid' => Metadata\Sources\OpenLibraryMatch::link($value),
-            default => '',
-        };
-        return $url;
+        return BaseMatch::getTypeLink($type, $value);
     }
 
     /**
