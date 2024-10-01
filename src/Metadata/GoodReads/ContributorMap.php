@@ -13,8 +13,8 @@ class ContributorMap
     public ?Works $works;
     public ?string $profileImageUrl;
     public ?string $webUrl;
-    public null $user;
-    public null $viewerIsFollowing;
+    public mixed $user;
+    public mixed $viewerIsFollowing;
     public ?Followers $followers;
 
     public function __construct(
@@ -27,8 +27,8 @@ class ContributorMap
         ?Works $works,
         ?string $profileImageUrl,
         ?string $webUrl,
-        null $user,
-        null $viewerIsFollowing,
+        mixed $user,
+        mixed $viewerIsFollowing,
         ?Followers $followers
     ) {
         $this->id = $id;
@@ -90,12 +90,12 @@ class ContributorMap
         return $this->webUrl;
     }
 
-    public function getUser(): null
+    public function getUser(): mixed
     {
         return $this->user;
     }
 
-    public function getViewerIsFollowing(): null
+    public function getViewerIsFollowing(): mixed
     {
         return $this->viewerIsFollowing;
     }

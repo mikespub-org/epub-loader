@@ -5,8 +5,8 @@ namespace Marsender\EPubLoader\Metadata\GoodReads;
 class PageProps
 {
     public ?Params $params;
-    public null $jwtToken;
-    public null $dataSource;
+    public mixed $jwtToken;
+    public mixed $dataSource;
     public ?ApolloState $apolloState;
     public ?AuthContextParams $authContextParams;
     public ?UserAgentContextParams $userAgentContextParams;
@@ -14,8 +14,8 @@ class PageProps
 
     public function __construct(
         ?Params $params,
-        null $jwtToken,
-        null $dataSource,
+        mixed $jwtToken,
+        mixed $dataSource,
         ?ApolloState $apolloState,
         ?AuthContextParams $authContextParams,
         ?UserAgentContextParams $userAgentContextParams,
@@ -35,12 +35,12 @@ class PageProps
         return $this->params;
     }
 
-    public function getJwtToken(): null
+    public function getJwtToken(): mixed
     {
         return $this->jwtToken;
     }
 
-    public function getDataSource(): null
+    public function getDataSource(): mixed
     {
         return $this->dataSource;
     }

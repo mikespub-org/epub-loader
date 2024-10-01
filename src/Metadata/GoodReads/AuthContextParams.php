@@ -5,14 +5,14 @@ namespace Marsender\EPubLoader\Metadata\GoodReads;
 class AuthContextParams
 {
     public ?bool $signedIn;
-    public null $customerId;
-    public null $legacyCustomerId;
+    public mixed $customerId;
+    public mixed $legacyCustomerId;
     public ?string $role;
 
     public function __construct(
         ?bool $signedIn,
-        null $customerId,
-        null $legacyCustomerId,
+        mixed $customerId,
+        mixed $legacyCustomerId,
         ?string $role
     ) {
         $this->signedIn = $signedIn;
@@ -26,12 +26,12 @@ class AuthContextParams
         return $this->signedIn;
     }
 
-    public function getCustomerId(): null
+    public function getCustomerId(): mixed
     {
         return $this->customerId;
     }
 
-    public function getLegacyCustomerId(): null
+    public function getLegacyCustomerId(): mixed
     {
         return $this->legacyCustomerId;
     }

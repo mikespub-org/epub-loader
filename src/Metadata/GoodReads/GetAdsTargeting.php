@@ -5,13 +5,13 @@ namespace Marsender\EPubLoader\Metadata\GoodReads;
 class GetAdsTargeting
 {
     public ?string $typename;
-    public null $behavioral;
-    public null $contextual;
+    public mixed $behavioral;
+    public mixed $contextual;
 
     public function __construct(
         ?string $typename,
-        null $behavioral,
-        null $contextual
+        mixed $behavioral,
+        mixed $contextual
     ) {
         $this->typename = $typename;
         $this->behavioral = $behavioral;
@@ -23,12 +23,12 @@ class GetAdsTargeting
         return $this->typename;
     }
 
-    public function getBehavioral(): null
+    public function getBehavioral(): mixed
     {
         return $this->behavioral;
     }
 
-    public function getContextual(): null
+    public function getContextual(): mixed
     {
         return $this->contextual;
     }

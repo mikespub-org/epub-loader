@@ -23,7 +23,7 @@ class BookMap
     public ?Work $work;
     public ?string $reviewEditUrl;
     public ?FeatureFlags $featureFlags;
-    public null $viewerShelving;
+    public mixed $viewerShelving;
     public ?Links $links;
 
     /**
@@ -48,7 +48,7 @@ class BookMap
         ?Work $work,
         ?string $reviewEditUrl,
         ?FeatureFlags $featureFlags,
-        null $viewerShelving,
+        mixed $viewerShelving,
         ?Links $links
     ) {
         $this->id = $id;
@@ -163,7 +163,7 @@ class BookMap
         return $this->featureFlags;
     }
 
-    public function getViewerShelving(): null
+    public function getViewerShelving(): mixed
     {
         return $this->viewerShelving;
     }

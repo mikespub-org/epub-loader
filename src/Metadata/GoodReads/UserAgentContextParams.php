@@ -4,14 +4,14 @@ namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 class UserAgentContextParams
 {
-    public null $isWebView;
+    public mixed $isWebView;
 
-    public function __construct(null $isWebView)
+    public function __construct(mixed $isWebView)
     {
         $this->isWebView = $isWebView;
     }
 
-    public function getIsWebView(): null
+    public function getIsWebView(): mixed
     {
         return $this->isWebView;
     }

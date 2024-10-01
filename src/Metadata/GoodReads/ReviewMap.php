@@ -16,7 +16,7 @@ class ReviewMap
     public ?int $rating;
     public ?Shelving $shelving;
     public ?int $likeCount;
-    public null $viewerHasLiked;
+    public mixed $viewerHasLiked;
     public ?int $commentCount;
 
     public function __construct(
@@ -32,7 +32,7 @@ class ReviewMap
         ?int $rating,
         ?Shelving $shelving,
         ?int $likeCount,
-        null $viewerHasLiked,
+        mixed $viewerHasLiked,
         ?int $commentCount
     ) {
         $this->id = $id;
@@ -111,7 +111,7 @@ class ReviewMap
         return $this->likeCount;
     }
 
-    public function getViewerHasLiked(): null
+    public function getViewerHasLiked(): mixed
     {
         return $this->viewerHasLiked;
     }

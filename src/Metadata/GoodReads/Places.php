@@ -8,14 +8,14 @@ class Places
     public ?string $name;
     public ?string $countryName;
     public ?string $webUrl;
-    public null $year;
+    public mixed $year;
 
     public function __construct(
         ?string $typename,
         ?string $name,
         ?string $countryName,
         ?string $webUrl,
-        null $year
+        mixed $year
     ) {
         $this->typename = $typename;
         $this->name = $name;
@@ -44,7 +44,7 @@ class Places
         return $this->webUrl;
     }
 
-    public function getYear(): null
+    public function getYear(): mixed
     {
         return $this->year;
     }

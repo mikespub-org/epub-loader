@@ -2,7 +2,7 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads;
 
-class LibraryLinks
+class SeriesLink
 {
     public ?string $typename;
     public ?string $name;

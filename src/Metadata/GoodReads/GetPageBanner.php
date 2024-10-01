@@ -5,13 +5,13 @@ namespace Marsender\EPubLoader\Metadata\GoodReads;
 class GetPageBanner
 {
     public ?string $typename;
-    public null $type;
-    public null $message;
+    public mixed $type;
+    public mixed $message;
 
     public function __construct(
         ?string $typename,
-        null $type,
-        null $message
+        mixed $type,
+        mixed $message
     ) {
         $this->typename = $typename;
         $this->type = $type;
@@ -23,12 +23,12 @@ class GetPageBanner
         return $this->typename;
     }
 
-    public function getType(): null
+    public function getType(): mixed
     {
         return $this->type;
     }
 
-    public function getMessage(): null
+    public function getMessage(): mixed
     {
         return $this->message;
     }

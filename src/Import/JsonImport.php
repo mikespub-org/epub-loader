@@ -60,15 +60,15 @@ class JsonImport extends BookImport
                 $nbError++;
             }
         } elseif (!empty($data["page"]) && $data["page"] == "/book/show/[book_id]") {
-            $book = BookShowResult::fromJson($data);
+            $bookShowResult = BookShowResult::fromJson($data);
             try {
                 // Load the book infos
-                $bookInfos = self::loadFromGoodReadsBook($inBasePath, $book);
+                $bookInfos = self::loadFromGoodReadsBook($inBasePath, $bookShowResult);
                 // Add the book
                 $this->addBook($bookInfos, 0);
                 $nbOk++;
             } catch (Exception $e) {
-                $id = basename($fileName) ?? spl_object_hash($book);
+                $id = basename($fileName);
                 $errors[$id] = $e->getMessage();
                 $nbError++;
             }
@@ -160,14 +160,14 @@ class JsonImport extends BookImport
      * Loads book infos from an GoodReads book
      *
      * @param string $inBasePath base directory
-     * @param BookShowResult $book GoodReads book
+     * @param BookShowResult $bookShowResult GoodReads book show
      * @throws Exception if error
      *
      * @return BookInfos
      */
-    public static function loadFromGoodReadsBook($inBasePath, $book)
+    public static function loadFromGoodReadsBook($inBasePath, $bookShowResult)
     {
-        $state = $book->getProps()->getPageProps()->getApolloState();
+        $state = $bookShowResult->getProps()->getPageProps()->getApolloState();
         if (empty($state)) {
             throw new Exception('Invalid format for GoodReads book');
         }
@@ -184,6 +184,7 @@ class JsonImport extends BookImport
 
         $bookInfos = new BookInfos();
         // @todo ...
+        $bookInfos->createUuid();
 
         return $bookInfos;
     }

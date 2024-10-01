@@ -14,10 +14,10 @@ class WorkMap
     public ?Quotes $quotes;
     public ?Questions $questions;
     public ?Topics $topics;
-    public null $viewerShelvings;
+    public mixed $viewerShelvings;
     public ?string $viewerShelvingsUrl;
     public ?FeaturedKnh $featuredKnh;
-    public null $giveaways;
+    public mixed $giveaways;
     public ?Editions $editions;
 
     public function __construct(
@@ -31,10 +31,10 @@ class WorkMap
         ?Quotes $quotes,
         ?Questions $questions,
         ?Topics $topics,
-        null $viewerShelvings,
+        mixed $viewerShelvings,
         ?string $viewerShelvingsUrl,
         ?FeaturedKnh $featuredKnh,
-        null $giveaways,
+        mixed $giveaways,
         ?Editions $editions
     ) {
         $this->id = $id;
@@ -113,7 +113,7 @@ class WorkMap
         return $this->topics;
     }
 
-    public function getViewerShelvings(): null
+    public function getViewerShelvings(): mixed
     {
         return $this->viewerShelvings;
     }
@@ -128,7 +128,7 @@ class WorkMap
         return $this->featuredKnh;
     }
 
-    public function getGiveaways(): null
+    public function getGiveaways(): mixed
     {
         return $this->giveaways;
     }

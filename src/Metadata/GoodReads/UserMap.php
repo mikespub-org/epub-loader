@@ -10,7 +10,7 @@ class UserMap
     public ?string $imageUrlSquare;
     public ?bool $isAuthor;
     public ?int $textReviewsCount;
-    public null $viewerRelationshipStatus;
+    public mixed $viewerRelationshipStatus;
     public ?string $name;
     public ?string $webUrl;
     public ?Contributor $contributor;
@@ -23,7 +23,7 @@ class UserMap
         ?string $imageUrlSquare,
         ?bool $isAuthor,
         ?int $textReviewsCount,
-        null $viewerRelationshipStatus,
+        mixed $viewerRelationshipStatus,
         ?string $name,
         ?string $webUrl,
         ?Contributor $contributor,
@@ -72,7 +72,7 @@ class UserMap
         return $this->textReviewsCount;
     }
 
-    public function getViewerRelationshipStatus(): null
+    public function getViewerRelationshipStatus(): mixed
     {
         return $this->viewerRelationshipStatus;
     }

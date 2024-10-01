@@ -35,16 +35,16 @@ class GoodReadsTest extends TestCase
         $this->assertCount(0, $errors);
     }
 
-    protected function skipTestJsonImportPath(): void
+    public function testJsonImportPath(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/google';
+        $dbPath = dirname(__DIR__) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
-        $jsonPath = 'authors';
+        $jsonPath = 'book/show';
         [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
 
-        $expected = '/cache/google/authors/Arthur Conan Doyle.en.40.json - 40 files OK - 0 files Error';
+        $expected = '/cache/goodreads/book/show/7112495.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
         $this->assertCount(0, $errors);
     }

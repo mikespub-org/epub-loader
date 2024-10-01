@@ -100,6 +100,9 @@ class BaseImport
                 if (str_contains($str, 'title_sort')) {
                     continue;
                 }
+                if (str_contains($str, 'fts5')) {
+                    continue;
+                }
                 // Add 'calibre_database_field_cover' field
                 if (str_contains($sql, 'has_cover BOOL DEFAULT 0,')) {
                     $sql = str_replace('has_cover BOOL DEFAULT 0,', 'has_cover BOOL DEFAULT 0,' . ' cover TEXT NOT NULL DEFAULT "",', $sql);

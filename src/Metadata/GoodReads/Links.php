@@ -11,7 +11,7 @@ class Links
     /** @var LibraryLinks[]|null */
     public ?array $libraryLinks;
     public ?string $overflowPageUrl;
-    public null $seriesLink;
+    public ?SeriesLink $seriesLink;
 
     /**
      * @param SecondaryAffiliateLinks[]|null $secondaryAffiliateLinks
@@ -23,7 +23,7 @@ class Links
         ?array $secondaryAffiliateLinks,
         ?array $libraryLinks,
         ?string $overflowPageUrl,
-        null $seriesLink
+        ?SeriesLink $seriesLink
     ) {
         $this->typename = $typename;
         $this->primaryAffiliateLink = $primaryAffiliateLink;
@@ -64,7 +64,7 @@ class Links
         return $this->overflowPageUrl;
     }
 
-    public function getSeriesLink(): null
+    public function getSeriesLink(): ?SeriesLink
     {
         return $this->seriesLink;
     }
