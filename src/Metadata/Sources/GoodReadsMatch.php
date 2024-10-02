@@ -59,20 +59,31 @@ class GoodReadsMatch extends BaseMatch
     {
         $content = preg_replace('~^.+?<table ~s', '', $content);
         $content = preg_replace('~<footer.+?$~s', '', $content);
+        $result = [];
         $matches = [];
         if (!preg_match_all('~<tr itemscope itemtype="http://schema.org/Book">(.*?)</tr>~s', $content, $matches, PREG_SET_ORDER)) {
+            if (str_contains($content, 'No results')) {
+                return $result;
+            }
             if ($this->cacheDir) {
                 $cacheFile = $this->cacheDir . '/goodreads/search/' . urlencode($query) . '.htm';
                 file_put_contents($cacheFile, $content);
             }
             throw new Exception('Unable to find rows in html page: see ' . urlencode($query) . '.htm');
         }
-        $result = [];
+        // support older format too
+        if (str_contains($content, ' itemprop="url">')) {
+            $titleMatch = '~<a class="bookTitle" href="([^"]+)" itemprop="url">\s*<span itemprop=\'name\'[^>]*>([^<]*)</span>\s*</a>~s';
+            $authorMatch = '~<a class="authorName" href="([^"]+)" itemprop="url">\s*<span itemprop="name">([^<]*)</span>\s*</a>~s';
+        } else {
+            $titleMatch = '~<a class="bookTitle" itemprop="url" href="([^"]+)">\s*<span itemprop=\'name\'[^>]*>([^<]*)</span>\s*</a>~s';
+            $authorMatch = '~<a class="authorName" itemprop="url" href="([^"]+)">\s*<span itemprop="name">([^<]*)</span>\s*</a>~s';
+        }
         foreach ($matches as $match) {
             $row = $match[1];
             $title = [];
             // <span itemprop='name' role='heading' aria-level='4'>Cloud Atlas</span>
-            if (!preg_match('~<a class="bookTitle" itemprop="url" href="([^"]+)">\s*<span itemprop=\'name\'[^>]*>([^<]*)</span>\s*</a>~s', $row, $title)) {
+            if (!preg_match($titleMatch, $row, $title)) {
                 echo $row;
                 throw new Exception('Unable to find title in html row: see ' . urlencode($query) . '.htm');
             }
@@ -98,7 +109,7 @@ class GoodReadsMatch extends BaseMatch
             }
             // we could have multiple authors for one book here
             $authors = [];
-            if (!preg_match_all('~<a class="authorName" itemprop="url" href="([^"]+)">\s*<span itemprop="name">([^<]*)</span>\s*</a>~s', $row, $authors, PREG_SET_ORDER)) {
+            if (!preg_match_all($authorMatch, $row, $authors, PREG_SET_ORDER)) {
                 echo $row;
                 throw new Exception('Unable to find author in html row: see ' . urlencode($query) . '.htm');
             }
