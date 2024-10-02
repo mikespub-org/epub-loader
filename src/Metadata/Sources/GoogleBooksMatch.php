@@ -11,7 +11,7 @@ namespace Marsender\EPubLoader\Metadata\Sources;
 class GoogleBooksMatch extends BaseMatch
 {
     public const ENTITY_URL = 'https://www.googleapis.com/books/v1/volumes/';
-    public const ENTITY_PATTERN = '/^w+$/';
+    public const ENTITY_PATTERN = '/^[\w-]+$/';
     public const CACHE_TYPES = ['google/authors', 'google/titles', 'google/volumes'];
     public const QUERY_URL = 'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults={limit}&printType=books&projection={full}&langRestrict={lang}';
 

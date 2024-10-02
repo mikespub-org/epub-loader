@@ -9,11 +9,11 @@
 <form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}">
 <table width="100%">
 	<tr>
-		<th>Id</th>
-		<th>Name</th>
-		<th>Sort</th>
-		<th>Books</th>
-		<th>Series</th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}">Id</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}?sort=name">Name</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}?sort=sort">Sort</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}?sort=books">Books</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}?sort=series">Series</a></th>
 		<th>Action</th>
 		<th>Link</th>
 	</tr>
@@ -24,8 +24,8 @@
 			{{item.name}}
 		</td>
 		<td>{{item.sort}}</td>
-		<td>{{bookcount[item.id]}}</td>
-		<td>{{seriescount[item.id]}}</td>
+		<td>{{item.books}}</td>
+		<td>{{item.series}}</td>
 		<td>
 			<a href="{{endpoint}}/wd_author/{{dbNum}}/{{item.id}}" title="WikiData Author">Check</a>
 			<a href="{{endpoint}}/wd_books/{{dbNum}}/{{item.id}}" title="WikiData Books">Books</a>

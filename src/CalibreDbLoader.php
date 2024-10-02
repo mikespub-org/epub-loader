@@ -25,6 +25,7 @@ class CalibreDbLoader
     protected $mDbFileName = null;
     /** @var PDO|null */
     protected $notesDb;
+    public int $limit = 500;
 
     /**
      * Open a Calibre database
@@ -94,15 +95,26 @@ class CalibreDbLoader
     /**
      * Summary of getAuthors
      * @param int|null $authorId
+     * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    public function getAuthors($authorId = null)
+    public function getAuthors($authorId = null, $sort = null, $offset = null)
     {
         $sql = 'select id, name, sort, link from authors';
         $params = [];
         if (!empty($authorId)) {
             $sql .= ' where id = ?';
             $params[] = $authorId;
+        }
+        if (!empty($sort) && in_array($sort, ['id', 'name', 'sort'])) {
+            $sql .= ' order by ' . $sort;
+        } else {
+            $sql .= ' order by id';
+        }
+        $sql .= ' limit ' . $this->limit;
+        if (!empty($offset) && is_int($offset)) {
+            $sql .= ' offset ' . $offset;
         }
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($params);
@@ -114,12 +126,31 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getAuthorNames
+     * @return array<mixed>
+     */
+    public function getAuthorNames()
+    {
+        // no limit for author names!?
+        $sql = 'select id, name from authors';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        $authors = [];
+        while ($post = $stmt->fetchObject()) {
+            $authors[$post->id] = $post->name;
+        }
+        return $authors;
+    }
+
+    /**
      * Summary of getBooks
      * @param int|null $bookId
      * @param int|null $authorId
+     * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    public function getBooks($bookId = null, $authorId = null)
+    public function getBooks($bookId = null, $authorId = null, $sort = null, $offset = null)
     {
         $sql = 'select books.id as id, books.title as title, author from books, books_authors_link
         where book = books.id';
@@ -131,6 +162,15 @@ class CalibreDbLoader
         if (!empty($authorId)) {
             $sql .= ' and author = ?';
             $params[] = $authorId;
+        }
+        if (!empty($sort) && in_array($sort, ['id', 'title'])) {
+            $sql .= ' order by ' . $sort;
+        } else {
+            $sql .= ' order by id';
+        }
+        $sql .= ' limit ' . $this->limit;
+        if (!empty($offset) && is_int($offset)) {
+            $sql .= ' offset ' . $offset;
         }
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($params);
@@ -158,22 +198,31 @@ class CalibreDbLoader
     /**
      * Summary of getBooksByAuthor
      * @param int $authorId
+     * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    public function getBooksByAuthor($authorId)
+    public function getBooksByAuthor($authorId, $sort = null, $offset = null)
     {
-        return $this->getBooks(null, $authorId);
+        return $this->getBooks(null, $authorId, $sort, $offset);
     }
 
     /**
      * Summary of getBookCount
+     * @param int|null $authorId
      * @return array<mixed>
      */
-    public function getBookCount()
+    public function getBookCount($authorId = null)
     {
-        $sql = 'select author, count(*) as numitems from books_authors_link group by author';
+        $sql = 'select author, count(*) as numitems from books_authors_link';
+        $params = [];
+        if (!empty($authorId)) {
+            $sql .= ' where author = ?';
+            $params[] = $authorId;
+        }
+        $sql .= ' group by author';
         $stmt = $this->mDb->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($params);
         $count = [];
         while ($post = $stmt->fetchObject()) {
             $count[$post->author] = $post->numitems;
@@ -224,9 +273,11 @@ class CalibreDbLoader
      * @param int|null $seriesId
      * @param int|null $authorId
      * @param int|null $bookId
+     * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    public function getSeries($seriesId = null, $authorId = null, $bookId = null)
+    public function getSeries($seriesId = null, $authorId = null, $bookId = null, $sort = null, $offset = null)
     {
         $sql = 'select series.id as id, series.name as name, author from series, books_series_link, books, books_authors_link
         where books_series_link.series = series.id and books_series_link.book = books.id and books_authors_link.book = books.id';
@@ -243,6 +294,15 @@ class CalibreDbLoader
             $sql .= ' and books.id = ?';
             $params[] = $bookId;
         }
+        if (!empty($sort) && in_array($sort, ['id', 'name'])) {
+            $sql .= ' order by ' . $sort;
+        } else {
+            $sql .= ' order by id';
+        }
+        $sql .= ' limit ' . $this->limit;
+        if (!empty($offset) && is_int($offset)) {
+            $sql .= ' offset ' . $offset;
+        }
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($params);
         $series = [];
@@ -255,34 +315,44 @@ class CalibreDbLoader
     /**
      * Summary of getSeriesByAuthor
      * @param int $authorId
+     * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    public function getSeriesByAuthor($authorId)
+    public function getSeriesByAuthor($authorId, $sort = null, $offset = null)
     {
-        return $this->getSeries(null, $authorId);
+        return $this->getSeries(null, $authorId, null, $sort, $offset);
     }
 
     /**
      * Summary of getSeriesByBook
      * @param int $bookId
+     * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    public function getSeriesByBook($bookId)
+    public function getSeriesByBook($bookId, $sort = null, $offset = null)
     {
-        return $this->getSeries(null, null, $bookId);
+        return $this->getSeries(null, null, $bookId, $sort, $offset);
     }
 
     /**
      * Summary of getSeriesCount
+     * @param int|null $authorId
      * @return array<mixed>
      */
-    public function getSeriesCount()
+    public function getSeriesCount($authorId = null)
     {
         $sql = 'select author, count(distinct series) as numitems from books_series_link, books, books_authors_link
-        where books_series_link.book = books.id and books_authors_link.book = books.id
-        group by author';
+        where books_series_link.book = books.id and books_authors_link.book = books.id';
+        $params = [];
+        if (!empty($authorId)) {
+            $sql .= ' and author = ?';
+            $params[] = $authorId;
+        }
+        $sql .= ' group by author';
         $stmt = $this->mDb->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($params);
         $count = [];
         while ($post = $stmt->fetchObject()) {
             $count[$post->author] = $post->numitems;

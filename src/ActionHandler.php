@@ -79,7 +79,8 @@ class ActionHandler
                 $result = $this->db_load($createDb);
                 break;
             case 'authors':
-                $result = $this->authors($authorId);
+                $sort = $this->request->get('sort');
+                $result = $this->authors($authorId, $sort);
                 break;
             case 'wd_author':
                 if (!WikiDataMatch::isValidEntity($matchId)) {
@@ -256,18 +257,19 @@ class ActionHandler
     /**
      * Summary of authors
      * @param int|null $authorId
+     * @param string|null $sort
      * @return array<mixed>|null
      */
-    public function authors($authorId = null)
+    public function authors($authorId = null, $sort = null)
     {
+        $offset = $this->request->get('offset');
         // List the authors
-        $authors = $this->db->getAuthors($authorId);
+        $authors = $this->db->getAuthors($authorId, $sort, $offset);
         $matched = null;
-        $authors = $this->addAuthorLinks($authors);
-        $bookcount = $this->db->getBookCount();
-        $seriescount = $this->db->getSeriesCount();
+        $authors = $this->addAuthorInfo($authors, $authorId, $sort);
+
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched, 'bookcount' => $bookcount, 'seriescount' => $seriescount];
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
     }
 
     /**
@@ -288,9 +290,11 @@ class ActionHandler
             }
             $authorId = null;
         }
+        $sort = $this->request->get('sort');
+        $offset = $this->request->get('offset');
 
         // List the authors
-        $authors = $this->db->getAuthors($authorId);
+        $authors = $this->db->getAuthors($authorId, $sort, $offset);
         $author = null;
         $query = null;
         if (!is_null($authorId) && is_null($matchId)) {
@@ -320,12 +324,10 @@ class ActionHandler
                 }
             }
         }
-        $authors = $this->addAuthorLinks($authors);
-        $bookcount = $this->db->getBookCount();
-        $seriescount = $this->db->getSeriesCount();
+        $authors = $this->addAuthorInfo($authors, $authorId, $sort);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched, 'bookcount' => $bookcount, 'seriescount' => $seriescount];
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
     }
 
     /**
@@ -376,7 +378,9 @@ class ActionHandler
             $query = $books[$bookId]['title'];
             $matched = $wikimatch->findWorksByTitle($query);
         } else {
-            $books = $this->db->getBooksByAuthor($authorId);
+            $sort = $this->request->get('sort');
+            $offset = $this->request->get('offset');
+            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $wikimatch->findWorksByAuthorProperty($author);
             //$matched = array_merge($matched, $wikimatch->findWorksByAuthorName($author));
             if (empty($matched)) {
@@ -434,7 +438,9 @@ class ActionHandler
             $query = $series[$seriesId]['name'];
             $matched = $wikimatch->findSeriesByName($query);
         } else {
-            $series = $this->db->getSeriesByAuthor($authorId);
+            $sort = $this->request->get('sort');
+            $offset = $this->request->get('offset');
+            $series = $this->db->getSeriesByAuthor($authorId, $sort, $offset);
             if (count($series) > 0) {
                 $matched = $wikimatch->findSeriesByAuthor($author);
             }
@@ -513,7 +519,9 @@ class ActionHandler
             $query = $books[$bookId]['title'];
             $matched = $googlematch->findWorksByTitle($query, $author);
         } else {
-            $books = $this->db->getBooksByAuthor($authorId);
+            $sort = $this->request->get('sort');
+            $offset = $this->request->get('offset');
+            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $googlematch->findWorksByAuthor($author);
         }
 
@@ -577,9 +585,11 @@ class ActionHandler
             }
             //$authorId = null;
         }
+        $sort = $this->request->get('sort');
+        $offset = $this->request->get('offset');
 
         // List the authors
-        $authors = $this->db->getAuthors($authorId);
+        $authors = $this->db->getAuthors($authorId, $sort, $offset);
         $author = null;
         $query = null;
         if (!is_null($authorId) && is_null($matchId)) {
@@ -614,12 +624,10 @@ class ActionHandler
                 }
             }
         }
-        $authors = $this->addAuthorLinks($authors);
-        $bookcount = $this->db->getBookCount();
-        $seriescount = $this->db->getSeriesCount();
+        $authors = $this->addAuthorInfo($authors, $authorId, $sort);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['docs'], 'bookcount' => $bookcount, 'seriescount' => $seriescount];
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['docs']];
     }
 
     /**
@@ -660,10 +668,14 @@ class ActionHandler
             // generic search returns 'docs' but author search returns 'entries'
             //$matched['entries'] ??= $matched['docs'];
         } elseif (!empty($matchId)) {
-            $books = $this->db->getBooksByAuthor($authorId);
+            $sort = $this->request->get('sort');
+            $offset = $this->request->get('offset');
+            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $openlibrary->findWorksByAuthorId($matchId);
         } else {
-            $books = $this->db->getBooksByAuthor($authorId);
+            $sort = $this->request->get('sort');
+            $offset = $this->request->get('offset');
+            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $olid = $openlibrary->findAuthorId($author);
             $matched = $openlibrary->findWorksByAuthorId($olid);
         }
@@ -808,12 +820,29 @@ class ActionHandler
      */
     protected function getAuthorList()
     {
-        $authorList = [];
-        $authors = $this->db->getAuthors();
-        foreach ($authors as $authorId => $author) {
-            $authorList[$authorId] = $author['name'];
+        // no limit for author names!?
+        return $this->db->getAuthorNames();
+    }
+
+    /**
+     * Summary of addAuthorInfo
+     * @param array<mixed> $authors
+     * @param int|null $authorId
+     * @param string|null $sort
+     * @return array<mixed>
+     */
+    protected function addAuthorInfo($authors, $authorId = null, $sort = null)
+    {
+        $authors = $this->addAuthorLinks($authors);
+        $authors = $this->addBookCount($authors, $authorId);
+        $authors = $this->addSeriesCount($authors, $authorId);
+        if (!empty($sort) && in_array($sort, ['books', 'series'])) {
+            // @todo this is within limit and offset
+            uasort($authors, function ($a, $b) use ($sort) {
+                return $b[$sort] <=> $a[$sort];
+            });
         }
-        return $authorList;
+        return $authors;
     }
 
     /**
@@ -833,6 +862,44 @@ class ActionHandler
                     $authors[$id]['entityType'] = 'ol_work';
                     $authors[$id]['entityId'] = OpenLibraryMatch::entity($author['link']);
                 }
+            }
+        }
+        return $authors;
+    }
+
+    /**
+     * Summary of addBookCount
+     * @param array<mixed> $authors
+     * @param int|null $authorId
+     * @return array<mixed>
+     */
+    protected function addBookCount($authors, $authorId = null)
+    {
+        $bookcount = $this->db->getBookCount($authorId);
+        foreach ($authors as $id => $author) {
+            if (isset($bookcount[$id])) {
+                $authors[$id]['books'] = $bookcount[$id];
+            } else {
+                $authors[$id]['books'] = '';
+            }
+        }
+        return $authors;
+    }
+
+    /**
+     * Summary of addSeriesCount
+     * @param array<mixed> $authors
+     * @param int|null $authorId
+     * @return array<mixed>
+     */
+    protected function addSeriesCount($authors, $authorId = null)
+    {
+        $seriescount = $this->db->getSeriesCount($authorId);
+        foreach ($authors as $id => $author) {
+            if (isset($seriescount[$id])) {
+                $authors[$id]['series'] = $seriescount[$id];
+            } else {
+                $authors[$id]['series'] = '';
             }
         }
         return $authors;

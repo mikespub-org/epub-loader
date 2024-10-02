@@ -26,8 +26,8 @@
 <form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}">
 <table width="100%">
 	<tr>
-		<th>Id</th>
-		<th>Name</th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}">Id</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=name">Name</a></th>
 		<th>Action</th>
 	</tr>
 	{% for item in series %}
