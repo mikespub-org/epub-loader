@@ -14,7 +14,7 @@ class WikiDataMatch extends BaseMatch
 {
     public const ENTITY_URL = 'http://www.wikidata.org/entity/';
     public const ENTITY_PATTERN = '/^Q\d+$/';
-    public const CACHE_TYPES = ['wikidata/authors', 'wikidata/works', 'wikidata/series', 'wikidata/entities'];
+    public const CACHE_TYPES = ['wikidata/authors', 'wikidata/works/author', 'wikidata/works/name', 'wikidata/works/title', 'wikidata/series/author', 'wikidata/series/title', 'wikidata/entities'];
     public const AUTHOR_PROPERTY = 'P50';
 
     /** @var Wikidata|null */
@@ -99,7 +99,7 @@ class WikiDataMatch extends BaseMatch
             return [];
         }
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/works/' . $entityId . '.' . $lang . '.' . $limit . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/works/author/' . $entityId . '.' . $lang . '.' . $limit . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -139,7 +139,7 @@ class WikiDataMatch extends BaseMatch
         $limit ??= $this->limit;
         $query = $author['name'];
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/works/' . $query . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/works/name/' . $query . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -172,7 +172,7 @@ class WikiDataMatch extends BaseMatch
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/works/' . $query . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/works/title/' . $query . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -225,7 +225,7 @@ class WikiDataMatch extends BaseMatch
             return [];
         }
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/series/' . $entityId . '.' . $lang . '.' . $limit . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/series/author/' . $entityId . '.' . $lang . '.' . $limit . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -267,7 +267,7 @@ class WikiDataMatch extends BaseMatch
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/series/' . $query . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/wikidata/series/title/' . $query . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }

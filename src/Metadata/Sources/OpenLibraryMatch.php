@@ -12,7 +12,7 @@ class OpenLibraryMatch extends BaseMatch
 {
     public const ENTITY_URL = 'https://openlibrary.org/works/';
     public const ENTITY_PATTERN = '/^OL\d+/';
-    public const CACHE_TYPES = ['openlibrary/authors', 'openlibrary/works', 'openlibrary/editions', 'openlibrary/ratings'];
+    public const CACHE_TYPES = ['openlibrary/authors', 'openlibrary/entities', 'openlibrary/works/author', 'openlibrary/works/title', 'openlibrary/editions', 'openlibrary/ratings'];
     public const AUTHOR_URL = 'https://openlibrary.org/authors/';
 
     /**
@@ -85,7 +85,7 @@ class OpenLibraryMatch extends BaseMatch
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/authors/' . $matchId . '.' . $lang . '.' . $limit . '.json';
+            $cacheFile = $this->cacheDir . '/openlibrary/works/author/' . $matchId . '.' . $lang . '.' . $limit . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -115,7 +115,7 @@ class OpenLibraryMatch extends BaseMatch
         }
         $authorName = $author['name'];
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/works/' . $query . '.' . $authorName . '.json';
+            $cacheFile = $this->cacheDir . '/openlibrary/works/title/' . $query . '.' . $authorName . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -145,7 +145,7 @@ class OpenLibraryMatch extends BaseMatch
     {
         $lang ??= $this->lang;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/authors/' . $authorId . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/openlibrary/entities/' . $authorId . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
@@ -173,7 +173,7 @@ class OpenLibraryMatch extends BaseMatch
         }
         $lang ??= $this->lang;
         if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/works/' . $workId . '.' . $lang . '.json';
+            $cacheFile = $this->cacheDir . '/openlibrary/entities/' . $workId . '.' . $lang . '.json';
             if (is_file($cacheFile)) {
                 return $this->loadCache($cacheFile);
             }
