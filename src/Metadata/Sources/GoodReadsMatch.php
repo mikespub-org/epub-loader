@@ -83,6 +83,19 @@ class GoodReadsMatch extends BaseMatch
             }
             $bookId = $href[1];
             $bookTitle = trim(preg_replace('~\s+~', ' ', $title[2]));
+            $book = [
+                'id' => $bookId,
+                'title' => $bookTitle,
+            ];
+            $image = [];
+            if (preg_match('~<img alt="([^"]*)" class="bookCover" itemprop="image" src="([^"]*)" />~', $row, $image)) {
+                $book['cover'] = trim($image[2]);
+            }
+            $rating = [];
+            if (preg_match('~<span class="minirating">.*?([\d.]+) avg rating &mdash; ([\d,]+) ratings?</span>~', $row, $rating)) {
+                $book['rating'] = (float) $rating[1];
+                $book['count'] = (int) str_replace(',', '', $rating[2]);
+            }
             // we could have multiple authors for one book here
             $authors = [];
             if (!preg_match_all('~<a class="authorName" itemprop="url" href="([^"]+)">\s*<span itemprop="name">([^<]*)</span>\s*</a>~s', $row, $authors, PREG_SET_ORDER)) {
@@ -104,7 +117,7 @@ class GoodReadsMatch extends BaseMatch
                         'books' => [],
                     ];
                 }
-                $result[$authorId]['books'][] = ['id' => $bookId, 'title' => $bookTitle];
+                $result[$authorId]['books'][] = $book;
             }
         }
         return $result;

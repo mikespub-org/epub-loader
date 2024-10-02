@@ -10,6 +10,7 @@ namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\Import\JsonImport;
 use Marsender\EPubLoader\Metadata\Sources\GoodReadsMatch;
+use Marsender\EPubLoader\RequestHandler;
 use PHPUnit\Framework\TestCase;
 
 class GoodReadsTest extends TestCase
@@ -165,5 +166,50 @@ class GoodReadsTest extends TestCase
 
         $expected = '6538289.David_Mitchell';
         $this->assertArrayHasKey($expected, $author);
+    }
+
+    public function testMatchParseAuthorList(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        $match = new GoodReadsMatch($cacheDir);
+
+        $fileList = RequestHandler::getFiles($cacheDir . '/goodreads/author/list/', '*.htm');
+        foreach ($fileList as $cacheFile) {
+            $jsonFile = str_replace('.htm', '.json', $cacheFile);
+            if (file_exists($jsonFile)) {
+                continue;
+            }
+            $authorId = str_replace($cacheDir . '/goodreads/author/list/', '', $cacheFile);
+            $authorId = str_replace('.htm', '', $authorId);
+            $content = file_get_contents($cacheFile);
+            $author = $match->parseAuthorPage($authorId, $content);
+            $match->saveCache($jsonFile, $author);
+        }
+
+        $expected = 1;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseSearch(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        $match = new GoodReadsMatch($cacheDir);
+
+        $fileList = RequestHandler::getFiles($cacheDir . '/goodreads/search/', '*.htm');
+        foreach ($fileList as $cacheFile) {
+            $jsonFile = str_replace('.htm', '.json', $cacheFile);
+            if (file_exists($jsonFile)) {
+                continue;
+            }
+            $query = str_replace($cacheDir . '/goodreads/search/', '', $cacheFile);
+            $query = str_replace('.htm', '', $query);
+            $query = urldecode($query);
+            $content = file_get_contents($cacheFile);
+            $matched = $match->parseSearchPage($query, $content);
+            $match->saveCache($jsonFile, $matched);
+        }
+
+        $expected = 1;
+        $this->assertCount($expected, $fileList);
     }
 }
