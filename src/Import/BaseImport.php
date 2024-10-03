@@ -211,4 +211,45 @@ class BaseImport
 
         return $res;
     }
+
+    /**
+     * Recursive get files
+     *
+     * @param string $inPath Base directory to search in
+     * @param string $inPattern Search pattern
+     * @return array<string>
+     */
+    public static function getFiles($inPath = '', $inPattern = '*.epub')
+    {
+        $res = [];
+
+        // Check path
+        if (!is_dir($inPath)) {
+            return $res;
+        }
+
+        // Get the list of directories
+        if (substr($inPath, -1) != DIRECTORY_SEPARATOR) {
+            $inPath .= DIRECTORY_SEPARATOR;
+        }
+
+        // Add files from the current directory
+        $files = glob($inPath . $inPattern, GLOB_MARK | GLOB_NOSORT);
+        foreach ($files as $item) {
+            if (substr($item, -1) == DIRECTORY_SEPARATOR) {
+                continue;
+            }
+            $res[] = $item;
+        }
+
+        // Scan sub directories
+        $paths = glob($inPath . '*', GLOB_MARK | GLOB_ONLYDIR | GLOB_NOSORT);
+        foreach ($paths as $path) {
+            $res = array_merge($res, static::getFiles($path, $inPattern));
+        }
+
+        sort($res);
+
+        return $res;
+    }
 }

@@ -4,6 +4,7 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Add parsing for OpenLibrary and WikiData files
   * Add GoodReads Author and GoodReads Books actions in app config
 
 3.3.2 - 20241001 Import books from JSON files (GoodReads API)

@@ -8,6 +8,11 @@
 
 namespace Marsender\EPubLoader\Metadata\Sources;
 
+use Marsender\EPubLoader\Metadata\OpenLibrary\AuthorEntity;
+use Marsender\EPubLoader\Metadata\OpenLibrary\AuthorSearchResult;
+use Marsender\EPubLoader\Metadata\OpenLibrary\WorkEntity;
+use Marsender\EPubLoader\Metadata\OpenLibrary\WorkSearchResult;
+
 class OpenLibraryMatch extends BaseMatch
 {
     public const ENTITY_URL = 'https://openlibrary.org/works/';
@@ -225,5 +230,45 @@ class OpenLibraryMatch extends BaseMatch
             return true;
         }
         return false;
+    }
+
+    /**
+     * Summary of parseAuthorSearch
+     * @param array<mixed> $data
+     * @return AuthorSearchResult
+     */
+    public static function parseAuthorSearch($data)
+    {
+        return AuthorSearchResult::fromJson($data);
+    }
+
+    /**
+     * Summary of parseWorkSearch
+     * @param array<mixed> $data
+     * @return WorkSearchResult
+     */
+    public static function parseWorkSearch($data)
+    {
+        return WorkSearchResult::fromJson($data);
+    }
+
+    /**
+     * Summary of parseAuthorEntity
+     * @param array<mixed> $data
+     * @return AuthorEntity
+     */
+    public static function parseAuthorEntity($data)
+    {
+        return AuthorEntity::fromJson($data);
+    }
+
+    /**
+     * Summary of parseWorkEntity
+     * @param array<mixed> $data
+     * @return WorkEntity
+     */
+    public static function parseWorkEntity($data)
+    {
+        return WorkEntity::fromJson($data);
     }
 }

@@ -11,10 +11,24 @@ namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\GoodReads\BookShowResult;
+use Marsender\EPubLoader\Metadata\GoodReads\SearchResult;
 use Exception;
 
 class GoodReadsBook
 {
+    /**
+     * Parse JSON data for GoodReads search result
+     *
+     * @param array<mixed> $data
+     *
+     * @return SearchResult
+     */
+    public static function parseResult($data)
+    {
+        $result = SearchResult::fromJson($data);
+        return $result;
+    }
+
     /**
      * Parse JSON data for a GoodReads book
      *

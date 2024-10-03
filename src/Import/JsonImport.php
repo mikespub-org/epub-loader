@@ -9,7 +9,6 @@
 
 namespace Marsender\EPubLoader\Import;
 
-use Marsender\EPubLoader\RequestHandler;
 use Exception;
 
 class JsonImport extends BookImport
@@ -93,7 +92,7 @@ class JsonImport extends BookImport
     {
         $allErrors = [];
         $allMessages = '';
-        $fileList = RequestHandler::getFiles($inBasePath . DIRECTORY_SEPARATOR . $jsonPath, '*.json');
+        $fileList = BaseImport::getFiles($inBasePath . DIRECTORY_SEPARATOR . $jsonPath, '*.json');
         foreach ($fileList as $file) {
             [$message, $errors] = $this->loadFromJsonFile($inBasePath, $file);
             $allMessages .= $message . '<br />';

@@ -9,6 +9,7 @@
 
 namespace Marsender\EPubLoader;
 
+use Marsender\EPubLoader\Import\BaseImport;
 use Exception;
 
 class RequestHandler
@@ -133,11 +134,11 @@ class RequestHandler
             $dbPath = $dbConfig['db_path'];
             $epubPath = $dbConfig['epub_path'];
             if ($action == 'csv_import') {
-                $fileList = static::getFiles($dbPath, '*.csv');
+                $fileList = BaseImport::getFiles($dbPath, '*.csv');
             } elseif ($action == 'json_import') {
-                $fileList = static::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.json');
+                $fileList = BaseImport::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.json');
             } else {
-                $fileList = static::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+                $fileList = BaseImport::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             }
             $result['databases'][$dbNum]['count'] = count($fileList);
             $dbFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
@@ -286,46 +287,5 @@ class RequestHandler
         }
 
         return $twig->render($template, $result);
-    }
-
-    /**
-     * Recursive get files
-     *
-     * @param string $inPath Base directory to search in
-     * @param string $inPattern Search pattern
-     * @return array<string>
-     */
-    public static function getFiles($inPath = '', $inPattern = '*.epub')
-    {
-        $res = [];
-
-        // Check path
-        if (!is_dir($inPath)) {
-            return $res;
-        }
-
-        // Get the list of directories
-        if (substr($inPath, -1) != DIRECTORY_SEPARATOR) {
-            $inPath .= DIRECTORY_SEPARATOR;
-        }
-
-        // Add files from the current directory
-        $files = glob($inPath . $inPattern, GLOB_MARK | GLOB_NOSORT);
-        foreach ($files as $item) {
-            if (substr($item, -1) == DIRECTORY_SEPARATOR) {
-                continue;
-            }
-            $res[] = $item;
-        }
-
-        // Scan sub directories
-        $paths = glob($inPath . '*', GLOB_MARK | GLOB_ONLYDIR | GLOB_NOSORT);
-        foreach ($paths as $path) {
-            $res = array_merge($res, static::getFiles($path, $inPattern));
-        }
-
-        sort($res);
-
-        return $res;
     }
 }

@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Import\GoogleBooksVolume;
 use PHPUnit\Framework\TestCase;
 
 class GoogleBooksTest extends TestCase
@@ -128,5 +129,84 @@ class GoogleBooksTest extends TestCase
         $expected = '/cache/google/titles/Émile Zola.La curée.fr.json - 10 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
         $this->assertCount(0, $errors);
+    }
+
+    public function testMatchParseAuthors(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new GoogleBooksMatch($cacheDir);
+
+        $fileList = JsonImport::getFiles($cacheDir . '/google/authors/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $query = str_replace($cacheDir . '/google/authors/', '', $cacheFile);
+            $query = str_replace('.en.40.json', '', $query);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$authors = $match->parseSearchPage($query, $content);
+            if (is_null($matched)) {
+                continue;
+            }
+            $authors = GoogleBooksVolume::parseResult($matched);
+        }
+
+        $expected = 1832;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseSeries(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new GoogleBooksMatch($cacheDir);
+
+        $fileList = JsonImport::getFiles($cacheDir . '/google/series/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $query = str_replace($cacheDir . '/google/series/', '', $cacheFile);
+            $query = str_replace('.en.json', '', $query);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$series = $match->parseSearchPage($query, $content);
+            $series = GoogleBooksVolume::parseResult($matched);
+        }
+
+        $expected = 2;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseTitles(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new GoogleBooksMatch($cacheDir);
+
+        $fileList = JsonImport::getFiles($cacheDir . '/google/titles/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $query = str_replace($cacheDir . '/google/titles/', '', $cacheFile);
+            $query = str_replace('.en.json', '', $query);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$titles = $match->parseSearchPage($query, $content);
+            $titles = GoogleBooksVolume::parseResult($matched);
+        }
+
+        $expected = 38;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseVolume(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new GoogleBooksMatch($cacheDir);
+
+        $fileList = JsonImport::getFiles($cacheDir . '/google/volumes/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $volumeId = str_replace($cacheDir . '/google/volumes/', '', $cacheFile);
+            $volumeId = str_replace('.en.json', '', $volumeId);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$volume = $match->parseSearchPage($volumeId, $content);
+            $volume = GoogleBooksVolume::parse($matched);
+        }
+
+        $expected = 16;
+        $this->assertCount($expected, $fileList);
     }
 }

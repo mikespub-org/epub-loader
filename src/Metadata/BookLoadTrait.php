@@ -9,9 +9,9 @@
 
 namespace Marsender\EPubLoader\Metadata;
 
+use Marsender\EPubLoader\Import\BaseImport;
 use Marsender\EPubLoader\Metadata\BookEPub;
 use Marsender\EPubLoader\Metadata\BookInfos;
-use Marsender\EPubLoader\RequestHandler;
 use Exception;
 
 trait BookLoadTrait
@@ -30,7 +30,7 @@ trait BookLoadTrait
         $nbOk = 0;
         $nbError = 0;
         if (!empty($epubPath)) {
-            $fileList = RequestHandler::getFiles($inBasePath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+            $fileList = BaseImport::getFiles($inBasePath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             foreach ($fileList as $file) {
                 $filePath = substr($file, strlen((string) $inBasePath) + 1);
                 try {

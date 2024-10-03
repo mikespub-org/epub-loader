@@ -8,6 +8,8 @@
 
 namespace Marsender\EPubLoader\Metadata\Sources;
 
+use Wikidata\Entity;
+use Wikidata\SearchResult;
 use Wikidata\Wikidata;
 
 class WikiDataMatch extends BaseMatch
@@ -305,5 +307,27 @@ class WikiDataMatch extends BaseMatch
             $this->saveCache($cacheFile, $entity);
         }
         return $entity;
+    }
+
+    /**
+     * Summary of parseSearchResult
+     * @param array<mixed> $data
+     * @param string $lang
+     * @return SearchResult
+     */
+    public static function parseSearchResult($data, $lang = 'en')
+    {
+        return new SearchResult($data, $lang);
+    }
+
+    /**
+     * Summary of parseEntity
+     * @param array<mixed> $data
+     * @param string $lang
+     * @return Entity
+     */
+    public static function parseEntity($data, $lang = 'en')
+    {
+        return new Entity($data, $lang);
     }
 }

@@ -8,6 +8,8 @@
 
 namespace Marsender\EPubLoader\Tests;
 
+use Marsender\EPubLoader\Import\BaseImport;
+use Marsender\EPubLoader\Metadata\Sources\WikiDataMatch;
 use PHPUnit\Framework\TestCase;
 
 class WikiDataTest extends TestCase
@@ -220,5 +222,138 @@ class WikiDataTest extends TestCase
         unset($_SERVER['PATH_INFO']);
         unset($_GET['bookId']);
         unset($_GET['matchId']);
+    }
+
+    public function testMatchParseAuthorSearch(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new WikiDataMatch($cacheDir);
+
+        $fileList = BaseImport::getFiles($cacheDir . '/wikidata/authors/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $query = str_replace($cacheDir . '/wikidata/authors/', '', $cacheFile);
+            $query = str_replace('.en.json', '', $query);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$authors = $match->parseSearchPage($query, $content);
+            $authors = WikiDataMatch::parseSearchResult($matched);
+        }
+
+        $expected = 1830;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseWorksByAuthor(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new WikiDataMatch($cacheDir);
+
+        $fileList = BaseImport::getFiles($cacheDir . '/wikidata/works/author/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $authorId = str_replace($cacheDir . '/wikidata/works/author/', '', $cacheFile);
+            $authorId = str_replace('.en.100.json', '', $authorId);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$works = $match->parseAuthorPage($authorId, $content);
+            $works = WikiDataMatch::parseSearchResult($matched);
+        }
+
+        $expected = 792;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseWorksByTitle(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new WikiDataMatch($cacheDir);
+
+        $fileList = BaseImport::getFiles($cacheDir . '/wikidata/works/title/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $query = str_replace($cacheDir . '/wikidata/works/title/', '', $cacheFile);
+            $query = str_replace('.en.json', '', $query);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$works = $match->parseSearchPage($query, $content);
+            $works = WikiDataMatch::parseSearchResult($matched);
+        }
+
+        $expected = 43;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseWorksByName(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new WikiDataMatch($cacheDir);
+
+        $fileList = BaseImport::getFiles($cacheDir . '/wikidata/works/name/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $query = str_replace($cacheDir . '/wikidata/works/name/', '', $cacheFile);
+            $query = str_replace('.en.json', '', $query);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$works = $match->parseSearchPage($query, $content);
+            $works = WikiDataMatch::parseSearchResult($matched);
+        }
+
+        $expected = 16;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseSeriesByAuthor(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new WikiDataMatch($cacheDir);
+
+        $fileList = BaseImport::getFiles($cacheDir . '/wikidata/series/author/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $authorId = str_replace($cacheDir . '/wikidata/series/author/', '', $cacheFile);
+            $authorId = str_replace('.en.100.json', '', $authorId);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$works = $match->parseAuthorPage($authorId, $content);
+            $works = WikiDataMatch::parseSearchResult($matched);
+        }
+
+        $expected = 1117;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseSeriesByTitle(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new WikiDataMatch($cacheDir);
+
+        $fileList = BaseImport::getFiles($cacheDir . '/wikidata/series/title/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $query = str_replace($cacheDir . '/wikidata/series/title/', '', $cacheFile);
+            $query = str_replace('.en.json', '', $query);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$works = $match->parseSearchPage($query, $content);
+            $works = WikiDataMatch::parseSearchResult($matched);
+        }
+
+        $expected = 11;
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testMatchParseEntity(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new WikiDataMatch($cacheDir);
+
+        $fileList = BaseImport::getFiles($cacheDir . '/wikidata/entities/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $entityId = str_replace($cacheDir . '/wikidata/entities/', '', $cacheFile);
+            $entityId = str_replace('.json', '', $entityId);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$work = $match->parseSearchPage($entityId, $content);
+            $work = WikiDataMatch::parseEntity($matched);
+        }
+
+        $expected = 1569;
+        $this->assertCount($expected, $fileList);
     }
 }
