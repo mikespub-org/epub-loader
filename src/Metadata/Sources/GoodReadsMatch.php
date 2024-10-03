@@ -8,6 +8,8 @@
 
 namespace Marsender\EPubLoader\Metadata\Sources;
 
+use Marsender\EPubLoader\Import\GoodReadsBook;
+use Marsender\EPubLoader\Metadata\BookInfos;
 use Exception;
 
 class GoodReadsMatch extends BaseMatch
@@ -266,9 +268,7 @@ class GoodReadsMatch extends BaseMatch
      */
     public function getBook($bookId, $lang = null)
     {
-        if (str_contains($bookId, '.')) {
-            [$bookId, $title] = explode('.', $bookId);
-        }
+        $bookId = static::bookid($bookId);
         $lang ??= $this->lang;
         if ($this->cacheDir) {
             $cacheFile = $this->cacheDir . '/goodreads/book/show/' . $bookId . '.json';
@@ -304,5 +304,32 @@ class GoodReadsMatch extends BaseMatch
             throw new Exception('Unable to find JSON data in html page: see ' . $bookId . '.htm');
         }
         return $matches[1];
+    }
+
+    /**
+     * Summary of bookid
+     * @param string $bookId
+     * @return string
+     */
+    public static function bookid($bookId)
+    {
+        if (str_contains($bookId, '.')) {
+            [$bookId, $title] = explode('.', $bookId);
+        }
+        if (str_contains($bookId, '-')) {
+            [$bookId, $title] = explode('-', $bookId);
+        }
+        return $bookId;
+    }
+
+    /**
+     * Summary of import
+     * @param string $dbPath
+     * @param array<mixed> $data
+     * @return BookInfos
+     */
+    public static function import($dbPath, $data)
+    {
+        return GoodReadsBook::import($dbPath, $data);
     }
 }

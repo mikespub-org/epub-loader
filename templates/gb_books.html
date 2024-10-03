@@ -40,12 +40,7 @@
 			{% endfor %}
 		</select>
 		<input type="submit" value="Find"/>
-		<a href="{{endpoint}}/wd_author/{{dbNum}}/{{authorId}}" title="WikiData Author">Check</a>
-		<a href="{{endpoint}}/wd_books/{{dbNum}}/{{authorId}}" title="WikiData Books">Books</a>
-		<a href="{{endpoint}}/wd_series/{{dbNum}}/{{authorId}}" title="WikiData Series">Series</a>
-		<a href="{{endpoint}}/gb_books/{{dbNum}}/{{authorId}}" title="Google Books">Google</a>
-		<a href="{{endpoint}}/ol_author/{{dbNum}}/{{authorId}}" title="OpenLibrary Author">Author</a>
-		<a href="{{endpoint}}/ol_books/{{dbNum}}/{{authorId}}" title="OpenLibrary Works">Works</a>
+		{{ include('links.html', {itemId: authorId}) }}
 	</form>
 </div>
 <form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}?lang={{lang}}">
@@ -77,7 +72,7 @@
 </form>
 {% if authorId %}
 <div class="part">
-	<p>Google Books:</p>
+	<p><b>Google Books</b></p>
 	{% if matched %}
 	Kind: {{matched.kind}}<br>
 	Total: {{matched.totalItems}}<br>

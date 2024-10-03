@@ -115,7 +115,8 @@ class GoodReadsBook
             if (empty($seriesRef) || empty($seriesMap) || empty($seriesMap[$seriesRef])) {
                 throw new Exception('Invalid seriesRef for GoodReads book');
             }
-            $bookInfos->mSerie = $seriesMap[$seriesRef]->getTitle();
+            $bookInfos->mSerie = (string) $seriesMap[$seriesRef]->getTitle();
+            $bookInfos->mSerieId = str_replace('https://www.goodreads.com/series/', '', (string) $seriesMap[$seriesRef]->getWebUrl());
             break;
         }
         // timestamp in milliseconds since the epoch for Javascript
@@ -133,5 +134,17 @@ class GoodReadsBook
         $bookInfos->mIdentifiers = ['goodreads' => $bookInfos->mName];
 
         return $bookInfos;
+    }
+
+    /**
+     * Summary of import
+     * @param string $dbPath
+     * @param array<mixed> $data
+     * @return BookInfos
+     */
+    public static function import($dbPath, $data)
+    {
+        $book = static::parse($data);
+        return static::load($dbPath, $book);
     }
 }

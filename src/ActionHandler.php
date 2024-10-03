@@ -13,9 +13,11 @@ use Marsender\EPubLoader\Export\BookExport;
 use Marsender\EPubLoader\Import\BookImport;
 use Marsender\EPubLoader\Import\CsvImport;
 use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Metadata\Sources\GoodReadsMatch;
 use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
 use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
 use Marsender\EPubLoader\Metadata\Sources\WikiDataMatch;
+use Exception;
 
 class ActionHandler
 {
@@ -134,6 +136,20 @@ class ActionHandler
                 break;
             case 'ol_work':
                 $result = $this->ol_work($matchId);
+                break;
+            case 'gr_author':
+                //if (!GoodReadsMatch::isValidEntity($matchId)) {
+                //    $matchId = null;
+                //}
+                $findLinks = $this->request->get('findLinks', false);
+                $result = $this->gr_author($authorId, $matchId, $findLinks);
+                break;
+            case 'gr_books':
+                $bookId = $this->request->getId('bookId');
+                //if (!WikiDataMatch::isValidEntity($matchId)) {
+                //    $matchId = null;
+                //}
+                $result = $this->gr_books($authorId, $bookId, $matchId);
                 break;
             case 'notes':
                 $colName = $this->request->get('colName');
@@ -514,15 +530,18 @@ class ActionHandler
         $googlematch = new GoogleBooksMatch($this->cacheDir, $lang);
 
         $matched = null;
+        $dbPath = $this->dbConfig['db_path'];
         if (!empty($bookId)) {
             $books = $this->db->getBooks($bookId);
             $query = $books[$bookId]['title'];
             $matched = $googlematch->findWorksByTitle($query, $author);
+            //$info = GoogleBooksMatch::import($dbPath, $matched);
         } else {
             $sort = $this->request->get('sort');
             $offset = $this->request->get('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $googlematch->findWorksByAuthor($author);
+            //$info = GoogleBooksMatch::import($dbPath, $matched);
         }
 
         $authorList = $this->getAuthorList();
@@ -660,6 +679,7 @@ class ActionHandler
         // Find match on OpenLibrary
         $openlibrary = new OpenLibraryMatch($this->cacheDir);
 
+        $authId = $this->request->get('authId');
         $matched = null;
         if (!empty($bookId)) {
             $books = $this->db->getBooks($bookId);
@@ -667,11 +687,11 @@ class ActionHandler
             $matched = $openlibrary->findWorksByTitle($query, $author);
             // generic search returns 'docs' but author search returns 'entries'
             //$matched['entries'] ??= $matched['docs'];
-        } elseif (!empty($matchId)) {
+        } elseif (!empty($authId)) {
             $sort = $this->request->get('sort');
             $offset = $this->request->get('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
-            $matched = $openlibrary->findWorksByAuthorId($matchId);
+            $matched = $openlibrary->findWorksByAuthorId($authId);
         } else {
             $sort = $this->request->get('sort');
             $offset = $this->request->get('offset');
@@ -748,6 +768,166 @@ class ActionHandler
             }
         }
         return ['notescount' => $notescount, 'colName' => $colName, 'itemId' => $itemId, 'items' => $items, 'html' => $html];
+    }
+
+    /**
+     * Summary of gr_author
+     * @param int|null $authorId
+     * @param string|null $matchId
+     * @param bool $findLinks
+     * @return array<mixed>|null
+     */
+    public function gr_author($authorId, $matchId, $findLinks = false)
+    {
+        // Update the author link
+        if (!is_null($authorId) && !is_null($matchId)) {
+            $link = GoodReadsMatch::AUTHOR_URL . $matchId;
+            if (!$this->db->setAuthorLink($authorId, $link)) {
+                $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
+                return null;
+            }
+            //$authorId = null;
+        }
+        $sort = $this->request->get('sort');
+        $offset = $this->request->get('offset');
+
+        // List the authors
+        $authors = $this->db->getAuthors($authorId, $sort, $offset);
+        $author = null;
+        $query = null;
+        if (!is_null($authorId) && is_null($matchId)) {
+            $author = $authors[$authorId];
+            $query = $author['name'];
+        }
+
+        // Find match on GoodReads
+        $goodreads = new GoodReadsMatch($this->cacheDir);
+
+        $matched = [];
+        if (!empty($query)) {
+            $matched = $goodreads->findAuthors($query);
+            // @todo Find author with highest books count!?
+            uasort($matched, function ($a, $b) {
+                return count($b['books']) <=> count($a['books']);
+            });
+        } elseif (!empty($matchId)) {
+            // remove other authors here?
+            $found = $goodreads->getAuthor($matchId);
+            if (!empty($found[$matchId])) {
+                $matched[$matchId] = $found[$matchId];
+            } else {
+                //var_dump($matched);
+                throw new Exception('Unable to find matching author');
+            }
+        } elseif ($findLinks) {
+            foreach ($authors as $id => $author) {
+                if (empty($author['link'])) {
+                    $matchId = $goodreads->findAuthorId($author);
+                    if (!empty($matchId)) {
+                        $authors[$id]['link'] = GoodReadsMatch::AUTHOR_URL . $matchId;
+                    }
+                }
+            }
+        }
+        $authors = $this->addAuthorInfo($authors, $authorId, $sort);
+        foreach ($matched as $key => $match) {
+            foreach ($match['books'] as $id => $book) {
+                $matched[$key]['books'][$id]['key'] = $book['id'];
+                $matched[$key]['books'][$id]['id'] = GoodReadsMatch::bookid($book['id']);
+            }
+        }
+
+        // Return info
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
+    }
+
+    /**
+     * Summary of gr_books
+     * @param int|null $authorId
+     * @param int|null $bookId
+     * @param string|null $matchId
+     * @return array<mixed>|null
+     */
+    public function gr_books($authorId, $bookId, $matchId)
+    {
+        $authors = $this->db->getAuthors($authorId);
+        if (empty($authorId) && empty($bookId)) {
+            //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
+            //return null;
+            $authorId = array_keys($authors)[0];
+        }
+        if (count($authors) < 1) {
+            $this->addError($this->dbFileName, "Please specify a valid authorId");
+            return null;
+        }
+        $author = $authors[$authorId];
+
+        // Update the book identifier
+        if (!is_null($bookId) && !is_null($matchId)) {
+            $this->updateBookIdentifier('goodreads', $bookId, $matchId);
+        }
+
+        // Find match on OpenLibrary
+        $goodreads = new GoodReadsMatch($this->cacheDir);
+
+        $authId = $this->request->get('authId');
+        $matched = null;
+        if (!empty($bookId)) {
+            $books = $this->db->getBooks($bookId);
+            $query = $books[$bookId]['title'];
+            // @todo find books by title with GoodReads?
+            //$matched = $goodreads->findWorksByTitle($query, $author);
+            // generic search returns 'docs' but author search returns 'entries'
+            //$matched['entries'] ??= $matched['docs'];
+        } else {
+            $sort = $this->request->get('sort');
+            $offset = $this->request->get('offset');
+            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
+        }
+        if (!empty($matchId)) {
+            $found = $goodreads->getBook($matchId);
+            $dbPath = $this->dbConfig['db_path'];
+            $info = GoodReadsMatch::import($dbPath, $found);
+            $matched[] = [
+                'id' => GoodReadsMatch::entity($info->mUri),
+                'title' => $info->mTitle,
+                'url' => $info->mUri,
+                'cover' => $info->mCover,
+                'series' => [
+                    'id' => $info->mSerieId,
+                    'title' => $info->mSerie,
+                    'index' => $info->mSerieIndex,
+                ],
+            ];
+        } elseif (!empty($authId)) {
+            $found = $goodreads->getAuthor($authId);
+            // remove books from other authors here?
+            $matched = $found[$authId]['books'];
+        } else {
+            $olid = $goodreads->findAuthorId($author);
+            $found = $goodreads->getAuthor($olid);
+            // remove books from other authors here?
+            $matched = $found[$olid]['books'];
+        }
+
+        $authorList = $this->getAuthorList();
+        $titles = [];
+        foreach ($books as $id => $book) {
+            $titles[$book['title']] = $id;
+        }
+        // exact match only here - see calibre metadata plugins for more advanced features
+        foreach ($matched as $key => $match) {
+            $matched[$key]['key'] = $match['id'];
+            $matched[$key]['id'] = GoodReadsMatch::bookid($match['id']);
+            if (array_key_exists($match['title'], $titles)) {
+                $id = $titles[$match['title']];
+                $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* goodreads', 'value' => $matched[$key]['id'], 'url' => GoodReadsMatch::link($match['id'])];
+                unset($titles[$match['title']]);
+            }
+        }
+
+        // Return info
+        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'matchId' => $matchId];
     }
 
     /**

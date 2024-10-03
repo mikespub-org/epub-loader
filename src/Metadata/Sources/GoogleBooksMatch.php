@@ -8,6 +8,9 @@
 
 namespace Marsender\EPubLoader\Metadata\Sources;
 
+use Marsender\EPubLoader\Import\GoogleBooksVolume;
+use Marsender\EPubLoader\Metadata\BookInfos;
+
 class GoogleBooksMatch extends BaseMatch
 {
     public const ENTITY_URL = 'https://www.googleapis.com/books/v1/volumes/';
@@ -186,5 +189,16 @@ class GoogleBooksMatch extends BaseMatch
             'en' => 'English',
             'fr' => 'Français',
         ];
+    }
+
+    /**
+     * Summary of import
+     * @param string $dbPath
+     * @param array<mixed> $data
+     * @return BookInfos|array<BookInfos>
+     */
+    public static function import($dbPath, $data)
+    {
+        return GoogleBooksVolume::import($dbPath, $data);
     }
 }

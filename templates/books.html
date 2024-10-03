@@ -15,12 +15,7 @@
 			{% endfor %}
 		</select>
 		<input type="submit" value="Find"/>
-		<a href="{{endpoint}}/wd_author/{{dbNum}}/{{authorId}}" title="WikiData Author">Check</a>
-		<a href="{{endpoint}}/wd_books/{{dbNum}}/{{authorId}}" title="WikiData Books">Books</a>
-		<a href="{{endpoint}}/wd_series/{{dbNum}}/{{authorId}}" title="WikiData Series">Series</a>
-		<a href="{{endpoint}}/gb_books/{{dbNum}}/{{authorId}}" title="Google Books">Google</a>
-		<a href="{{endpoint}}/ol_author/{{dbNum}}/{{authorId}}" title="OpenLibrary Author">Author</a>
-		<a href="{{endpoint}}/ol_books/{{dbNum}}/{{authorId}}" title="OpenLibrary Works">Works</a>
+		{{ include('links.html', {itemId: authorId}) }}
 	</form>
 </div>
 <form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}">
@@ -35,7 +30,19 @@
 	<tr>
 		<td>{{item.id}}</td>
 		<td>{{item.title}}</td>
-		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?bookId={{item.id}}">Search</a>{% endif %}</td>
+		<td>
+			{% if matchId %}
+				{% if bookId == item.id %}
+					<strong>Match</strong>
+				{% else %}
+					<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?bookId={{item.id}}&matchId={{matchId}}">Match</a>
+				{% endif %}
+			{% elseif bookId == item.id %}
+				<strong>Search</strong>
+			{% else %}
+				<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?bookId={{item.id}}">Search</a>
+			{% endif %}
+		</td>
 		<td>
 			{% for identifier in item.identifiers %}
 				{% if identifier.url %}

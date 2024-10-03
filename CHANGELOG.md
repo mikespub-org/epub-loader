@@ -3,6 +3,9 @@
 1.5.x - 2024xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
+3.x.x - 2024xxxx
+  * Add GoodReads Author and GoodReads Books actions in app config
+
 3.3.2 - 20241001 Import books from JSON files (GoodReads API)
   * Add JsonImport for GoodReads API cached files
 

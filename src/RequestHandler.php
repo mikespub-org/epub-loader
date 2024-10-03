@@ -140,6 +140,19 @@ class RequestHandler
                 $fileList = static::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             }
             $result['databases'][$dbNum]['count'] = count($fileList);
+            $dbFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
+            // Open the database
+            if (is_file($dbFileName)) {
+                $db = new CalibreDbLoader($dbFileName);
+                $stats = $db->getStats();
+            } else {
+                $stats = [
+                    'authors' => 0,
+                    'books' => 0,
+                    'series' => 0,
+                ];
+            }
+            $result['databases'][$dbNum] = array_merge($result['databases'][$dbNum], $stats);
         }
         $result['errors'] = $this->getErrors();
         $this->template = 'databases.html';

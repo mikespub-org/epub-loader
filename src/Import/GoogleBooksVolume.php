@@ -108,6 +108,7 @@ class GoogleBooksVolume
                 $info = $series->getVolumeSeries()[0];
                 // @todo get series name from id
                 $bookInfos->mSerie = (string) $info->getSeriesId();
+                $bookInfos->mSerieId = (string) $info->getSeriesId();
             }
         }
         $bookInfos->mCreationDate = (string) $volumeInfo->getPublishedDate();
@@ -119,5 +120,28 @@ class GoogleBooksVolume
         $bookInfos->mIdentifiers = ['google' => $bookInfos->mName];
 
         return $bookInfos;
+    }
+
+    /**
+     * Summary of import
+     * @param string $dbPath
+     * @param array<mixed> $data
+     * @return BookInfos|array<BookInfos>
+     */
+    public static function import($dbPath, $data)
+    {
+        if (!empty($data["kind"]) && $data["kind"] == "books#volume") {
+            $volume = static::parse($data);
+            return static::load($dbPath, $volume);
+        }
+        $result = static::parseResult($data);
+        if (empty($result->getItems())) {
+            $result->items = [];
+        }
+        $books = [];
+        foreach ($result->getItems() as $volume) {
+            $books[] = static::load($dbPath, $volume);
+        }
+        return $books;
     }
 }

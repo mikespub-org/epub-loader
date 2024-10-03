@@ -49,6 +49,8 @@ class BookInfos
 
     public string $mSerie = '';
 
+    public string $mSerieId = '';
+
     public string $mSerieIndex = '';
 
     public string $mCreationDate = '';

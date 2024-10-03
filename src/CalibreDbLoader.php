@@ -80,6 +80,41 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getStats
+     * @see https://www.sqlite.org/lang_analyze.html
+     * @return array<string, int>
+     */
+    public function getStats()
+    {
+        /**
+        // this throws an error for read-only databases
+        $sql = "analyze; select tbl, idx, stat from sqlite_stat1 where tbl in ('authors', 'books', 'series')";
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        $stats = [];
+        while ($post = $stmt->fetchObject()) {
+            $stats[$post->tbl] ??= (int) explode(' ', $post->stat)[0];
+        }
+        return $stats;
+         */
+        $stats = [
+            'authors' => 0,
+            'books' => 0,
+            'series' => 0,
+        ];
+        $tables = ['authors', 'books', 'series'];
+        foreach ($tables as $table) {
+            $sql = 'select count(*) as count from ' . $table;
+            $stmt = $this->mDb->prepare($sql);
+            $stmt->execute();
+            if ($post = $stmt->fetchObject()) {
+                $stats[$table] = $post->count;
+            }
+        }
+        return $stats;
+    }
+
+    /**
      * Summary of setAuthorLink
      * @param int $authorId
      * @param string $link

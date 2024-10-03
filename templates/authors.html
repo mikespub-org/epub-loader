@@ -27,12 +27,7 @@
 		<td>{{item.books}}</td>
 		<td>{{item.series}}</td>
 		<td>
-			<a href="{{endpoint}}/wd_author/{{dbNum}}/{{item.id}}" title="WikiData Author">Check</a>
-			<a href="{{endpoint}}/wd_books/{{dbNum}}/{{item.id}}" title="WikiData Books">Books</a>
-			<a href="{{endpoint}}/wd_series/{{dbNum}}/{{item.id}}" title="WikiData Series">Series</a>
-			<a href="{{endpoint}}/gb_books/{{dbNum}}/{{item.id}}" title="Google Books">Google</a>
-			<a href="{{endpoint}}/ol_author/{{dbNum}}/{{item.id}}" title="OpenLibrary Author">Author</a>
-			<a href="{{endpoint}}/ol_books/{{dbNum}}/{{item.id}}" title="OpenLibrary Works">Works</a>
+			{{ include('links.html', {itemId: item.id}) }}
 		</td>
 		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{authorId}}?matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>
