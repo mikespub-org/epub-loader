@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\Import\BaseImport;
+use Marsender\EPubLoader\Import\DataCapture;
 use Marsender\EPubLoader\Metadata\Sources\WikiDataMatch;
 use PHPUnit\Framework\TestCase;
 
@@ -342,6 +343,8 @@ class WikiDataTest extends TestCase
     {
         $cacheDir = dirname(__DIR__) . '/cache';
         //$match = new WikiDataMatch($cacheDir);
+        //$patterns = ['.properties' => '/^P\d+$/'];
+        //$capture = new DataCapture($patterns);
 
         $fileList = BaseImport::getFiles($cacheDir . '/wikidata/entities/', '*.json');
         foreach ($fileList as $cacheFile) {
@@ -349,9 +352,12 @@ class WikiDataTest extends TestCase
             $entityId = str_replace('.json', '', $entityId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            //$capture->analyze($matched);
             //$work = $match->parseSearchPage($entityId, $content);
             $work = WikiDataMatch::parseEntity($matched);
         }
+        //$report = $capture->report();
+        //echo json_encode($report, JSON_PRETTY_PRINT);
 
         $expected = 1569;
         $this->assertCount($expected, $fileList);

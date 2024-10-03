@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\Import\BaseImport;
+use Marsender\EPubLoader\Import\DataCapture;
 use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
 use PHPUnit\Framework\TestCase;
 
@@ -261,6 +262,8 @@ class OpenLibraryTest extends TestCase
     {
         $cacheDir = dirname(__DIR__) . '/cache';
         //$match = new OpenLibraryMatch($cacheDir);
+        //$patterns = ['.remoteIds.properties' => '/^\w+$/'];
+        //$capture = new DataCapture($patterns);
 
         $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/entities/', '*A.en.json');
         foreach ($fileList as $cacheFile) {
@@ -270,7 +273,10 @@ class OpenLibraryTest extends TestCase
             $matched = json_decode($results, true);
             //$author = $match->parseSearchPage($authorId, $content);
             $author = OpenLibraryMatch::parseAuthorEntity($matched);
+            //$capture->analyze($author);
         }
+        //$report = $capture->report();
+        //echo json_encode($report, JSON_PRETTY_PRINT);
 
         $expected = 18;
         $this->assertCount($expected, $fileList);

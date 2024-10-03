@@ -9,17 +9,17 @@ class RemoteIds
 {
     //public ?string $wikidata;
     /** @var array<string, string>|null */
-    public ?array $map;
+    public ?array $properties;
 
     /**
-     * @param array<mixed> $map
+     * @param array<mixed> $properties
      */
     public function __construct(
-        ?array $map
+        ?array $properties
         //?string $wikidata,
     ) {
         //$this->wikidata = $wikidata;
-        $this->map = $map;
+        $this->properties = $properties;
     }
 
     //public function getWikidata(): ?string
@@ -30,9 +30,9 @@ class RemoteIds
     /**
      * @return array<string, string>|null
      */
-    public function getMap(): ?array
+    public function getProperties(): ?array
     {
-        return $this->map;
+        return $this->properties;
     }
 
     /**
@@ -40,7 +40,7 @@ class RemoteIds
      */
     public static function fromJson(array $data): self
     {
-        // use patternProperties here for any remote ids
+        // simulate patternProperties from JSON schema - all keys here
         return new self(
             $data,
             //$data['wikidata'] ?? null,

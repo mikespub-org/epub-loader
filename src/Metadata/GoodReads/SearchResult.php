@@ -9,22 +9,22 @@ namespace Marsender\EPubLoader\Metadata\GoodReads;
 class SearchResult
 {
     /** @var array<string, AuthorMap>|null */
-    public ?array $resultMap;
+    public ?array $properties;
 
     /**
-     * @param array<string, AuthorMap>|null $resultMap
+     * @param array<string, AuthorMap>|null $properties
      */
-    public function __construct(?array $resultMap)
+    public function __construct(?array $properties)
     {
-        $this->resultMap = $resultMap;
+        $this->properties = $properties;
     }
 
     /**
      * @return array<string, AuthorMap>|null
      */
-    public function getResultMap(): ?array
+    public function getProperties(): ?array
     {
-        return $this->resultMap;
+        return $this->properties;
     }
 
     /**
@@ -32,14 +32,14 @@ class SearchResult
      */
     public static function fromJson(array $data): self
     {
-        // simulate patternProperties from JSON schema - multiple keys here
-        $resultMap = [];
-        $resultMapKeys = preg_grep('/^\d+/', array_keys($data)) ?: [];
-        foreach ($resultMapKeys as $key) {
-            $resultMap[$key] = ($data[$key] ?? null) !== null ? AuthorMap::fromJson($data[$key]) : null;
+        // simulate patternProperties from JSON schema - all keys here
+        $properties = [];
+        $propertiesKeys = preg_grep('/^\d+/', array_keys($data)) ?: [];
+        foreach ($propertiesKeys as $key) {
+            $properties[$key] = ($data[$key] ?? null) !== null ? AuthorMap::fromJson($data[$key]) : null;
         }
         return new self(
-            $resultMap
+            $properties
         );
     }
 }

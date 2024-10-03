@@ -9,13 +9,22 @@
 
 namespace Marsender\EPubLoader\Import;
 
-use Exception;
-
 class DataCapture
 {
-    public int $count = 0;
     /** @var array<mixed> */
-    public array $structure = [];
+    public array $structure = ['path' => '', 'type' => []];
+    /** @var array<mixed> */
+    public array $patterns = [];
+
+    /**
+     * Simulate patternProperties from JSON schema if needed
+     * Example: $patterns = ['.properties' => '/^P\d+$/', ...];
+     * @param array<string, string> $patterns [path => pattern]
+     */
+    public function __construct($patterns = [])
+    {
+        $this->patterns = $patterns;
+    }
 
     /**
      * Summary of analyze
@@ -24,30 +33,60 @@ class DataCapture
      */
     public function analyze($data)
     {
-        if (is_object($data)) {
-            $data = get_object_vars($data);
-        }
-        $this->count += 1;
-        foreach ($data as $key => $value) {
-            $this->structure[$key] ??= ['count' => []];
-            $this->addKeyValue($key, $value, $this->structure[$key]);
-        }
+        $this->addItem($data, $this->structure);
     }
 
     /**
-     * Summary of addKeyValue
-     * @param string $key
-     * @param mixed $value
+     * Summary of addItem
+     * @param mixed $item
+     * @param mixed $node
+     * @param mixed $path
+     * @return void
+     */
+    public function addItem($item, &$node, $path = '')
+    {
+        $type = gettype($item);
+        if (is_object($item)) {
+            if (method_exists($item, 'toArray')) {
+                // @todo support Collection like WikiData Entity
+                $item = $item->toArray();
+            } else {
+                $item = get_object_vars($item);
+            }
+            $this->addProperties($item, $node, $path);
+        } elseif ($type == 'array' && count($item) > 0) {
+            $first = array_keys($item)[0];
+            if (!is_numeric($first)) {
+                $type = 'object';
+                $this->addProperties($item, $node, $path);
+            } else {
+                $node['items'] ??= ['path' => $path . '.0', 'type' => []];
+                foreach ($item as $entry) {
+                    $this->addItem($entry, $node['items'], $path . '.0');
+                }
+            }
+        }
+        $node['type'][$type] ??= 0;
+        $node['type'][$type] += 1;
+    }
+
+    /**
+     * Summary of addProperties
+     * @param mixed $item
      * @param mixed $node
      * @return void
      */
-    public function addKeyValue($key, $value, $node)
+    public function addProperties($item, &$node, $path)
     {
-        $type = gettype($value);
-        if (!array_key_exists($type, $node['count'])) {
-            $node['count'][$type] = 0;
+        $node['properties'] ??= [];
+        $pattern = $this->patterns[$path] ?? null;
+        foreach ($item as $key => $val) {
+            if (!empty($pattern) && preg_match($pattern, $key)) {
+                $key = $pattern;
+            }
+            $node['properties'][$key] ??= ['path' => $path . '.' . $key, 'type' => []];
+            $this->addItem($val, $node['properties'][$key], $path . '.' . $key);
         }
-        $node['count'][$type] += 1;
     }
 
     /**
