@@ -38,6 +38,11 @@ $gConfig['admin_email'] = '';
 $gConfig['create_db'] = true;
 
 /**
+ * Specify a cache directory for any Google or Wikidata lookup
+ */
+$gConfig['cache_dir'] = dirname(__DIR__) . '/cache';
+
+/**
  * Databases infos
  *
  * For each database:

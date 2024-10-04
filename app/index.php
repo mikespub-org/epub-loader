@@ -61,8 +61,19 @@ $data = [
     'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13((string) $gConfig['admin_email']),
 ];
 
+// specify a cache directory for any Google or Wikidata lookup
+$cacheDir = $gConfig['cache_dir'] ?? dirname(__DIR__) . '/cache';
+if (!is_dir($cacheDir) && !mkdir($cacheDir, 0o777, true)) {
+    echo 'Please make sure the cache directory can be created';
+    return;
+}
+if (!is_writable($cacheDir)) {
+    echo 'Please make sure the cache directory is writeable';
+    return;
+}
+
 // you can define extra actions for your app - see example.php
-$handler = new RequestHandler($gConfig, ExtraActions::class);
+$handler = new RequestHandler($gConfig, ExtraActions::class, $cacheDir);
 $result = $handler->request($action, $dbNum, $urlParams);
 
 if ($handler->isDone()) {
