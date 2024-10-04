@@ -51,7 +51,7 @@
 <img src="https://covers.openlibrary.org/a/olid/{{workId}}-M.jpg"/>
 {% endif %}
 {% if workId ends with 'W' and work.covers %}
-<img src="https://covers.openlibrary.org/b/id/{{work.covers.0}}-M.jpg"/>
+<img src="https://covers.openlibrary.org/b/id/{{work.covers|sort|first}}-M.jpg"/>
 {% endif %}
 <ul>
 {% for key, value in work %}

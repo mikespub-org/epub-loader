@@ -73,6 +73,20 @@ class JsonImport extends BookImport
                 $errors[$id] = $e->getMessage();
                 $nbError++;
             }
+        } elseif (!empty($data["type"]) && !empty($data["type"]["key"]) && $data["type"]["key"] == "/type/work") {
+            try {
+                // Parse the JSON data
+                $work = OpenLibraryWork::parse($data);
+                // Load the book infos
+                $bookInfos = OpenLibraryWork::load($inBasePath, $work);
+                // Add the book
+                $this->addBook($bookInfos, 0);
+                $nbOk++;
+            } catch (Exception $e) {
+                $id = basename($fileName);
+                $errors[$id] = $e->getMessage();
+                $nbError++;
+            }
         } else {
             // @todo add more formats to support
         }

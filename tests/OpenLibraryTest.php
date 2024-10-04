@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\Import\BaseImport;
+use Marsender\EPubLoader\Import\JsonImport;
 use Marsender\EPubLoader\Import\DataCapture;
 use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
 use PHPUnit\Framework\TestCase;
@@ -201,6 +202,34 @@ class OpenLibraryTest extends TestCase
         unset($_GET['matchId']);
     }
 
+    public function testJsonImportFile(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/openlibrary';
+        $dbFile = $dbPath . '/metadata.db';
+        $import = new JsonImport($dbFile, true);
+
+        $jsonFile = $dbPath . '/entities/OL118974W.en.json';
+        [$message, $errors] = $import->loadFromJsonFile($dbPath, $jsonFile);
+
+        $expected = '/cache/openlibrary/entities/OL118974W.en.json - 1 files OK - 0 files Error';
+        $this->assertStringContainsString($expected, $message);
+        $this->assertCount(0, $errors);
+    }
+
+    public function testJsonImportPath(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/openlibrary';
+        $dbFile = $dbPath . '/metadata.db';
+        $import = new JsonImport($dbFile, true);
+
+        $jsonPath = 'entities';
+        [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
+
+        $expected = '/cache/openlibrary/entities/OL118974W.en.json - 1 files OK - 0 files Error';
+        $this->assertStringContainsString($expected, $message);
+        $this->assertCount(0, $errors);
+    }
+
     public function testMatchParseAuthorSearch(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
@@ -254,7 +283,7 @@ class OpenLibraryTest extends TestCase
             $works = OpenLibraryMatch::parseWorkSearch($matched);
         }
 
-        $expected = 9;
+        $expected = 10;
         $this->assertCount($expected, $fileList);
     }
 
@@ -280,7 +309,7 @@ class OpenLibraryTest extends TestCase
         //$cacheFile = $cacheDir . '/openlibrary/authorentity.report.json';
         //$report = $capture->report($cacheFile);
 
-        $expected = 18;
+        $expected = 27;
         $this->assertCount($expected, $fileList);
     }
 
@@ -305,7 +334,7 @@ class OpenLibraryTest extends TestCase
         //$cacheFile = $cacheDir . '/openlibrary/workentity.report.json';
         //$report = $capture->report($cacheFile);
 
-        $expected = 29;
+        $expected = 27;
         $this->assertCount($expected, $fileList);
     }
 }
