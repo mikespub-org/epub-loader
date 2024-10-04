@@ -2,9 +2,9 @@
 
 {% block findlinks %}
 {% if not authorId %}
- - <a href="{{endpoint}}/{{action}}/{{dbNum}}?findLinks=1">GoodReads author links</a>
- - <a href="{{endpoint}}/wd_author/{{dbNum}}">Check WikiData authors</a>
- - <a href="{{endpoint}}/ol_author/{{dbNum}}">Find OpenLibrary authors</a>
+ - <a href="{{endpoint}}/wd_author/{{dbNum}}" title="WikiData Authors">WD Authors</a>
+ - <a href="{{endpoint}}/ol_author/{{dbNum}}" title="OpenLibrary Authors">OL Authors</a>
+ - <a href="{{endpoint}}/{{action}}/{{dbNum}}?findLinks=1">Find GR Author links</a>
 {% endif %}
 {% endblock findlinks %}
 

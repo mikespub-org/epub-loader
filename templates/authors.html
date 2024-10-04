@@ -32,6 +32,37 @@
 		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{authorId}}?matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>
 	{% endfor %}
+	{% if paging %}
+	<tr>
+		<td>
+			{% if paging.first %}
+				<a href="{{endpoint}}/{{action}}/{{dbNum}}?{{paging.first}}">&nbsp;|&lt;&nbsp;</a>
+			{% else %}
+			{% endif %}
+		</td>
+		<td>
+			{% if paging.prev %}
+				<a href="{{endpoint}}/{{action}}/{{dbNum}}?{{paging.prev}}">&nbsp;&lt;&nbsp;</a>
+			{% else %}
+			{% endif %}
+		</td>
+		<td>
+			{% if paging.next %}
+				<a href="{{endpoint}}/{{action}}/{{dbNum}}?{{paging.next}}">&nbsp;&gt;&nbsp;</a>
+			{% else %}
+			{% endif %}
+		</td>
+		<td>
+			{% if paging.last %}
+				<a href="{{endpoint}}/{{action}}/{{dbNum}}?{{paging.last}}">&nbsp;&gt;|&nbsp;</a>
+			{% else %}
+			{% endif %}
+		</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	{% endif %}
 </table>
 </form>
 {% block lookup %}

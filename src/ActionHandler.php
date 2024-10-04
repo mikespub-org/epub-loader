@@ -278,14 +278,15 @@ class ActionHandler
      */
     public function authors($authorId = null, $sort = null)
     {
-        $offset = $this->request->get('offset');
+        $offset = $this->request->getId('offset');
         // List the authors
         $authors = $this->db->getAuthors($authorId, $sort, $offset);
         $matched = null;
-        $authors = $this->addAuthorInfo($authors, $authorId, $sort);
+        $authors = $this->addAuthorInfo($authors, $authorId, $sort, $offset);
+        $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched, 'paging' => $paging];
     }
 
     /**
@@ -307,7 +308,7 @@ class ActionHandler
             $authorId = null;
         }
         $sort = $this->request->get('sort');
-        $offset = $this->request->get('offset');
+        $offset = $this->request->getId('offset');
 
         // List the authors
         $authors = $this->db->getAuthors($authorId, $sort, $offset);
@@ -340,10 +341,11 @@ class ActionHandler
                 }
             }
         }
-        $authors = $this->addAuthorInfo($authors, $authorId, $sort);
+        $authors = $this->addAuthorInfo($authors, $authorId, $sort, $offset);
+        $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched, 'paging' => $paging];
     }
 
     /**
@@ -395,7 +397,7 @@ class ActionHandler
             $matched = $wikimatch->findWorksByTitle($query);
         } else {
             $sort = $this->request->get('sort');
-            $offset = $this->request->get('offset');
+            $offset = $this->request->getId('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $wikimatch->findWorksByAuthorProperty($author);
             //$matched = array_merge($matched, $wikimatch->findWorksByAuthorName($author));
@@ -455,7 +457,7 @@ class ActionHandler
             $matched = $wikimatch->findSeriesByName($query);
         } else {
             $sort = $this->request->get('sort');
-            $offset = $this->request->get('offset');
+            $offset = $this->request->getId('offset');
             $series = $this->db->getSeriesByAuthor($authorId, $sort, $offset);
             if (count($series) > 0) {
                 $matched = $wikimatch->findSeriesByAuthor($author);
@@ -538,7 +540,7 @@ class ActionHandler
             //$info = GoogleBooksMatch::import($dbPath, $matched);
         } else {
             $sort = $this->request->get('sort');
-            $offset = $this->request->get('offset');
+            $offset = $this->request->getId('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $googlematch->findWorksByAuthor($author);
             //$info = GoogleBooksMatch::import($dbPath, $matched);
@@ -605,7 +607,7 @@ class ActionHandler
             //$authorId = null;
         }
         $sort = $this->request->get('sort');
-        $offset = $this->request->get('offset');
+        $offset = $this->request->getId('offset');
 
         // List the authors
         $authors = $this->db->getAuthors($authorId, $sort, $offset);
@@ -643,10 +645,11 @@ class ActionHandler
                 }
             }
         }
-        $authors = $this->addAuthorInfo($authors, $authorId, $sort);
+        $authors = $this->addAuthorInfo($authors, $authorId, $sort, $offset);
+        $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['docs']];
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['docs'], 'paging' => $paging];
     }
 
     /**
@@ -689,12 +692,12 @@ class ActionHandler
             //$matched['entries'] ??= $matched['docs'];
         } elseif (!empty($authId)) {
             $sort = $this->request->get('sort');
-            $offset = $this->request->get('offset');
+            $offset = $this->request->getId('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $openlibrary->findWorksByAuthorId($authId);
         } else {
             $sort = $this->request->get('sort');
-            $offset = $this->request->get('offset');
+            $offset = $this->request->getId('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $olid = $openlibrary->findAuthorId($author);
             $matched = $openlibrary->findWorksByAuthorId($olid);
@@ -789,7 +792,7 @@ class ActionHandler
             //$authorId = null;
         }
         $sort = $this->request->get('sort');
-        $offset = $this->request->get('offset');
+        $offset = $this->request->getId('offset');
 
         // List the authors
         $authors = $this->db->getAuthors($authorId, $sort, $offset);
@@ -829,16 +832,17 @@ class ActionHandler
                 }
             }
         }
-        $authors = $this->addAuthorInfo($authors, $authorId, $sort);
+        $authors = $this->addAuthorInfo($authors, $authorId, $sort, $offset);
         foreach ($matched as $key => $match) {
             foreach ($match['books'] as $id => $book) {
                 $matched[$key]['books'][$id]['key'] = $book['id'];
                 $matched[$key]['books'][$id]['id'] = GoodReadsMatch::bookid($book['id']);
             }
         }
+        $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched];
+        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched, 'paging' => $paging];
     }
 
     /**
@@ -881,7 +885,7 @@ class ActionHandler
             //$matched['entries'] ??= $matched['docs'];
         } else {
             $sort = $this->request->get('sort');
-            $offset = $this->request->get('offset');
+            $offset = $this->request->getId('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
         }
         if (!empty($matchId)) {
@@ -1009,19 +1013,24 @@ class ActionHandler
      * @param array<mixed> $authors
      * @param int|null $authorId
      * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    protected function addAuthorInfo($authors, $authorId = null, $sort = null)
+    protected function addAuthorInfo($authors, $authorId = null, $sort = null, $offset = null)
     {
-        $authors = $this->addAuthorLinks($authors);
         $authors = $this->addBookCount($authors, $authorId);
         $authors = $this->addSeriesCount($authors, $authorId);
+        // we order & slice here for books or series
         if (!empty($sort) && in_array($sort, ['books', 'series'])) {
-            // @todo this is within limit and offset
             uasort($authors, function ($a, $b) use ($sort) {
                 return $b[$sort] <=> $a[$sort];
             });
+            $offset ??= 0;
+            if (count($authors) > $this->db->limit) {
+                $authors = array_slice($authors, $offset, $this->db->limit, true);
+            }
         }
+        $authors = $this->addAuthorLinks($authors);
         return $authors;
     }
 

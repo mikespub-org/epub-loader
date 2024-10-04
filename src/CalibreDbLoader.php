@@ -147,9 +147,12 @@ class CalibreDbLoader
         } else {
             $sql .= ' order by id';
         }
-        $sql .= ' limit ' . $this->limit;
-        if (!empty($offset) && is_int($offset)) {
-            $sql .= ' offset ' . $offset;
+        // we will order & slice later for books or series - see ActionHandler::addAuthorInfo()
+        if (empty($sort) || !in_array($sort, ['books', 'series'])) {
+            $sql .= ' limit ' . $this->limit;
+            if (!empty($offset) && is_int($offset)) {
+                $sql .= ' offset ' . (string) $offset;
+            }
         }
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($params);
@@ -175,6 +178,68 @@ class CalibreDbLoader
             $authors[$post->id] = $post->name;
         }
         return $authors;
+    }
+
+    /**
+     * Summary of getAuthorCount
+     * @return int|null
+     */
+    public function getAuthorCount()
+    {
+        $sql = 'select count(*) as count from authors';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        if ($post = $stmt->fetchObject()) {
+            return $post->count;
+        }
+        return null;
+    }
+
+    /**
+     * Summary of getAuthorPaging
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>|null
+     */
+    public function getAuthorPaging($sort = null, $offset = null)
+    {
+        $count = $this->getAuthorCount();
+        return $this->getCountPaging($count, $sort, $offset);
+    }
+
+    /**
+     * Summary of getCountPaging
+     * @param int|null $count
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>|null
+     */
+    public function getCountPaging($count = null, $sort = null, $offset = null)
+    {
+        if (empty($count) || $count <= $this->limit) {
+            return null;
+        }
+        $offset ??= 0;
+        $prefix = '';
+        if (!empty($sort) && $sort != 'id') {
+            $prefix = 'sort=' . $sort . '&';
+        }
+        $paging = [
+            'first' => '',
+            'prev' => '',
+            'next' => '',
+            'last' => '',
+        ];
+        if (!empty($offset)) {
+            $paging['first'] = $prefix . 'offset=0';
+            $paging['prev'] = $prefix . 'offset=' . (string) ($offset - $this->limit);
+        }
+        $max = $this->limit * intdiv($count, $this->limit);
+        if ($offset < $max) {
+            $paging['next'] = $prefix . 'offset=' . (string) ($offset + $this->limit);
+            $paging['last'] = $prefix . 'offset=' . (string) $max;
+        }
+        return $paging;
     }
 
     /**
@@ -205,7 +270,7 @@ class CalibreDbLoader
         }
         $sql .= ' limit ' . $this->limit;
         if (!empty($offset) && is_int($offset)) {
-            $sql .= ' offset ' . $offset;
+            $sql .= ' offset ' . (string) $offset;
         }
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($params);
@@ -336,7 +401,7 @@ class CalibreDbLoader
         }
         $sql .= ' limit ' . $this->limit;
         if (!empty($offset) && is_int($offset)) {
-            $sql .= ' offset ' . $offset;
+            $sql .= ' offset ' . (string) $offset;
         }
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($params);
