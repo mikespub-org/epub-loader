@@ -328,6 +328,9 @@ class WikiDataMatch extends BaseMatch
      */
     public static function parseEntity($data, $lang = 'en')
     {
-        return new Entity($data, $lang);
+        $entity = new Entity($data, $lang);
+        // @todo this generates warnings for missing prop, propertyLabel, qualifier etc.
+        $entity->parseProperties($data['properties'] ?? []);
+        return $entity;
     }
 }

@@ -343,7 +343,7 @@ class WikiDataTest extends TestCase
     {
         $cacheDir = dirname(__DIR__) . '/cache';
         //$match = new WikiDataMatch($cacheDir);
-        //$patterns = ['.properties' => '/^P\d+$/'];
+        //$patterns = ['.properties' => '^P\d+$'];
         //$capture = new DataCapture($patterns);
 
         $fileList = BaseImport::getFiles($cacheDir . '/wikidata/entities/', '*.json');
@@ -355,9 +355,10 @@ class WikiDataTest extends TestCase
             //$capture->analyze($matched);
             //$work = $match->parseSearchPage($entityId, $content);
             $work = WikiDataMatch::parseEntity($matched);
+            //$capture->analyze($work);
         }
-        //$report = $capture->report();
-        //echo json_encode($report, JSON_PRETTY_PRINT);
+        //$cacheFile = $cacheDir . '/wikidata/entity.report.json';
+        //$report = $capture->report($cacheFile);
 
         $expected = 1569;
         $this->assertCount($expected, $fileList);

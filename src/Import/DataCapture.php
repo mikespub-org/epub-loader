@@ -17,13 +17,18 @@ class DataCapture
     public array $patterns = [];
 
     /**
-     * Simulate patternProperties from JSON schema if needed
-     * Example: $patterns = ['.properties' => '/^P\d+$/', ...];
+     * Simulate patternProperties from JSON schema if needed (regex pattern without delimiter)
+     * Example: $patterns = ['.properties' => '^P\d+$', ...];
      * @param array<string, string> $patterns [path => pattern]
      */
     public function __construct($patterns = [])
     {
-        $this->patterns = $patterns;
+        $this->patterns = [];
+        // add delimiter here
+        foreach ($patterns as $path => $pattern) {
+            $pattern = str_replace('~', '\\~', $pattern);
+            $this->patterns[$path] = '~' . $pattern . '~';
+        }
     }
 
     /**
@@ -47,8 +52,14 @@ class DataCapture
     {
         $type = gettype($item);
         if (is_object($item)) {
-            if (method_exists($item, 'toArray')) {
-                // @todo support Collection like WikiData Entity
+            $node['$comment'] ??= get_class($item);
+            if (method_exists($item, 'all')) {
+                $item = $item->all();
+                // flatten collection here!?
+                if (count($item) == 1 && !empty($item[''])) {
+                    $item = $item[''];
+                }
+            } elseif (method_exists($item, 'toArray')) {
                 $item = $item->toArray();
             } else {
                 $item = get_object_vars($item);
@@ -65,6 +76,8 @@ class DataCapture
                     $this->addItem($entry, $node['items'], $path . '.0');
                 }
             }
+        } elseif (!isset($node['examples']) && !is_null($item) && !is_array($item)) {
+            $node['examples'] = [ $item ];
         }
         $node['type'][$type] ??= 0;
         $node['type'][$type] += 1;
@@ -80,21 +93,30 @@ class DataCapture
     {
         $node['properties'] ??= [];
         $pattern = $this->patterns[$path] ?? null;
+        $example = null;
         foreach ($item as $key => $val) {
             if (!empty($pattern) && preg_match($pattern, $key)) {
+                $example ??= $key;
                 $key = $pattern;
             }
             $node['properties'][$key] ??= ['path' => $path . '.' . $key, 'type' => []];
+            if (!empty($example)) {
+                $node['properties'][$key]['$comment'] ??= 'Pattern example: ' . $example;
+            }
             $this->addItem($val, $node['properties'][$key], $path . '.' . $key);
         }
     }
 
     /**
      * Summary of report
+     * @param ?string $fileName
      * @return array<mixed>
      */
-    public function report()
+    public function report($fileName = null)
     {
+        if (!empty($fileName)) {
+            file_put_contents($fileName, json_encode($this->structure, JSON_PRETTY_PRINT));
+        }
         return $this->structure;
     }
 }
