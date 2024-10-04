@@ -4,6 +4,7 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Cache database stats and file counts for big libraries
   * Add JsonImport for OpenLibrary API cached files
   * Add parsing for OpenLibrary and WikiData files
   * Add GoodReads Author and GoodReads Books actions in app config

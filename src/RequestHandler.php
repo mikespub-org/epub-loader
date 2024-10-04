@@ -130,8 +130,39 @@ class RequestHandler
         $result['actionTitle'] = $this->gConfig['actions'][$action];
         $result['actions'] = $this->gConfig['actions'];
         $result['databases'] = $this->gConfig['databases'];
+        $cacheFile = null;
+        $saveFile = false;
+        $sizes = [];
+        $result['statsUpdated'] = 'never';
+        if (!empty($this->cacheDir)) {
+            // cache database stats and file counts for 2 hours
+            $cacheFile = $this->cacheDir . '/sizes.json';
+            if (file_exists($cacheFile) && filemtime($cacheFile) > time() - 2 * 60 * 60) {
+                $content = file_get_contents($cacheFile);
+                $sizes = json_decode($content, true);
+                $result['statsUpdated'] = (string) intval((time() - filemtime($cacheFile)) / 60);
+                $result['statsUpdated'] .= ' minutes ago';
+            }
+        }
         foreach ($this->gConfig['databases'] as $dbNum => $dbConfig) {
             $dbPath = $dbConfig['db_path'];
+            if (!empty($sizes[$dbPath])) {
+                $result['databases'][$dbNum] = array_merge($result['databases'][$dbNum], $sizes[$dbPath]);
+                continue;
+            }
+            $saveFile = true;
+            $dbFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
+            // Open the database
+            if (is_file($dbFileName)) {
+                $db = new CalibreDbLoader($dbFileName);
+                $sizes[$dbPath] = $db->getStats();
+            } else {
+                $sizes[$dbPath] = [
+                    'authors' => 0,
+                    'books' => 0,
+                    'series' => 0,
+                ];
+            }
             $epubPath = $dbConfig['epub_path'];
             if ($action == 'csv_import') {
                 $fileList = BaseImport::getFiles($dbPath, '*.csv');
@@ -140,20 +171,12 @@ class RequestHandler
             } else {
                 $fileList = BaseImport::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             }
-            $result['databases'][$dbNum]['count'] = count($fileList);
-            $dbFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
-            // Open the database
-            if (is_file($dbFileName)) {
-                $db = new CalibreDbLoader($dbFileName);
-                $stats = $db->getStats();
-            } else {
-                $stats = [
-                    'authors' => 0,
-                    'books' => 0,
-                    'series' => 0,
-                ];
-            }
-            $result['databases'][$dbNum] = array_merge($result['databases'][$dbNum], $stats);
+            $sizes[$dbPath]['count'] = count($fileList);
+            $result['databases'][$dbNum] = array_merge($result['databases'][$dbNum], $sizes[$dbPath]);
+        }
+        if (!empty($cacheFile) && $saveFile) {
+            file_put_contents($cacheFile, json_encode($sizes, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $result['statsUpdated'] = 'now';
         }
         $result['errors'] = $this->getErrors();
         $this->template = 'databases.html';
