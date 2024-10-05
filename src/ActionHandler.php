@@ -310,7 +310,7 @@ class ActionHandler
             $link = WikiDataMatch::link($matchId);
             if (!$this->db->setAuthorLink($authorId, $link)) {
                 $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
-                return null;
+                //return null;
             }
             $authorId = null;
         }
@@ -467,7 +467,7 @@ class ActionHandler
                 $link = WikiDataMatch::link($matchId);
                 if (!$this->db->setSeriesLink($seriesId, $link)) {
                     $this->addError($this->dbFileName, "Failed updating link {$link} for seriesId {$seriesId}");
-                    return null;
+                    //return null;
                 }
             }
             $query = $first['name'];
@@ -540,10 +540,7 @@ class ActionHandler
 
         // Update the book identifier
         if (!is_null($bookId) && !is_null($matchId)) {
-            if (!$this->updateBookIdentifier('google', $bookId, $matchId)) {
-                $this->addError($this->dbFileName, "Failed updating google identifier for bookId {$bookId} to {$matchId}");
-                return null;
-            }
+            $this->updateBookIdentifier('google', $bookId, $matchId);
         }
 
         // Find match on Google Books
@@ -620,7 +617,7 @@ class ActionHandler
             $link = OpenLibraryMatch::link($matchId);
             if (!$this->db->setAuthorLink($authorId, $link)) {
                 $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
-                return null;
+                //return null;
             }
             //$authorId = null;
         }
@@ -805,7 +802,7 @@ class ActionHandler
             $link = GoodReadsMatch::AUTHOR_URL . $matchId;
             if (!$this->db->setAuthorLink($authorId, $link)) {
                 $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
-                return null;
+                //return null;
             }
             //$authorId = null;
         }
@@ -990,7 +987,7 @@ class ActionHandler
                 $link = GoodReadsMatch::SERIES_URL . $matchId;
                 if (!$this->db->setSeriesLink($seriesId, $link)) {
                     $this->addError($this->dbFileName, "Failed updating link {$link} for seriesId {$seriesId}");
-                    return null;
+                    //return null;
                 }
             }
         } else {
