@@ -35,7 +35,7 @@ class ExtraActionsTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/hello_world">Example: Hello, World - see app/example.php</a>';
         $this->assertStringContainsString($expected, $output);
@@ -59,7 +59,7 @@ class ExtraActionsTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<th colspan="2">Errors (1)</th>';
         $this->assertStringContainsString($expected, $output);

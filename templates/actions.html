@@ -2,11 +2,28 @@
 
 {% block content %}
 <div><b>Select action</b></div>
+{% if groups %}
 <ul>
-{% for action, actionInfo in actions %}
+	{% for group, actionList in groups %}
+	<li>
+		{{group}}
+		<ul>
+			{% for action, actionInfo in actionList %}
+			<li>
+				<a href="{{endpoint}}/{{action}}/{{dbNum}}">{{actionInfo}}</a>
+			</li>
+			{% endfor %}
+		</ul>
+	</li>
+	{% endfor %}
+</ul>
+{% else %}
+<ul>
+	{% for action, actionInfo in actions %}
 	<li>
 		<a href="{{endpoint}}/{{action}}/{{dbNum}}">{{actionInfo}}</a>
 	</li>
-{% endfor %}
+	{% endfor %}
 </ul>
+{% endif %}
 {% endblock content %}

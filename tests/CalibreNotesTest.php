@@ -34,7 +34,7 @@ class CalibreNotesTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/notes/0?colName=authors">authors</a>';
         $this->assertStringContainsString($expected, $output);
@@ -59,7 +59,7 @@ class CalibreNotesTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/notes/0?colName=authors&itemId=3">3</a>';
         $this->assertStringContainsString($expected, $output);
@@ -86,7 +86,7 @@ class CalibreNotesTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/notes/0?colName=authors&itemId=3&html=1">html</a>';
         $this->assertStringContainsString($expected, $output);
@@ -117,7 +117,7 @@ class CalibreNotesTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/notes/0?colName=authors&itemId=3">3</a>';
         $this->assertStringContainsString($expected, $output);

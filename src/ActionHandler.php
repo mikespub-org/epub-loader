@@ -151,6 +151,13 @@ class ActionHandler
                 //}
                 $result = $this->gr_books($authorId, $bookId, $matchId);
                 break;
+            case 'gr_series':
+                $seriesId = $this->request->getId('seriesId');
+                //if (!WikiDataMatch::isValidEntity($matchId)) {
+                //    $matchId = null;
+                //}
+                $result = $this->gr_series($authorId, $seriesId, $matchId);
+                break;
             case 'notes':
                 $colName = $this->request->get('colName');
                 $itemId = $this->request->getId('itemId');
@@ -932,6 +939,72 @@ class ActionHandler
 
         // Return info
         return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'matchId' => $matchId];
+    }
+
+    /**
+     * Summary of gr_series
+     * @param int|null $authorId
+     * @param int|null $seriesId
+     * @param string|null $matchId
+     * @return array<mixed>|null
+     */
+    public function gr_series($authorId, $seriesId, $matchId)
+    {
+        $authors = $this->db->getAuthors($authorId);
+        if (empty($authorId) && empty($seriesId)) {
+            //$this->addError($this->dbFileName, "Please specify authorId and/or seriesId");
+            //return null;
+            $authorId = array_keys($authors)[0];
+        }
+
+        if (count($authors) < 1) {
+            $this->addError($this->dbFileName, "Please specify a valid authorId");
+            return null;
+        }
+        //$author = $authors[$authorId];
+
+        // Find match on GoodReads
+        $goodreads = new GoodReadsMatch($this->cacheDir);
+        //$entityId = $goodreads->findAuthorId($author);
+
+        $matched = null;
+        if (!empty($seriesId)) {
+            $series = $this->db->getSeries($seriesId);
+            //$query = $series[$seriesId]['name'];
+            $link = $series[$seriesId]['link'] ?? '';
+            if (empty($matchId) && !empty($link) && str_starts_with($link, GoodReadsMatch::SERIES_URL)) {
+                $matchId = str_replace(GoodReadsMatch::SERIES_URL, '', $link);
+            }
+        } else {
+            $sort = $this->request->get('sort');
+            $offset = $this->request->getId('offset');
+            $series = $this->db->getSeriesByAuthor($authorId, $sort, $offset);
+        }
+        foreach ($series as $id => $serie) {
+            if (!empty($serie['link']) && str_starts_with($serie['link'], GoodReadsMatch::SERIES_URL)) {
+                $series[$id]['entityType'] = 'gr_series';
+                $series[$id]['entityId'] = str_replace(GoodReadsMatch::SERIES_URL, '', $serie['link']);
+            }
+        }
+        if (!empty($matchId)) {
+            $found = $goodreads->getSeries($matchId);
+            if (!empty($found)) {
+                $matched = [];
+                $match = [
+                    'id' => $matchId,
+                    'title' => '',
+                    'count' => '',
+                    'description' => '',
+                    'link' => 'https://www.goodreads.com/series/' . $matchId,
+                ];
+                $matched[] = $match;
+            }
+        }
+
+        $authorList = $this->getAuthorList();
+
+        // Return info
+        return ['series' => $series, 'authorId' => $authorId, 'author' => $authors[$authorId], 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList];
     }
 
     /**

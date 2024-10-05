@@ -24,12 +24,14 @@
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}">Id</a></th>
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=name">Name</a></th>
 		<th>Action</th>
+		<th>Link</th>
 	</tr>
 	{% for item in series %}
 	<tr>
 		<td>{{item.id}}</td>
 		<td>{{item.name}}</td>
 		<td>{% if seriesId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}">Search</a>{% endif %}</td>
+		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>
 	{% endfor %}
 </table>

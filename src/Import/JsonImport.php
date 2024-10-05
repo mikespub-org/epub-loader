@@ -62,9 +62,9 @@ class JsonImport extends BookImport
         } elseif (!empty($data["page"]) && $data["page"] == "/book/show/[book_id]") {
             try {
                 // Parse the JSON data
-                $bookShowResult = GoodReadsBook::parse($data);
+                $bookResult = GoodReadsBook::parse($data);
                 // Load the book infos
-                $bookInfos = GoodReadsBook::load($inBasePath, $bookShowResult);
+                $bookInfos = GoodReadsBook::load($inBasePath, $bookResult);
                 // Add the book
                 $this->addBook($bookInfos, 0);
                 $nbOk++;

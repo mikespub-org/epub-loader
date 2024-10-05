@@ -225,10 +225,10 @@ class GoodReadsTest extends TestCase
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
             //$authors = $match->parseAuthorPage($authorId, $content);
-            $authors = GoodReadsBook::parseResult($matched);
+            $authors = GoodReadsBook::parseSearch($matched);
         }
 
-        $expected = 3;
+        $expected = 18;
         $this->assertCount($expected, $fileList);
     }
 
@@ -244,16 +244,31 @@ class GoodReadsTest extends TestCase
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
             //$authors = $match->parseSearchPage($query, $content);
-            $authors = GoodReadsBook::parseResult($matched);
+            $authors = GoodReadsBook::parseSearch($matched);
         }
 
-        $expected = 3;
+        $expected = 15;
         $this->assertCount($expected, $fileList);
     }
 
-    protected function skipTestMatchParseSeries(): void
+    public function testMatchParseSeriesResult(): void
     {
-        // @todo ...
+        $cacheDir = dirname(__DIR__) . '/cache';
+        //$match = new GoodReadsMatch($cacheDir);
+
+        $fileList = JsonImport::getFiles($cacheDir . '/goodreads/series/', '*.json');
+        foreach ($fileList as $cacheFile) {
+            $seriesId = str_replace($cacheDir . '/goodreads/series/', '', $cacheFile);
+            $seriesId = str_replace('.json', '', $seriesId);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            //$series = $match->parseSearchPage($seriesId, $content);
+            $series = GoodReadsBook::parseSeries($matched);
+            $series->setId($seriesId);
+        }
+
+        $expected = 5;
+        $this->assertCount($expected, $fileList);
     }
 
     public function testMatchParseBook(): void
@@ -271,7 +286,7 @@ class GoodReadsTest extends TestCase
             $book = GoodReadsBook::parse($matched);
         }
 
-        $expected = 3;
+        $expected = 4;
         $this->assertCount($expected, $fileList);
     }
 }

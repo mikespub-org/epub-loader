@@ -45,7 +45,7 @@ class DataCapture
      * Summary of addItem
      * @param mixed $item
      * @param mixed $node
-     * @param mixed $path
+     * @param string $path
      * @return void
      */
     public function addItem($item, &$node, $path = '')
@@ -87,6 +87,7 @@ class DataCapture
      * Summary of addProperties
      * @param mixed $item
      * @param mixed $node
+     * @param string $path
      * @return void
      */
     public function addProperties($item, &$node, $path)

@@ -37,7 +37,7 @@ class WikiDataTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/wd_author/0">Some Books</a>';
         $this->assertStringContainsString($expected, $output);
@@ -62,7 +62,7 @@ class WikiDataTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/wd_entity/0/?matchId=Q42511">Q42511</a>';
         $this->assertStringContainsString($expected, $output);
@@ -87,7 +87,7 @@ class WikiDataTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/wd_entity/0/1?matchId=Q35610">Q35610</a>';
         $this->assertStringContainsString($expected, $output);
@@ -111,7 +111,7 @@ class WikiDataTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/wd_books/0/1?bookId=11">Search</a>';
         $this->assertStringContainsString($expected, $output);
@@ -136,7 +136,7 @@ class WikiDataTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/wd_entity/0/1?bookId=11&matchId=Q223131">Q223131</a>';
         $this->assertStringContainsString($expected, $output);
@@ -161,7 +161,7 @@ class WikiDataTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/wd_series/0/1?seriesId=1">Search</a>';
         $this->assertStringContainsString($expected, $output);
@@ -186,7 +186,7 @@ class WikiDataTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/wd_entity/0/1?seriesId=1&matchId=Q4653">Q4653</a>';
         $this->assertStringContainsString($expected, $output);
@@ -213,7 +213,7 @@ class WikiDataTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="https://en.wikipedia.org/wiki/A_Study_in_Scarlet">Wikipedia</a>';
         $this->assertStringContainsString($expected, $output);
@@ -259,7 +259,7 @@ class WikiDataTest extends TestCase
             $works = WikiDataMatch::parseSearchResult($matched);
         }
 
-        $expected = 792;
+        $expected = 793;
         $this->assertCount($expected, $fileList);
     }
 
@@ -335,7 +335,7 @@ class WikiDataTest extends TestCase
             $works = WikiDataMatch::parseSearchResult($matched);
         }
 
-        $expected = 11;
+        $expected = 12;
         $this->assertCount($expected, $fileList);
     }
 

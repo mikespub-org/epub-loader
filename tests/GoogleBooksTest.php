@@ -36,7 +36,7 @@ class GoogleBooksTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/gb_books/0/1?lang=en&bookId=11">Search</a>';
         $this->assertStringContainsString($expected, $output);
@@ -62,7 +62,7 @@ class GoogleBooksTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/gb_volume/0?lang=en&matchId=2BrZDQAAQBAJ">A Study in Scarlet</a>';
         $this->assertStringContainsString($expected, $output);
@@ -90,7 +90,7 @@ class GoogleBooksTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'selfLink: https://www.googleapis.com/books/v1/volumes/2BrZDQAAQBAJ';
         $this->assertStringContainsString($expected, $output);

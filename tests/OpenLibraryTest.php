@@ -38,7 +38,7 @@ class OpenLibraryTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/ol_author/0">Some Books</a>';
         $this->assertStringContainsString($expected, $output);
@@ -63,7 +63,7 @@ class OpenLibraryTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/ol_work/0/?matchId=OL13066A">OL13066A</a>';
         $this->assertStringContainsString($expected, $output);
@@ -88,7 +88,7 @@ class OpenLibraryTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/ol_books/0/1?bookId=11">Search</a>';
         $this->assertStringContainsString($expected, $output);
@@ -113,7 +113,7 @@ class OpenLibraryTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/ol_work/0/1?bookId=11&matchId=OL262496W">OL262496W</a>';
         $this->assertStringContainsString($expected, $output);
@@ -138,7 +138,7 @@ class OpenLibraryTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/ol_work/0/1?matchId=OL161167A">OL161167A</a>';
         $this->assertStringContainsString($expected, $output);
@@ -163,7 +163,7 @@ class OpenLibraryTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'wikipedia: http://en.wikipedia.org/wiki/Arthur_Conan_Doyle';
         $this->assertStringContainsString($expected, $output);
@@ -190,7 +190,7 @@ class OpenLibraryTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'key: /works/OL262496W';
         $this->assertStringContainsString($expected, $output);

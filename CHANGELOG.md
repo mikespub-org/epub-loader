@@ -4,7 +4,12 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Add GoodReads Series action (lookup only)
+  * Split GoodReads namespace and add SeriesResult
+  * Use action groups instead of actions in display
   * Cache database stats and file counts for big libraries
+
+3.3.3 - 20241004 Add GoodReads actions + import OpenLibrary
   * Add JsonImport for OpenLibrary API cached files
   * Add parsing for OpenLibrary and WikiData files
   * Add GoodReads Author and GoodReads Books actions in app config

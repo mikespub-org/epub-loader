@@ -15,8 +15,8 @@ use Exception;
 class RequestHandler
 {
     public const ENDPOINT = './index.php';
-    public const APP_NAME = 'Epub Loader';
-    public const VERSION = '2.5';
+    public const APP_NAME = 'EPub Loader';
+    public const VERSION = '3.3';
     public const TEMPLATE = 'index.html';
 
     /** @var array<mixed> */
@@ -64,6 +64,13 @@ class RequestHandler
         $this->gConfig['create_db'] ??= false;
         $this->gConfig['databases'] ??= [];
         $this->gConfig['actions'] ??= [];
+        // use action groups for display
+        $this->gConfig['groups'] ??= [];
+        foreach ($this->gConfig['groups'] as $group => $actionList) {
+            foreach ($actionList as $action => $actionInfo) {
+                $this->gConfig['actions'][$action] ??= $actionInfo;
+            }
+        }
         // verify expected keys
         $this->gConfig['endpoint'] ??= static::ENDPOINT;
         $this->gConfig['app_name'] ??= static::APP_NAME;
@@ -103,10 +110,11 @@ class RequestHandler
             return $result;
         }
         if (!isset($action)) {
-            // Display the available actions
+            // Display the available action groups
             $result = [];
             $result['action'] = $action;
             $result['dbNum'] = $dbNum;
+            $result['groups'] = $this->gConfig['groups'] ?? [];
             $result['actions'] = $this->gConfig['actions'];
             $result['databases'] = $this->gConfig['databases'];
             $result['errors'] = $this->getErrors();

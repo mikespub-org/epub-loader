@@ -33,7 +33,7 @@ class AppIndexTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<div><b>Select action</b></div>';
         $this->assertStringContainsString($expected, $output);
@@ -53,7 +53,7 @@ class AppIndexTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'Invalid action';
         $this->assertStringContainsString($expected, $output);
@@ -75,7 +75,7 @@ class AppIndexTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<th>Db num</th>';
         $this->assertStringContainsString($expected, $output);
@@ -99,9 +99,9 @@ class AppIndexTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/csv_export">Csv export</a>';
+        $expected = '<a href="/phpunit/csv_export">Export CSV records from Calibre database</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = '/tests/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $output);
@@ -119,9 +119,9 @@ class AppIndexTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/csv_import">Csv import</a>';
+        $expected = '<a href="/phpunit/csv_import">Import CSV records into new Calibre database</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = '/tests/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $output);
@@ -144,9 +144,9 @@ class AppIndexTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/db_load">Create database</a>';
+        $expected = '<a href="/phpunit/db_load">Create Calibre database with available epub files</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = '/calibre/library/metadata.db - 164 files OK - 2 files Error';
         $this->assertStringContainsString($expected, $output);
@@ -168,7 +168,7 @@ class AppIndexTest extends TestCase
         require dirname(__DIR__) . '/app/index.php';
         $output = ob_get_clean();
 
-        $expected = '<title>Epub Loader</title>';
+        $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/authors/0">Some Books</a>';
         $this->assertStringContainsString($expected, $output);

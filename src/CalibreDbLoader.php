@@ -379,7 +379,7 @@ class CalibreDbLoader
      */
     public function getSeries($seriesId = null, $authorId = null, $bookId = null, $sort = null, $offset = null)
     {
-        $sql = 'select series.id as id, series.name as name, author from series, books_series_link, books, books_authors_link
+        $sql = 'select series.id as id, series.name as name, series.link as link, author from series, books_series_link, books, books_authors_link
         where books_series_link.series = series.id and books_series_link.book = books.id and books_authors_link.book = books.id';
         $params = [];
         if (!empty($seriesId)) {

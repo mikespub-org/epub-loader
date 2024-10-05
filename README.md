@@ -1,4 +1,4 @@
-# epub-loader
+# EPub Loader
 
 ## Prerequisites for this fork
 -	PHP 8.x with DOM, GD, Intl, Json, PDO SQLite, SQLite3, XML, XMLWriter and ZLib support (PHP 8.1 or later recommended)
@@ -15,14 +15,25 @@ They have the same PHP version dependencies for 1.x and 2.x releases
 
 ## Description
 
-epub-loader is a utility package for ebooks. It can be used as a stand-alone project or included in your own PHP application
+EPub Loader is a utility package for ebooks. It can be used as a stand-alone project or included in your own PHP application.
 
-- CalibreDbLoader class allows create Calibre databases and add ebooks
-- BookExport class allows to export ebooks metadata in csv files
-- WikiDataMatch class allows to match ebooks and authors with Wikidata
-- GoogleBooksMatch class allows to match ebooks and authors with Google Books
-- OpenLibraryMatch class allows to match ebooks and authors with Open Library
-- The app directory contains samples and allows to run actions
+It supports multiple databases defined by name, database path and epub path where its ebooks are located. You can create new Calibre-compatible databases with EPub Loader, or use existing Calibre databases from elsewhere.
+
+Main features are:
+
+- Import:
+  - create Calibre database with available ebooks
+  - import CSV records into new Calibre database
+  - import JSON files from Lookup into new Calibre database
+- Export:
+  - export CSV records from Calibre database
+- Lookup:
+  - match ebooks and authors with WikiData
+  - match ebooks and authors with Google Books
+  - match ebooks and authors with OpenLibrary
+  - match ebooks and authors with GoodReads
+- Extra:
+  - run extra actions defined in the app directory
 
 ## Installation (stand-alone)
 
@@ -30,7 +41,7 @@ epub-loader is a utility package for ebooks. It can be used as a stand-alone pro
 composer create-project mikespub/epub-loader
 ```
 
-- If a first-time install, copy app/config.php.example to app/config.php
+- If a first-time install, copy `app/config.php.example` to `app/config.php`
 - Edit config.php to match your config
 - Open the app directory url: [./app/index.php](./app/index.php)
 
@@ -47,15 +58,15 @@ composer require mikespub/epub-loader
 use Marsender\EPubLoader\RequestHandler;
 
 // get the global config for epub-loader from somewhere
-// get the current action and dbNum if any
+// get the current action, dbNum and urlParams if any
 
 // you can define extra actions for your app - see example.php
-$handler = new RequestHandler($gConfig, ExtraActions::class);
-$result = $handler->request($action, $dbNum);
+$handler = new RequestHandler($gConfig, ExtraActions::class, $cacheDir);
+$result = $handler->request($action, $dbNum, $urlParams);
 
 // handle the result yourself or let epub-loader generate the output
-$result['endpoint'] = 'loader.php';
-$result['app_name'] = 'My Application';
+$result['endpoint'] = 'index.php/loader';
+$result['app_name'] = 'My EPub Loader';
 echo $handler->output($result, $templateDir, $template);
 ```
 
@@ -63,12 +74,25 @@ echo $handler->output($result, $templateDir, $template);
 
 - You can add extra actions on databases and/or epub files as shown in [./app/example.php](./app/example.php)
 ```php
-public function more()
+class ExtraActions extends ActionHandler
 {
-    // do some more...
-    return [
-        'result' => 'This is more...',
-        'extra' => 'easy',
-    ];
+    // ...
+
+    public function more()
+    {
+        // do some more...
+        return [
+            'result' => 'This is more...',
+            'extra' => 'easy',
+        ];
+    }
 }
 ```
+
+## License & Copyright
+
+This package is available under the GNU General Public License v2 or later - see [LICENSE](LICENSE)
+
+EPub Loader was first distributed as resource for COPS - Calibre OPDS (and HTML) PHP Server. This fork is now a separate package that can work alone or be integrated with other web applications.
+
+Copyright (C) 2013-2021 Didier Corbière

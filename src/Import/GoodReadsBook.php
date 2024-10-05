@@ -10,8 +10,9 @@
 namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
-use Marsender\EPubLoader\Metadata\GoodReads\BookShowResult;
-use Marsender\EPubLoader\Metadata\GoodReads\SearchResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
 use Exception;
 
 class GoodReadsBook
@@ -23,9 +24,22 @@ class GoodReadsBook
      *
      * @return SearchResult
      */
-    public static function parseResult($data)
+    public static function parseSearch($data)
     {
         $result = SearchResult::fromJson($data);
+        return $result;
+    }
+
+    /**
+     * Parse JSON data for GoodReads series result
+     *
+     * @param array<mixed> $data
+     *
+     * @return SeriesResult
+     */
+    public static function parseSeries($data)
+    {
+        $result = SeriesResult::fromJson($data);
         return $result;
     }
 
@@ -34,26 +48,26 @@ class GoodReadsBook
      *
      * @param array<mixed> $data
      *
-     * @return BookShowResult
+     * @return BookResult
      */
     public static function parse($data)
     {
-        $bookShowResult = BookShowResult::fromJson($data);
-        return $bookShowResult;
+        $bookResult = BookResult::fromJson($data);
+        return $bookResult;
     }
 
     /**
      * Loads book infos from a GoodReads book
      *
      * @param string $inBasePath base directory
-     * @param BookShowResult $bookShowResult GoodReads book show
+     * @param BookResult $bookResult GoodReads book show
      * @throws Exception if error
      *
      * @return BookInfos
      */
-    public static function load($inBasePath, $bookShowResult)
+    public static function load($inBasePath, $bookResult)
     {
-        $state = $bookShowResult->getProps()?->getPageProps()?->getApolloState();
+        $state = $bookResult->getProps()?->getPageProps()?->getApolloState();
         if (empty($state)) {
             throw new Exception('Invalid state for GoodReads book');
         }

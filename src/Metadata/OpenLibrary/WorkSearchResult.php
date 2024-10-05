@@ -14,7 +14,7 @@ class WorkSearchResult
     public ?array $docs;
     public ?int $num_found;
     public ?string $q;
-    public null $offset;
+    public mixed $offset;
 
     /**
      * @param WorkDocs[]|null $docs
@@ -26,7 +26,7 @@ class WorkSearchResult
         ?array $docs,
         ?int $num_found,
         ?string $q,
-        null $offset
+        mixed $offset
     ) {
         $this->numFound = $numFound;
         $this->start = $start;
@@ -70,7 +70,7 @@ class WorkSearchResult
         return $this->q;
     }
 
-    public function getOffset(): null
+    public function getOffset(): mixed
     {
         return $this->offset;
     }
