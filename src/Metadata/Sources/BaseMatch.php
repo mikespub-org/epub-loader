@@ -136,7 +136,7 @@ class BaseMatch
             'google' => GoogleBooksMatch::link($value),
             'wd' => WikiDataMatch::link($value),
             'olid' => OpenLibraryMatch::link($value),
-            'goodreads' => 'https://www.goodreads.com/book/show/' . $value,
+            'goodreads' => GoodReadsMatch::link($value),
             'amazon' => 'https://www.amazon.com/dp/' . $value,
             'isbn' => 'https://search.worldcat.org/search?q=bn:' . $value,
             'url' => str_contains($value, '://') ? $value : '',

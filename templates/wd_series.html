@@ -1,7 +1,6 @@
 {% extends 'series.html' %}
 
 {% block lookup %}
-{% if authorId %}
 <div class="part">
 	<p><b>Wikidata Series</b></p>
 	{% if matched %}
@@ -27,5 +26,4 @@
 		No match found
 	{% endif %}
 </div>
-{% endif %}
 {% endblock lookup %}

@@ -115,16 +115,38 @@ class CalibreDbLoader
     }
 
     /**
-     * Summary of setAuthorLink
-     * @param int $authorId
-     * @param string $link
-     * @return bool
+     * Summary of getCountPaging
+     * @param int|null $count
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>|null
      */
-    public function setAuthorLink($authorId, $link)
+    public function getCountPaging($count = null, $sort = null, $offset = null)
     {
-        $sql = 'update authors set link = ? where id = ?';
-        $stmt = $this->mDb->prepare($sql);
-        return $stmt->execute([$link, $authorId]);
+        if (empty($count) || $count <= $this->limit) {
+            return null;
+        }
+        $offset ??= 0;
+        $prefix = '';
+        if (!empty($sort) && $sort != 'id') {
+            $prefix = 'sort=' . $sort . '&';
+        }
+        $paging = [
+            'first' => '',
+            'prev' => '',
+            'next' => '',
+            'last' => '',
+        ];
+        if (!empty($offset)) {
+            $paging['first'] = $prefix . 'offset=0';
+            $paging['prev'] = $prefix . 'offset=' . (string) ($offset - $this->limit);
+        }
+        $max = $this->limit * intdiv($count, $this->limit);
+        if ($offset < $max) {
+            $paging['next'] = $prefix . 'offset=' . (string) ($offset + $this->limit);
+            $paging['last'] = $prefix . 'offset=' . (string) $max;
+        }
+        return $paging;
     }
 
     /**
@@ -208,38 +230,16 @@ class CalibreDbLoader
     }
 
     /**
-     * Summary of getCountPaging
-     * @param int|null $count
-     * @param string|null $sort
-     * @param int|null $offset
-     * @return array<mixed>|null
+     * Summary of setAuthorLink
+     * @param int $authorId
+     * @param string $link
+     * @return bool
      */
-    public function getCountPaging($count = null, $sort = null, $offset = null)
+    public function setAuthorLink($authorId, $link)
     {
-        if (empty($count) || $count <= $this->limit) {
-            return null;
-        }
-        $offset ??= 0;
-        $prefix = '';
-        if (!empty($sort) && $sort != 'id') {
-            $prefix = 'sort=' . $sort . '&';
-        }
-        $paging = [
-            'first' => '',
-            'prev' => '',
-            'next' => '',
-            'last' => '',
-        ];
-        if (!empty($offset)) {
-            $paging['first'] = $prefix . 'offset=0';
-            $paging['prev'] = $prefix . 'offset=' . (string) ($offset - $this->limit);
-        }
-        $max = $this->limit * intdiv($count, $this->limit);
-        if ($offset < $max) {
-            $paging['next'] = $prefix . 'offset=' . (string) ($offset + $this->limit);
-            $paging['last'] = $prefix . 'offset=' . (string) $max;
-        }
-        return $paging;
+        $sql = 'update authors set link = ? where id = ?';
+        $stmt = $this->mDb->prepare($sql);
+        return $stmt->execute([$link, $authorId]);
     }
 
     /**
@@ -331,6 +331,20 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getBookPaging
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>|null
+     */
+    public function getBookPaging($sort = null, $offset = null)
+    {
+        // get the total of all books per author
+        $count = $this->getBookCount();
+        $total = array_sum(array_values($count));
+        return $this->getCountPaging($total, $sort, $offset);
+    }
+
+    /**
      * Summary of getIdentifierUrl
      * @param string $type
      * @param mixed $value
@@ -379,7 +393,7 @@ class CalibreDbLoader
      */
     public function getSeries($seriesId = null, $authorId = null, $bookId = null, $sort = null, $offset = null)
     {
-        $sql = 'select series.id as id, series.name as name, series.link as link, author from series, books_series_link, books, books_authors_link
+        $sql = 'select distinct series.id as id, series.name as name, series.link as link, author from series, books_series_link, books, books_authors_link
         where books_series_link.series = series.id and books_series_link.book = books.id and books_authors_link.book = books.id';
         $params = [];
         if (!empty($seriesId)) {
@@ -394,7 +408,7 @@ class CalibreDbLoader
             $sql .= ' and books.id = ?';
             $params[] = $bookId;
         }
-        if (!empty($sort) && in_array($sort, ['id', 'name'])) {
+        if (!empty($sort) && in_array($sort, ['id', 'name', 'author'])) {
             $sql .= ' order by ' . $sort;
         } else {
             $sql .= ' order by id';
@@ -406,8 +420,9 @@ class CalibreDbLoader
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($params);
         $series = [];
+        // series can have multiple authors
         while ($post = $stmt->fetchObject()) {
-            $series[$post->id] = (array) $post;
+            $series[(string) $post->id . '.' . (string) $post->author] = (array) $post;
         }
         return $series;
     }
@@ -458,6 +473,33 @@ class CalibreDbLoader
             $count[$post->author] = $post->numitems;
         }
         return $count;
+    }
+
+    /**
+     * Summary of getSeriesPaging
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>|null
+     */
+    public function getSeriesPaging($sort = null, $offset = null)
+    {
+        // get the total of all series per author
+        $count = $this->getSeriesCount();
+        $total = array_sum(array_values($count));
+        return $this->getCountPaging($total, $sort, $offset);
+    }
+
+    /**
+     * Summary of setSeriesLink
+     * @param int $seriesId
+     * @param string $link
+     * @return bool
+     */
+    public function setSeriesLink($seriesId, $link)
+    {
+        $sql = 'update series set link = ? where id = ?';
+        $stmt = $this->mDb->prepare($sql);
+        return $stmt->execute([$link, $seriesId]);
     }
 
     /**

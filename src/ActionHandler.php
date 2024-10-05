@@ -460,7 +460,17 @@ class ActionHandler
         $matched = null;
         if (!empty($seriesId)) {
             $series = $this->db->getSeries($seriesId);
-            $query = $series[$seriesId]['name'];
+            // series can have multiple authors
+            $first = array_values($series)[0];
+            // Update the series link
+            if (!empty($matchId) && empty($first['link'])) {
+                $link = WikiDataMatch::link($matchId);
+                if (!$this->db->setSeriesLink($seriesId, $link)) {
+                    $this->addError($this->dbFileName, "Failed updating link {$link} for seriesId {$seriesId}");
+                    return null;
+                }
+            }
+            $query = $first['name'];
             $matched = $wikimatch->findSeriesByName($query);
         } else {
             $sort = $this->request->get('sort');
@@ -470,11 +480,12 @@ class ActionHandler
                 $matched = $wikimatch->findSeriesByAuthor($author);
             }
         }
+        $paging = ($seriesId || $authorId) ? null : $this->db->getSeriesPaging($sort, $offset);
 
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['series' => $series, 'authorId' => $authorId, 'author' => $authors[$authorId], 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList];
+        return ['series' => $series, 'authorId' => $authorId, 'author' => $authors[$authorId], 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList, 'paging' => $paging];
     }
 
     /**
@@ -954,7 +965,7 @@ class ActionHandler
         if (empty($authorId) && empty($seriesId)) {
             //$this->addError($this->dbFileName, "Please specify authorId and/or seriesId");
             //return null;
-            $authorId = array_keys($authors)[0];
+            //$authorId = array_keys($authors)[0];
         }
 
         if (count($authors) < 1) {
@@ -962,6 +973,8 @@ class ActionHandler
             return null;
         }
         //$author = $authors[$authorId];
+        $sort = $this->request->get('sort');
+        $offset = $this->request->getId('offset');
 
         // Find match on GoodReads
         $goodreads = new GoodReadsMatch($this->cacheDir);
@@ -969,42 +982,65 @@ class ActionHandler
 
         $matched = null;
         if (!empty($seriesId)) {
-            $series = $this->db->getSeries($seriesId);
-            //$query = $series[$seriesId]['name'];
-            $link = $series[$seriesId]['link'] ?? '';
-            if (empty($matchId) && !empty($link) && str_starts_with($link, GoodReadsMatch::SERIES_URL)) {
-                $matchId = str_replace(GoodReadsMatch::SERIES_URL, '', $link);
+            $series = $this->db->getSeries($seriesId, $authorId, null, $sort, $offset);
+            // series can have multiple authors
+            $first = array_values($series)[0];
+            // Update the series link
+            if (!empty($matchId) && empty($first['link'])) {
+                $link = GoodReadsMatch::SERIES_URL . $matchId;
+                if (!$this->db->setSeriesLink($seriesId, $link)) {
+                    $this->addError($this->dbFileName, "Failed updating link {$link} for seriesId {$seriesId}");
+                    return null;
+                }
             }
         } else {
-            $sort = $this->request->get('sort');
-            $offset = $this->request->getId('offset');
             $series = $this->db->getSeriesByAuthor($authorId, $sort, $offset);
         }
         foreach ($series as $id => $serie) {
             if (!empty($serie['link']) && str_starts_with($serie['link'], GoodReadsMatch::SERIES_URL)) {
                 $series[$id]['entityType'] = 'gr_series';
                 $series[$id]['entityId'] = str_replace(GoodReadsMatch::SERIES_URL, '', $serie['link']);
+                if (empty($matchId) && !empty($seriesId)) {
+                    $matchId = $series[$id]['entityId'];
+                }
             }
         }
         if (!empty($matchId)) {
             $found = $goodreads->getSeries($matchId);
             if (!empty($found)) {
+                $dbPath = $this->dbConfig['db_path'];
+                $info = GoodReadsMatch::import($dbPath, $found);
                 $matched = [];
                 $match = [
                     'id' => $matchId,
-                    'title' => '',
-                    'count' => '',
-                    'description' => '',
+                    'title' => $info->getTitle(),
+                    'count' => $info->getNumWorks(),
+                    'description' => $info->getDescription(),
                     'link' => 'https://www.goodreads.com/series/' . $matchId,
                 ];
                 $matched[] = $match;
             }
+        } elseif (empty($authorId)) {
+            $matched = [];
+            foreach ($goodreads->getSeriesIds() as $id) {
+                $matched[] = [
+                    'id' => $id,
+                    'title' => '',
+                    'count' => '',
+                    'description' => '',
+                    'link' => 'https://www.goodreads.com/series/' . $id,
+                ];
+            }
+            if (count($matched) > $this->db->limit) {
+                $matched = array_slice($matched, $offset, $this->db->limit);
+            }
         }
+        $paging = ($seriesId || $authorId) ? null : $this->db->getSeriesPaging($sort, $offset);
 
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['series' => $series, 'authorId' => $authorId, 'author' => $authors[$authorId], 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList];
+        return ['series' => $series, 'authorId' => $authorId, 'author' => $authors[$authorId], 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList, 'paging' => $paging];
     }
 
     /**
@@ -1119,10 +1155,16 @@ class ActionHandler
                 if (WikiDataMatch::isValidLink($author['link'])) {
                     $authors[$id]['entityType'] = 'wd_entity';
                     $authors[$id]['entityId'] = WikiDataMatch::entity($author['link']);
+                    continue;
                 }
                 if (OpenLibraryMatch::isValidLink($author['link'])) {
                     $authors[$id]['entityType'] = 'ol_work';
                     $authors[$id]['entityId'] = OpenLibraryMatch::entity($author['link']);
+                    continue;
+                }
+                if (str_starts_with($author['link'], GoodReadsMatch::AUTHOR_URL)) {
+                    $authors[$id]['entityType'] = 'gr_author';
+                    $authors[$id]['entityId'] = GoodReadsMatch::entity($author['link']);
                 }
             }
         }

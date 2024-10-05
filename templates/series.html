@@ -3,7 +3,7 @@
 {% block content %}
 <div class="title">
 	<form method="GET" action="{{endpoint}}/{{action}}/{{dbNum}}">
-		<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/wd_books/{{dbNum}}/{{authorId}}">{{dbConfig.name}}</a>
+		<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/authors/{{dbNum}}/{{authorId}}">{{dbConfig.name}}</a>
 		Author <select name="authorId">
 			<option value=""></option>
 			{% for id, name in authors %}
@@ -22,18 +22,23 @@
 <table width="100%">
 	<tr>
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}">Id</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=author">AuthorId</a></th>
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=name">Name</a></th>
 		<th>Action</th>
 		<th>Link</th>
 	</tr>
 	{% for item in series %}
 	<tr>
-		<td>{{item.id}}</td>
+		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/?seriesId={{item.id}}">{{item.id}}</a></td>
+		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}">{{item.author}}</a></td>
 		<td>{{item.name}}</td>
 		<td>{% if seriesId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}">Search</a>{% endif %}</td>
 		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>
 	{% endfor %}
+	{% if paging %}
+		{{ include('paging.html') }}
+	{% endif %}
 </table>
 </form>
 {% block lookup %}

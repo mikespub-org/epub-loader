@@ -4,7 +4,7 @@
   * ...
 
 3.x.x - 2024xxxx
-  * Add GoodReads Series action (lookup only)
+  * Add GoodReads Series action, paging and match
   * Split GoodReads namespace and add SeriesResult
   * Use action groups instead of actions in display
   * Cache database stats and file counts for big libraries

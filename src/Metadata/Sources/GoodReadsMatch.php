@@ -8,8 +8,11 @@
 
 namespace Marsender\EPubLoader\Metadata\Sources;
 
+use Marsender\EPubLoader\Import\BaseImport;
 use Marsender\EPubLoader\Import\GoodReadsBook;
 use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
 use Exception;
 
 class GoodReadsMatch extends BaseMatch
@@ -162,6 +165,18 @@ class GoodReadsMatch extends BaseMatch
     }
 
     /**
+     * Summary of getSearchQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getSearchQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/goodreads/search/';
+        return BaseImport::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
      * Summary of getAuthor
      * @param string $authorId
      * @param string|null $lang Language (default: en)
@@ -205,6 +220,18 @@ class GoodReadsMatch extends BaseMatch
             }
             throw $e;
         }
+    }
+
+    /**
+     * Summary of getAuthorIds
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getAuthorIds($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/goodreads/author/list/';
+        return BaseImport::getFiles($baseDir, '*.json', true);
     }
 
     /**
@@ -261,6 +288,18 @@ class GoodReadsMatch extends BaseMatch
     }
 
     /**
+     * Summary of getSeriesIds
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getSeriesIds($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/goodreads/series/';
+        return BaseImport::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
      * Summary of getBook
      * @param string $bookId
      * @param string|null $lang Language (default: en)
@@ -307,6 +346,47 @@ class GoodReadsMatch extends BaseMatch
     }
 
     /**
+     * Summary of getBookIds
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getBookIds($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/goodreads/book/show/';
+        return BaseImport::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
+     * Summary of entity
+     * @param string $link
+     * @return string
+     */
+    public static function entity($link)
+    {
+        if (str_starts_with($link, static::AUTHOR_URL)) {
+            return str_replace(static::AUTHOR_URL, '', $link);
+        }
+        if (str_starts_with($link, static::SERIES_URL)) {
+            return str_replace(static::SERIES_URL, '', $link);
+        }
+        return str_replace(static::ENTITY_URL, '', $link);
+    }
+
+    /**
+     * Summary of isValidLink
+     * @param string $link
+     * @return bool
+     */
+    public static function isValidLink($link)
+    {
+        if (!empty($link) && (str_starts_with($link, (string) static::ENTITY_URL) || str_starts_with($link, (string) static::AUTHOR_URL) || str_starts_with($link, (string) static::SERIES_URL))) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Summary of bookid
      * @param string $bookId
      * @return string
@@ -326,10 +406,16 @@ class GoodReadsMatch extends BaseMatch
      * Summary of import
      * @param string $dbPath
      * @param array<mixed> $data
-     * @return BookInfos
+     * @return BookInfos|SeriesResult|SearchResult
      */
     public static function import($dbPath, $data)
     {
-        return GoodReadsBook::import($dbPath, $data);
+        if (!empty($data["page"]) && $data["page"] == "/book/show/[book_id]") {
+            return GoodReadsBook::import($dbPath, $data);
+        }
+        if (array_keys($data)[0] == 0) {
+            return GoodReadsBook::parseSeries($data);
+        }
+        return GoodReadsBook::parseSearch($data);
     }
 }

@@ -217,9 +217,10 @@ class BaseImport
      *
      * @param string $inPath Base directory to search in
      * @param string $inPattern Search pattern
+     * @param bool $inStrip Strip path and pattern from result (e.g. for entity ids)
      * @return array<string>
      */
-    public static function getFiles($inPath = '', $inPattern = '*.epub')
+    public static function getFiles($inPath = '', $inPattern = '*.epub', $inStrip = false)
     {
         $res = [];
 
@@ -232,6 +233,8 @@ class BaseImport
         if (substr($inPath, -1) != DIRECTORY_SEPARATOR) {
             $inPath .= DIRECTORY_SEPARATOR;
         }
+        // Simple cases only, e.g. *.epub or *.en.json
+        $suffix = str_replace('*', '', $inPattern);
 
         // Add files from the current directory
         $files = glob($inPath . $inPattern, GLOB_MARK | GLOB_NOSORT);
@@ -239,7 +242,11 @@ class BaseImport
             if (substr($item, -1) == DIRECTORY_SEPARATOR) {
                 continue;
             }
-            $res[] = $item;
+            if ($inStrip) {
+                $res[] = basename($item, $suffix);
+            } else {
+                $res[] = $item;
+            }
         }
 
         // Scan sub directories
