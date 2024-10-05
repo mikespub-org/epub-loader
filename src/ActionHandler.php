@@ -1162,9 +1162,10 @@ class ActionHandler
                     $authors[$id]['entityId'] = OpenLibraryMatch::entity($author['link']);
                     continue;
                 }
-                if (str_starts_with($author['link'], GoodReadsMatch::AUTHOR_URL)) {
+                if (GoodReadsMatch::isValidLink($author['link'])) {
                     $authors[$id]['entityType'] = 'gr_author';
                     $authors[$id]['entityId'] = GoodReadsMatch::entity($author['link']);
+                    continue;
                 }
             }
         }

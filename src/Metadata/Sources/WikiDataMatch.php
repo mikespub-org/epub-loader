@@ -61,6 +61,7 @@ class WikiDataMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -125,6 +126,7 @@ class WikiDataMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -156,6 +158,7 @@ class WikiDataMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -187,6 +190,7 @@ class WikiDataMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -251,6 +255,7 @@ class WikiDataMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -282,6 +287,7 @@ class WikiDataMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -306,6 +312,7 @@ class WikiDataMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $entity);
         }
+        usleep(static::SLEEP_TIME);
         return $entity;
     }
 

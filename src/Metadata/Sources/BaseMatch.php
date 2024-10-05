@@ -15,6 +15,7 @@ class BaseMatch
     public const ENTITY_URL = 'http://www.wikidata.org/entity/';
     public const ENTITY_PATTERN = '/^\w+$/';
     public const CACHE_TYPES = [];
+    public const SLEEP_TIME = 50000;
 
     /** @var string|null */
     protected $cacheDir;

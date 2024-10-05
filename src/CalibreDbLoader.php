@@ -26,6 +26,7 @@ class CalibreDbLoader
     /** @var PDO|null */
     protected $notesDb;
     public int $limit = 500;
+    public bool $readOnly = false;
 
     /**
      * Open a Calibre database
@@ -36,6 +37,9 @@ class CalibreDbLoader
     {
         $this->mDbFileName = $inDbFileName;
         $this->openDatabase($inDbFileName);
+        if (!is_writable($this->mDbFileName)) {
+            $this->readOnly = true;
+        }
     }
 
     /**
@@ -237,6 +241,9 @@ class CalibreDbLoader
      */
     public function setAuthorLink($authorId, $link)
     {
+        if ($this->readOnly) {
+            return false;
+        }
         $sql = 'update authors set link = ? where id = ?';
         $stmt = $this->mDb->prepare($sql);
         return $stmt->execute([$link, $authorId]);
@@ -363,6 +370,9 @@ class CalibreDbLoader
      */
     public function updateIdentifier($id, $value)
     {
+        if ($this->readOnly) {
+            return false;
+        }
         $sql = 'update identifiers set val = ? where id = ?';
         $stmt = $this->mDb->prepare($sql);
         return $stmt->execute([$value, $id]);
@@ -377,6 +387,9 @@ class CalibreDbLoader
      */
     public function insertIdentifier($bookId, $type, $value)
     {
+        if ($this->readOnly) {
+            return false;
+        }
         $sql = 'insert into identifiers(book, type, val) values(?, ?, ?)';
         $stmt = $this->mDb->prepare($sql);
         return $stmt->execute([$bookId, $type, $value]);
@@ -497,6 +510,9 @@ class CalibreDbLoader
      */
     public function setSeriesLink($seriesId, $link)
     {
+        if ($this->readOnly) {
+            return false;
+        }
         $sql = 'update series set link = ? where id = ?';
         $stmt = $this->mDb->prepare($sql);
         return $stmt->execute([$link, $seriesId]);

@@ -48,6 +48,7 @@ class OpenLibraryMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -104,6 +105,7 @@ class OpenLibraryMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -137,6 +139,7 @@ class OpenLibraryMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -162,6 +165,7 @@ class OpenLibraryMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $entity);
         }
+        usleep(static::SLEEP_TIME);
         return $entity;
     }
 
@@ -190,6 +194,7 @@ class OpenLibraryMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $entity);
         }
+        usleep(static::SLEEP_TIME);
         return $entity;
     }
 

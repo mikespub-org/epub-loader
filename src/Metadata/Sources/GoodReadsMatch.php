@@ -23,6 +23,7 @@ class GoodReadsMatch extends BaseMatch
     public const QUERY_URL = 'https://www.goodreads.com/search?q={query}&search_type=books';  // &utf8=%E2%9C%93&tab=books&per_page={limit}
     public const AUTHOR_URL = 'https://www.goodreads.com/author/list/';
     public const SERIES_URL = 'https://www.goodreads.com/series/';
+    public const SLEEP_TIME = 200000;
 
     /**
      * Summary of findAuthors
@@ -51,6 +52,7 @@ class GoodReadsMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -200,6 +202,7 @@ class GoodReadsMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $entity);
         }
+        usleep(static::SLEEP_TIME);
         return $entity;
     }
 
@@ -256,6 +259,7 @@ class GoodReadsMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $parsed);
         }
+        usleep(static::SLEEP_TIME);
         return $parsed;
     }
 
@@ -323,6 +327,7 @@ class GoodReadsMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $entity);
         }
+        usleep(static::SLEEP_TIME);
         return $entity;
     }
 

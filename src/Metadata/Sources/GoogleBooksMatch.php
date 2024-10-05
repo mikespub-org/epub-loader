@@ -64,6 +64,7 @@ class GoogleBooksMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -108,6 +109,7 @@ class GoogleBooksMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -152,6 +154,7 @@ class GoogleBooksMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $matched);
         }
+        usleep(static::SLEEP_TIME);
         return $matched;
     }
 
@@ -176,6 +179,7 @@ class GoogleBooksMatch extends BaseMatch
         if ($this->cacheDir) {
             $this->saveCache($cacheFile, $entity);
         }
+        usleep(static::SLEEP_TIME);
         return $entity;
     }
 
