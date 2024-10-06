@@ -6,18 +6,28 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Metadata\Sources;
+namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
-use Marsender\EPubLoader\Import\BaseImport;
-use Marsender\EPubLoader\Import\GoogleBooksVolume;
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BaseMatch;
 
 class GoogleBooksMatch extends BaseMatch
 {
     public const ENTITY_URL = 'https://www.googleapis.com/books/v1/volumes/';
     public const ENTITY_PATTERN = '/^[\w-]+$/';
-    public const CACHE_TYPES = ['google/authors', 'google/titles', 'google/series', 'google/volumes'];
     public const QUERY_URL = 'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults={limit}&printType=books&projection={full}&langRestrict={lang}';
+
+    /** @var GoogleBooksCache */
+    protected $cache;
+
+    /**
+     * Summary of setCache
+     * @param string|null $cacheDir
+     * @return void
+     */
+    public function setCache($cacheDir)
+    {
+        $this->cache = new GoogleBooksCache($cacheDir);
+    }
 
     /**
      * Summary of getResults
@@ -52,34 +62,17 @@ class GoogleBooksMatch extends BaseMatch
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         $query = $author['name'];
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/google/authors/' . $query . '.' . $lang . '.' . $limit . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthorQuery($query, $lang, $limit);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // Find literary works from author
         $query = 'inauthor:"' . $query . '"';
         $results = $this->getResults($query, $lang, $limit);
         $matched = json_decode($results, true);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getAuthorQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @param string|int|null $limit Max count of returning items (default: 40)
-     * @return array<string, mixed>
-     */
-    public function getAuthorQueries($lang = null, $limit = 40)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/google/authors/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -97,15 +90,13 @@ class GoogleBooksMatch extends BaseMatch
         }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if ($this->cacheDir) {
-            if (!empty($author)) {
-                $cacheFile = $this->cacheDir . '/google/titles/' . $author['name'] . '.' . $query . '.' . $lang . '.json';
-            } else {
-                $cacheFile = $this->cacheDir . '/google/titles/' . $query . '.' . $lang . '.json';
-            }
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        if (!empty($author)) {
+            $cacheFile = $this->cache->getTitleQuery($author['name'] . '.' . $query, $lang);
+        } else {
+            $cacheFile = $this->cache->getTitleQuery($query, $lang);
+        }
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // search by title and author first
         $query = 'intitle:"' . $query . '"';
@@ -120,23 +111,9 @@ class GoogleBooksMatch extends BaseMatch
             $results = $this->getResults($query, $lang, $limit);
             $matched = json_decode($results, true);
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getTitleQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getTitleQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/google/titles/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -154,15 +131,13 @@ class GoogleBooksMatch extends BaseMatch
         }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if ($this->cacheDir) {
-            if (!empty($author)) {
-                $cacheFile = $this->cacheDir . '/google/series/' . $author['name'] . '.' . $query . '.' . $lang . '.json';
-            } else {
-                $cacheFile = $this->cacheDir . '/google/series/' . $query . '.' . $lang . '.json';
-            }
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        if (!empty($author)) {
+            $cacheFile = $this->cache->getSeriesQuery($author['name'] . '.' . $query, $lang);
+        } else {
+            $cacheFile = $this->cache->getSeriesQuery($query, $lang);
+        }
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // search by bibliogroup and author first
         $query = 'bibliogroup:"' . $query . '"';
@@ -177,23 +152,9 @@ class GoogleBooksMatch extends BaseMatch
             $results = $this->getResults($query, $lang, $limit, 'lite');
             $matched = json_decode($results, true);
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getSeriesQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getSeriesQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/google/series/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -205,32 +166,16 @@ class GoogleBooksMatch extends BaseMatch
     public function getVolume($volumeId, $lang = null)
     {
         $lang ??= $this->lang;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/google/volumes/' . $volumeId . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getVolume($volumeId, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         $url = static::link($volumeId);
         $result = file_get_contents($url);
         $entity = json_decode($result, true);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $entity);
-        }
+        $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);
         return $entity;
-    }
-
-    /**
-     * Summary of getVolumeIds
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getVolumeIds($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/google/volumes/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -243,16 +188,5 @@ class GoogleBooksMatch extends BaseMatch
             'en' => 'English',
             'fr' => 'Français',
         ];
-    }
-
-    /**
-     * Summary of import
-     * @param string $dbPath
-     * @param array<mixed> $data
-     * @return BookInfos|array<BookInfos>
-     */
-    public static function import($dbPath, $data)
-    {
-        return GoogleBooksVolume::import($dbPath, $data);
     }
 }

@@ -9,8 +9,8 @@
 namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\Import\JsonImport;
-use Marsender\EPubLoader\Import\GoodReadsBook;
-use Marsender\EPubLoader\Metadata\Sources\GoodReadsMatch;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use PHPUnit\Framework\TestCase;
 
 class GoodReadsTest extends TestCase
@@ -347,7 +347,7 @@ class GoodReadsTest extends TestCase
         $cacheDir = dirname(__DIR__) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/goodreads/author/list/', '*.htm');
+        $fileList = GoodReadsCache::getFiles($cacheDir . '/goodreads/author/list/', '*.htm');
         foreach ($fileList as $cacheFile) {
             $jsonFile = str_replace('.htm', '.json', $cacheFile);
             if (file_exists($jsonFile)) {
@@ -357,7 +357,7 @@ class GoodReadsTest extends TestCase
             $authorId = str_replace('.htm', '', $authorId);
             $content = file_get_contents($cacheFile);
             $author = $match->parseAuthorPage($authorId, $content);
-            $match->saveCache($jsonFile, $author);
+            $match->getCache()->saveCache($jsonFile, $author);
         }
 
         $expected = 1;
@@ -369,7 +369,7 @@ class GoodReadsTest extends TestCase
         $cacheDir = dirname(__DIR__) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/goodreads/search/', '*.htm');
+        $fileList = GoodReadsCache::getFiles($cacheDir . '/goodreads/search/', '*.htm');
         foreach ($fileList as $cacheFile) {
             $jsonFile = str_replace('.htm', '.json', $cacheFile);
             if (file_exists($jsonFile)) {
@@ -380,87 +380,83 @@ class GoodReadsTest extends TestCase
             $query = urldecode($query);
             $content = file_get_contents($cacheFile);
             $matched = $match->parseSearchPage($query, $content);
-            $match->saveCache($jsonFile, $matched);
+            $match->getCache()->saveCache($jsonFile, $matched);
         }
 
         $expected = 1;
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseAuthorResult(): void
+    public function testCacheParseAuthorResult(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new GoodReadsMatch($cacheDir);
+        $cache = new GoodReadsCache($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/goodreads/author/list/', '*.json');
+        $fileList = $cache::getFiles($cacheDir . '/goodreads/author/list/', '*.json');
         foreach ($fileList as $cacheFile) {
             $authorId = str_replace($cacheDir . '/goodreads/author/list/', '', $cacheFile);
             $authorId = str_replace('.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$authors = $match->parseAuthorPage($authorId, $content);
-            $authors = GoodReadsBook::parseSearch($matched);
+            $authors = $cache::parseSearch($matched);
         }
 
-        $expected = count($match->getAuthorIds());
+        $expected = count($cache->getAuthorIds());
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseSearchResult(): void
+    public function testCacheParseSearchResult(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new GoodReadsMatch($cacheDir);
+        $cache = new GoodReadsCache($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/goodreads/search/', '*.json');
+        $fileList = $cache::getFiles($cacheDir . '/goodreads/search/', '*.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/goodreads/search/', '', $cacheFile);
             $query = str_replace('.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$authors = $match->parseSearchPage($query, $content);
-            $authors = GoodReadsBook::parseSearch($matched);
+            $authors = $cache::parseSearch($matched);
         }
 
-        $expected = count($match->getSearchQueries());
+        $expected = count($cache->getSearchQueries());
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseSeriesResult(): void
+    public function testCacheParseSeriesResult(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new GoodReadsMatch($cacheDir);
+        $cache = new GoodReadsCache($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/goodreads/series/', '*.json');
+        $fileList = $cache::getFiles($cacheDir . '/goodreads/series/', '*.json');
         foreach ($fileList as $cacheFile) {
             $seriesId = str_replace($cacheDir . '/goodreads/series/', '', $cacheFile);
             $seriesId = str_replace('.json', '', $seriesId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$series = $match->parseSearchPage($seriesId, $content);
-            $series = GoodReadsBook::parseSeries($matched);
+            $series = $cache::parseSeries($matched);
             $series->setId($seriesId);
         }
 
-        $expected = count($match->getSeriesIds());
+        $expected = count($cache->getSeriesIds());
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseBook(): void
+    public function testCacheParseBook(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new GoodReadsMatch($cacheDir);
+        $cache = new GoodReadsCache($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/goodreads/book/show/', '*.json');
+        $fileList = $cache::getFiles($cacheDir . '/goodreads/book/show/', '*.json');
         foreach ($fileList as $cacheFile) {
             $bookId = str_replace($cacheDir . '/goodreads/book/show/', '', $cacheFile);
             $bookId = str_replace('.json', '', $bookId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$book = $match->parseBookPage($bookId, $content);
-            $book = GoodReadsBook::parse($matched);
+            $book = $cache::parseBook($matched);
         }
 
-        $expected = count($match->getBookIds());
+        $expected = count($cache->getBookIds());
         $this->assertCount($expected, $fileList);
     }
 }

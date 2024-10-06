@@ -6,52 +6,53 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Metadata\Sources;
+namespace Marsender\EPubLoader\Metadata\GoodReads;
 
-use Marsender\EPubLoader\Import\BaseImport;
-use Marsender\EPubLoader\Import\GoodReadsBook;
-use Marsender\EPubLoader\Metadata\BookInfos;
-use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
-use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
+use Marsender\EPubLoader\Metadata\BaseMatch;
 use Exception;
 
 class GoodReadsMatch extends BaseMatch
 {
     public const ENTITY_URL = 'https://www.goodreads.com/book/show/';
     public const ENTITY_PATTERN = '/^\d+(|\.\w+)$/';
-    public const CACHE_TYPES = ['goodreads/book/show', 'goodreads/author/list', 'goodreads/series', 'goodreads/search'];
     public const QUERY_URL = 'https://www.goodreads.com/search?q={query}&search_type=books';  // &utf8=%E2%9C%93&tab=books&per_page={limit}
     public const AUTHOR_URL = 'https://www.goodreads.com/author/list/';
     public const SERIES_URL = 'https://www.goodreads.com/series/';
     public const SLEEP_TIME = 200000;
 
+    /** @var GoodReadsCache */
+    protected $cache;
+
+    /**
+     * Summary of setCache
+     * @param string|null $cacheDir
+     * @return void
+     */
+    public function setCache($cacheDir)
+    {
+        $this->cache = new GoodReadsCache($cacheDir);
+    }
+
     /**
      * Summary of findAuthors
      * @param string $query
-     * @param string|null $lang Language (default: en)
-     * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>
      */
-    public function findAuthors($query, $lang = null, $limit = 10)
+    public function findAuthors($query)
     {
         if (empty($query)) {
             return [];
         }
         // Find match on Wikidata
-        $lang ??= $this->lang;
-        $limit ??= $this->limit;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/goodreads/search/' . urlencode($query) . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        // this will use urlencode($query)
+        $cacheFile = $this->cache->getSearchQuery($query);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         $url = str_replace('{query}', rawurlencode($query), static::QUERY_URL);
         $result = file_get_contents($url);
         $matched = $this->parseSearchPage($query, $result);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
     }
@@ -72,10 +73,10 @@ class GoodReadsMatch extends BaseMatch
             if (str_contains($content, 'No results')) {
                 return $result;
             }
-            if ($this->cacheDir) {
-                $cacheFile = $this->cacheDir . '/goodreads/search/' . urlencode($query) . '.htm';
-                file_put_contents($cacheFile, $content);
-            }
+            // save html page for testing
+            // this will use urlencode($query)
+            $cacheFile = str_replace('.json', '.htm', $this->cache->getSearchQuery($query));
+            $this->cache->saveFile($cacheFile, $content);
             throw new Exception('Unable to find rows in html page: see ' . urlencode($query) . '.htm');
         }
         // support older format too
@@ -144,17 +145,16 @@ class GoodReadsMatch extends BaseMatch
     /**
      * Summary of findAuthorId
      * @param array<mixed> $author
-     * @param string|null $lang Language (default: en)
      * @return string|null
      */
-    public function findAuthorId($author, $lang = null)
+    public function findAuthorId($author)
     {
         if (!empty($author['link']) && str_starts_with($author['link'], self::AUTHOR_URL)) {
             return str_replace(self::AUTHOR_URL, '', $author['link']);
         }
         $entityId = null;
         $query = $author['name'];
-        $matched = $this->findAuthors($query, $lang);
+        $matched = $this->findAuthors($query);
         // @todo Find author with highest books count!?
         if (count($matched) > 0) {
             //$entityId = array_keys($matched)[0];
@@ -167,31 +167,15 @@ class GoodReadsMatch extends BaseMatch
     }
 
     /**
-     * Summary of getSearchQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getSearchQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/goodreads/search/';
-        return BaseImport::getFiles($baseDir, '*.json', true);
-    }
-
-    /**
      * Summary of getAuthor
      * @param string $authorId
-     * @param string|null $lang Language (default: en)
      * @return array<string, mixed>
      */
-    public function getAuthor($authorId, $lang = null)
+    public function getAuthor($authorId)
     {
-        $lang ??= $this->lang;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/goodreads/author/list/' . $authorId . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthor($authorId);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // https://www.goodreads.com/author/list/123.Author_Name?per_page=100
         $url = static::AUTHOR_URL . $authorId . '?per_page=100';
@@ -199,9 +183,7 @@ class GoodReadsMatch extends BaseMatch
         $parsed = $this->parseAuthorPage($authorId, $result);
         // @todo remove other authors here?
         $entity = $parsed;
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $entity);
-        }
+        $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);
         return $entity;
     }
@@ -217,48 +199,29 @@ class GoodReadsMatch extends BaseMatch
         try {
             return $this->parseSearchPage($authorId, $content);
         } catch (Exception $e) {
-            if ($this->cacheDir) {
-                $cacheFile = $this->cacheDir . '/goodreads/author/list/' . $authorId . '.htm';
-                file_put_contents($cacheFile, $content);
-            }
+            // save html page for testing
+            $cacheFile = str_replace('.json', '.htm', $this->cache->getAuthor($authorId));
+            $this->cache->saveFile($cacheFile, $content);
             throw $e;
         }
     }
 
     /**
-     * Summary of getAuthorIds
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getAuthorIds($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/goodreads/author/list/';
-        return BaseImport::getFiles($baseDir, '*.json', true);
-    }
-
-    /**
      * Summary of getSeries
      * @param string $seriesId
-     * @param string|null $lang Language (default: en)
      * @return array<mixed>
      */
-    public function getSeries($seriesId, $lang = null)
+    public function getSeries($seriesId)
     {
-        $lang ??= $this->lang;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/goodreads/series/' . $seriesId . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getSeries($seriesId);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // https://www.goodreads.com/series/123.Series_Name
         $url = static::SERIES_URL . $seriesId;
         $result = file_get_contents($url);
         $parsed = $this->parseSeriesPage($seriesId, $result);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $parsed);
-        }
+        $this->cache->saveCache($cacheFile, $parsed);
         usleep(static::SLEEP_TIME);
         return $parsed;
     }
@@ -273,10 +236,9 @@ class GoodReadsMatch extends BaseMatch
     {
         $matches = [];
         if (!preg_match_all('~\sdata-react-class="([^"]*)"\s+data-react-props="([^"]*)"~', $content, $matches, PREG_SET_ORDER)) {
-            if ($this->cacheDir) {
-                $cacheFile = $this->cacheDir . '/goodreads/series/' . $seriesId . '.htm';
-                file_put_contents($cacheFile, $content);
-            }
+            // save html page for testing
+            $cacheFile = str_replace('.json', '.htm', $this->cache->getSeries($seriesId));
+            $this->cache->saveFile($cacheFile, $content);
             throw new Exception('Unable to find JSON data in html page: see ' . $seriesId . '.htm');
         }
         $result = [];
@@ -292,41 +254,24 @@ class GoodReadsMatch extends BaseMatch
     }
 
     /**
-     * Summary of getSeriesIds
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getSeriesIds($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/goodreads/series/';
-        return BaseImport::getFiles($baseDir, '*.json', true);
-    }
-
-    /**
      * Summary of getBook
      * @param string $bookId
-     * @param string|null $lang Language (default: en)
      * @return array<string, mixed>
      */
-    public function getBook($bookId, $lang = null)
+    public function getBook($bookId)
     {
+        // we only use the book # here, not the title
         $bookId = static::bookid($bookId);
-        $lang ??= $this->lang;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/goodreads/book/show/' . $bookId . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getBook($bookId);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // https://www.goodreads.com/book/show/123.Book_Title
         $url = static::link($bookId);
         $result = file_get_contents($url);
         $result = $this->parseBookPage($bookId, $result);
         $entity = json_decode($result, true, 512, JSON_THROW_ON_ERROR);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $entity);
-        }
+        $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);
         return $entity;
     }
@@ -341,25 +286,12 @@ class GoodReadsMatch extends BaseMatch
     {
         $matches = [];
         if (!preg_match('~<script id="__NEXT_DATA__" type="application/json">(.+?)</script>~', $content, $matches)) {
-            if ($this->cacheDir) {
-                $cacheFile = $this->cacheDir . '/goodreads/book/show/' . $bookId . '.htm';
-                file_put_contents($cacheFile, $content);
-            }
+            // save html page for testing
+            $cacheFile = str_replace('.json', '.htm', $this->cache->getBook($bookId));
+            $this->cache->saveFile($cacheFile, $content);
             throw new Exception('Unable to find JSON data in html page: see ' . $bookId . '.htm');
         }
         return $matches[1];
-    }
-
-    /**
-     * Summary of getBookIds
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getBookIds($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/goodreads/book/show/';
-        return BaseImport::getFiles($baseDir, '*.json', true);
     }
 
     /**
@@ -405,22 +337,5 @@ class GoodReadsMatch extends BaseMatch
             [$bookId, $title] = explode('-', $bookId);
         }
         return $bookId;
-    }
-
-    /**
-     * Summary of import
-     * @param string $dbPath
-     * @param array<mixed> $data
-     * @return BookInfos|SeriesResult|SearchResult
-     */
-    public static function import($dbPath, $data)
-    {
-        if (!empty($data["page"]) && $data["page"] == "/book/show/[book_id]") {
-            return GoodReadsBook::import($dbPath, $data);
-        }
-        if (array_keys($data)[0] == 0) {
-            return GoodReadsBook::parseSeries($data);
-        }
-        return GoodReadsBook::parseSearch($data);
     }
 }

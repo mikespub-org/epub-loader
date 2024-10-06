@@ -9,7 +9,7 @@
 
 namespace Marsender\EPubLoader;
 
-use Marsender\EPubLoader\Metadata\Sources\BaseMatch;
+use Marsender\EPubLoader\Metadata\BaseMatch;
 use Exception;
 use PDO;
 

@@ -1,48 +1,19 @@
 <?php
 /**
- * OpenLibraryWork import class
+ * OpenLibraryImport class
  *
  * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Import;
+namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
-use Marsender\EPubLoader\Metadata\OpenLibrary\AuthorEntity;
-use Marsender\EPubLoader\Metadata\OpenLibrary\WorkEntity;
 use Exception;
-use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
 
-class OpenLibraryWork
+class OpenLibraryImport
 {
-    /**
-     * Parse JSON data for an OpenLibrary author
-     *
-     * @param array<mixed> $data
-     *
-     * @return AuthorEntity
-     */
-    public static function parseAuthor($data)
-    {
-        $author = AuthorEntity::fromJson($data);
-        return $author;
-    }
-
-    /**
-     * Parse JSON data for an OpenLibrary work
-     *
-     * @param array<mixed> $data
-     *
-     * @return WorkEntity
-     */
-    public static function parse($data)
-    {
-        $work = WorkEntity::fromJson($data);
-        return $work;
-    }
-
     /**
      * Loads book infos from an OpenLibrary work
      *
@@ -120,14 +91,14 @@ class OpenLibraryWork
     }
 
     /**
-     * Summary of import
+     * Summary of getBookInfos
      * @param string $dbPath
      * @param array<mixed> $data
      * @return BookInfos
      */
-    public static function import($dbPath, $data)
+    public static function getBookInfos($dbPath, $data)
     {
-        $work = static::parse($data);
+        $work = OpenLibraryCache::parseWorkEntity($data);
         return static::load($dbPath, $work);
     }
 }

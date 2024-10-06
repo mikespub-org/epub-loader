@@ -13,10 +13,12 @@ use Marsender\EPubLoader\Export\BookExport;
 use Marsender\EPubLoader\Import\BookImport;
 use Marsender\EPubLoader\Import\CsvImport;
 use Marsender\EPubLoader\Import\JsonImport;
-use Marsender\EPubLoader\Metadata\Sources\GoodReadsMatch;
-use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
-use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
-use Marsender\EPubLoader\Metadata\Sources\WikiDataMatch;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsImport;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
+use Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksMatch;
+use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryMatch;
+use Marsender\EPubLoader\Metadata\WikiData\WikiDataMatch;
 use Exception;
 
 class ActionHandler
@@ -559,13 +561,13 @@ class ActionHandler
             $books = $this->db->getBooks($bookId);
             $query = $books[$bookId]['title'];
             $matched = $googlematch->findWorksByTitle($query, $author);
-            //$info = GoogleBooksMatch::import($dbPath, $matched);
+            //$info = GoogleBooksMatch::getBookInfos($dbPath, $matched);
         } else {
             $sort = $this->request->get('sort');
             $offset = $this->request->getId('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $googlematch->findWorksByAuthor($author);
-            //$info = GoogleBooksMatch::import($dbPath, $matched);
+            //$info = GoogleBooksMatch::getBookInfos($dbPath, $matched);
         }
 
         $authorList = $this->getAuthorList();
@@ -913,7 +915,7 @@ class ActionHandler
         if (!empty($matchId)) {
             $found = $goodreads->getBook($matchId);
             $dbPath = $this->dbConfig['db_path'];
-            $info = GoodReadsMatch::import($dbPath, $found);
+            $info = GoodReadsImport::getBookInfos($dbPath, $found);
             $matched[] = [
                 'id' => GoodReadsMatch::entity($info->mUri),
                 'title' => $info->mTitle,
@@ -1013,7 +1015,7 @@ class ActionHandler
             $found = $goodreads->getSeries($matchId);
             if (!empty($found)) {
                 $dbPath = $this->dbConfig['db_path'];
-                $info = GoodReadsMatch::import($dbPath, $found);
+                $info = GoodReadsCache::parseSeries($found);
                 $matched = [];
                 $match = [
                     'id' => $matchId,
@@ -1026,7 +1028,8 @@ class ActionHandler
             }
         } elseif (empty($authorId)) {
             $matched = [];
-            foreach ($goodreads->getSeriesIds() as $id) {
+            // @todo show all availables series if no author is selected?
+            foreach ($goodreads->getCache()->getSeriesIds() as $id) {
                 $matched[] = [
                     'id' => $id,
                     'title' => '',

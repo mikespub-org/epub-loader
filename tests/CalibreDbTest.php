@@ -27,7 +27,7 @@ class CalibreDbTest extends TestCase
         $dbFile = $dbPath . '/metadata.db';
         $db = new CalibreDbLoader($dbFile);
         $stats = $db->getStats();
-    
+
         $expected = [
             'authors' => 4,
             'books' => 7,
@@ -42,7 +42,7 @@ class CalibreDbTest extends TestCase
         $dbFile = $dbPath . '/metadata.db';
         $db = new CalibreDbLoader($dbFile);
         $paging = $db->getAuthorPaging();
-    
+
         $expected = null;
         $this->assertEquals($expected, $paging);
 
@@ -64,7 +64,7 @@ class CalibreDbTest extends TestCase
         $dbFile = $dbPath . '/metadata.db';
         $db = new CalibreDbLoader($dbFile);
         $paging = $db->getBookPaging();
-    
+
         $expected = null;
         $this->assertEquals($expected, $paging);
 
@@ -86,7 +86,7 @@ class CalibreDbTest extends TestCase
         $dbFile = $dbPath . '/metadata.db';
         $db = new CalibreDbLoader($dbFile);
         $paging = $db->getSeriesPaging();
-    
+
         $expected = null;
         $this->assertEquals($expected, $paging);
 

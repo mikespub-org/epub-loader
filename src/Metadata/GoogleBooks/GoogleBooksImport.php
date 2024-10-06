@@ -1,47 +1,19 @@
 <?php
 /**
- * GoogleBooksVolume import class
+ * GoogleBooksImport class
  *
  * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Import;
+namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
-use Marsender\EPubLoader\Metadata\GoogleBooks\SearchResult;
-use Marsender\EPubLoader\Metadata\GoogleBooks\Volume;
 use Exception;
 
-class GoogleBooksVolume
+class GoogleBooksImport
 {
-    /**
-     * Parse JSON data for Google Books search result
-     *
-     * @param array<mixed> $data
-     *
-     * @return SearchResult
-     */
-    public static function parseResult($data)
-    {
-        $result = SearchResult::fromJson($data);
-        return $result;
-    }
-
-    /**
-     * Parse JSON data for a Google Books volume
-     *
-     * @param array<mixed> $data
-     *
-     * @return Volume
-     */
-    public static function parse($data)
-    {
-        $volume = Volume::fromJson($data);
-        return $volume;
-    }
-
     /**
      * Loads book infos from a Google Books volume
      *
@@ -123,18 +95,19 @@ class GoogleBooksVolume
     }
 
     /**
-     * Summary of import
+     * Summary of getBookInfos
      * @param string $dbPath
      * @param array<mixed> $data
      * @return BookInfos|array<BookInfos>
      */
-    public static function import($dbPath, $data)
+    public static function getBookInfos($dbPath, $data)
     {
         if (!empty($data["kind"]) && $data["kind"] == "books#volume") {
-            $volume = static::parse($data);
+            $volume = GoogleBooksCache::parseVolume($data);
             return static::load($dbPath, $volume);
         }
-        $result = static::parseResult($data);
+        // load all volumes in search result
+        $result = GoogleBooksCache::parseSearch($data);
         if (empty($result->getItems())) {
             $result->items = [];
         }

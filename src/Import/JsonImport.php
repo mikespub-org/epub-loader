@@ -9,6 +9,14 @@
 
 namespace Marsender\EPubLoader\Import;
 
+use Marsender\EPubLoader\Metadata\BaseCache;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsImport;
+use Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksCache;
+use Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksImport;
+use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryCache;
+use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryImport;
+use Marsender\EPubLoader\Metadata\WikiData\WikiDataCache;
 use Exception;
 
 class JsonImport extends BookImport
@@ -28,14 +36,14 @@ class JsonImport extends BookImport
         $nbError = 0;
         if (!empty($data["kind"]) && $data["kind"] == "books#volumes") {
             // Parse the JSON data
-            $result = GoogleBooksVolume::parseResult($data);
+            $result = GoogleBooksCache::parseSearch($data);
             if (empty($result->getItems())) {
                 $result->items = [];
             }
             foreach ($result->getItems() as $volume) {
                 try {
                     // Load the book infos
-                    $bookInfos = GoogleBooksVolume::load($inBasePath, $volume);
+                    $bookInfos = GoogleBooksImport::load($inBasePath, $volume);
                     // Add the book
                     $this->addBook($bookInfos, 0);
                     $nbOk++;
@@ -48,9 +56,9 @@ class JsonImport extends BookImport
         } elseif (!empty($data["kind"]) && $data["kind"] == "books#volume") {
             try {
                 // Parse the JSON data
-                $volume = GoogleBooksVolume::parse($data);
+                $volume = GoogleBooksCache::parseVolume($data);
                 // Load the book infos
-                $bookInfos = GoogleBooksVolume::load($inBasePath, $volume);
+                $bookInfos = GoogleBooksImport::load($inBasePath, $volume);
                 // Add the book
                 $this->addBook($bookInfos, 0);
                 $nbOk++;
@@ -62,9 +70,9 @@ class JsonImport extends BookImport
         } elseif (!empty($data["page"]) && $data["page"] == "/book/show/[book_id]") {
             try {
                 // Parse the JSON data
-                $bookResult = GoodReadsBook::parse($data);
+                $bookResult = GoodReadsCache::parseBook($data);
                 // Load the book infos
-                $bookInfos = GoodReadsBook::load($inBasePath, $bookResult);
+                $bookInfos = GoodReadsImport::load($inBasePath, $bookResult);
                 // Add the book
                 $this->addBook($bookInfos, 0);
                 $nbOk++;
@@ -76,9 +84,9 @@ class JsonImport extends BookImport
         } elseif (!empty($data["type"]) && !empty($data["type"]["key"]) && $data["type"]["key"] == "/type/work") {
             try {
                 // Parse the JSON data
-                $work = OpenLibraryWork::parse($data);
+                $work = OpenLibraryCache::parseWorkEntity($data);
                 // Load the book infos
-                $bookInfos = OpenLibraryWork::load($inBasePath, $work);
+                $bookInfos = OpenLibraryImport::load($inBasePath, $work);
                 // Add the book
                 $this->addBook($bookInfos, 0);
                 $nbOk++;
@@ -91,7 +99,7 @@ class JsonImport extends BookImport
             // not imported separately
             try {
                 // Parse the JSON data
-                $author = OpenLibraryWork::parseAuthor($data);
+                $author = OpenLibraryCache::parseAuthorEntity($data);
                 //$nbOk++;
             } catch (Exception $e) {
                 $id = basename($fileName);
@@ -100,6 +108,7 @@ class JsonImport extends BookImport
             }
         } else {
             // @todo add more formats to support
+            //$entity = WikiDataCache::parseEntity($data);
         }
         $message = sprintf('Import ebooks from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError);
         return [$message, $errors];
@@ -117,7 +126,7 @@ class JsonImport extends BookImport
     {
         $allErrors = [];
         $allMessages = '';
-        $fileList = BaseImport::getFiles($inBasePath . DIRECTORY_SEPARATOR . $jsonPath, '*.json');
+        $fileList = BaseCache::getFiles($inBasePath . DIRECTORY_SEPARATOR . $jsonPath, '*.json');
         foreach ($fileList as $file) {
             [$message, $errors] = $this->loadFromJsonFile($inBasePath, $file);
             $allMessages .= $message . '<br />';

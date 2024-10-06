@@ -6,20 +6,28 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Metadata\Sources;
+namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
-use Marsender\EPubLoader\Import\BaseImport;
-use Marsender\EPubLoader\Metadata\OpenLibrary\AuthorEntity;
-use Marsender\EPubLoader\Metadata\OpenLibrary\AuthorSearchResult;
-use Marsender\EPubLoader\Metadata\OpenLibrary\WorkEntity;
-use Marsender\EPubLoader\Metadata\OpenLibrary\WorkSearchResult;
+use Marsender\EPubLoader\Metadata\BaseMatch;
 
 class OpenLibraryMatch extends BaseMatch
 {
     public const ENTITY_URL = 'https://openlibrary.org/works/';
     public const ENTITY_PATTERN = '/^OL\d+/';
-    public const CACHE_TYPES = ['openlibrary/authors', 'openlibrary/entities', 'openlibrary/works/author', 'openlibrary/works/title', 'openlibrary/editions', 'openlibrary/ratings'];
     public const AUTHOR_URL = 'https://openlibrary.org/authors/';
+
+    /** @var OpenLibraryCache */
+    protected $cache;
+
+    /**
+     * Summary of setCache
+     * @param string|null $cacheDir
+     * @return void
+     */
+    public function setCache($cacheDir)
+    {
+        $this->cache = new OpenLibraryCache($cacheDir);
+    }
 
     /**
      * Summary of findAuthors
@@ -36,19 +44,15 @@ class OpenLibraryMatch extends BaseMatch
         // Find match on Wikidata
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/authors/' . $query . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthorQuery($query, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // https://openlibrary.org/dev/docs/api/authors
         $url = 'https://openlibrary.org/search/authors.json?q=' . rawurlencode($query);
         $results = file_get_contents($url);
         $matched = json_decode($results, true);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
     }
@@ -78,18 +82,6 @@ class OpenLibraryMatch extends BaseMatch
     }
 
     /**
-     * Summary of getAuthorQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getAuthorQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/openlibrary/authors/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
-    }
-
-    /**
      * Summary of findWorksByAuthorId
      * @param string $matchId
      * @param string|null $lang Language (default: en)
@@ -103,11 +95,9 @@ class OpenLibraryMatch extends BaseMatch
         }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/works/author/' . $matchId . '.' . $lang . '.' . $limit . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthorWork($matchId, $lang, $limit);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // https://openlibrary.org/dev/docs/api/authors
         //$url = 'https://openlibrary.org/authors/' . $matchId . '/works.json?limit=' . $limit;
@@ -115,24 +105,9 @@ class OpenLibraryMatch extends BaseMatch
         $url = 'https://openlibrary.org/search.json?author=' . $matchId . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
         $results = file_get_contents($url);
         $matched = json_decode($results, true);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getAuthorWorkIds
-     * @param string|null $lang Language (default: en)
-     * @param string|int|null $limit Max count of returning items (default: 100)
-     * @return array<string, mixed>
-     */
-    public function getAuthorWorkIds($lang = null, $limit = 100)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/openlibrary/works/author/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -147,11 +122,9 @@ class OpenLibraryMatch extends BaseMatch
             return ['numFound' => 0, 'start' => 0, 'numFoundExact' => true, 'docs' => []];
         }
         $authorName = $author['name'];
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/works/title/' . $query . '.' . $authorName . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getTitleQuery($query . '.' . $authorName);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // https://openlibrary.org/dev/docs/api/search
         $url = 'https://openlibrary.org/search.json?title=' . rawurlencode($query) . '&author=' . rawurlencode((string) $authorName) . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
@@ -162,23 +135,9 @@ class OpenLibraryMatch extends BaseMatch
             $results = file_get_contents($url);
             $matched = json_decode($results, true);
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getTitleQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getTitleQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/openlibrary/works/title/';
-        return BaseImport::getFiles($baseDir, '*.json', true);
     }
 
     /**
@@ -190,33 +149,17 @@ class OpenLibraryMatch extends BaseMatch
     public function getAuthor($authorId, $lang = null)
     {
         $lang ??= $this->lang;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/entities/' . $authorId . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthor($authorId, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // https://openlibrary.org/dev/docs/api/authors
         $url = static::AUTHOR_URL . $authorId . '.json';
         $result = file_get_contents($url);
         $entity = json_decode($result, true);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $entity);
-        }
+        $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);
         return $entity;
-    }
-
-    /**
-     * Summary of getAuthorIds
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getAuthorIds($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/openlibrary/entities/';
-        return BaseImport::getFiles($baseDir, '*A.' . $lang . '.json', true);
     }
 
     /**
@@ -231,33 +174,17 @@ class OpenLibraryMatch extends BaseMatch
             return $this->getAuthor($workId);
         }
         $lang ??= $this->lang;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/openlibrary/entities/' . $workId . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getWork($workId, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // https://openlibrary.org/dev/docs/api/books
         $url = static::link($workId) . '.json';
         $result = file_get_contents($url);
         $entity = json_decode($result, true);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $entity);
-        }
+        $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);
         return $entity;
-    }
-
-    /**
-     * Summary of getWorkIds
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getWorkIds($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/openlibrary/entities/';
-        return BaseImport::getFiles($baseDir, '*W.' . $lang . '.json', true);
     }
 
     /**
@@ -297,45 +224,5 @@ class OpenLibraryMatch extends BaseMatch
             return true;
         }
         return false;
-    }
-
-    /**
-     * Summary of parseAuthorSearch
-     * @param array<mixed> $data
-     * @return AuthorSearchResult
-     */
-    public static function parseAuthorSearch($data)
-    {
-        return AuthorSearchResult::fromJson($data);
-    }
-
-    /**
-     * Summary of parseWorkSearch
-     * @param array<mixed> $data
-     * @return WorkSearchResult
-     */
-    public static function parseWorkSearch($data)
-    {
-        return WorkSearchResult::fromJson($data);
-    }
-
-    /**
-     * Summary of parseAuthorEntity
-     * @param array<mixed> $data
-     * @return AuthorEntity
-     */
-    public static function parseAuthorEntity($data)
-    {
-        return AuthorEntity::fromJson($data);
-    }
-
-    /**
-     * Summary of parseWorkEntity
-     * @param array<mixed> $data
-     * @return WorkEntity
-     */
-    public static function parseWorkEntity($data)
-    {
-        return WorkEntity::fromJson($data);
     }
 }

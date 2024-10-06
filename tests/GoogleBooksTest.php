@@ -9,8 +9,8 @@
 namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\Import\JsonImport;
-use Marsender\EPubLoader\Import\GoogleBooksVolume;
-use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
+use Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksCache;
+use Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksMatch;
 use PHPUnit\Framework\TestCase;
 
 class GoogleBooksTest extends TestCase
@@ -132,28 +132,6 @@ class GoogleBooksTest extends TestCase
         $this->assertCount(0, $errors);
     }
 
-    public function testMatchParseAuthors(): void
-    {
-        $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new GoogleBooksMatch($cacheDir);
-
-        $fileList = JsonImport::getFiles($cacheDir . '/google/authors/', '*.en.40.json');
-        foreach ($fileList as $cacheFile) {
-            $query = str_replace($cacheDir . '/google/authors/', '', $cacheFile);
-            $query = str_replace('.en.40.json', '', $query);
-            $results = file_get_contents($cacheFile);
-            $matched = json_decode($results, true);
-            //$authors = $match->parseSearchPage($query, $content);
-            if (is_null($matched)) {
-                continue;
-            }
-            $authors = GoogleBooksVolume::parseResult($matched);
-        }
-
-        $expected = count($match->getAuthorQueries('en', 40));
-        $this->assertCount($expected, $fileList);
-    }
-
     public function testFindSeriesByName(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
@@ -172,60 +150,78 @@ class GoogleBooksTest extends TestCase
         $this->assertCount($expected, $series['items']);
     }
 
-    public function testMatchParseSeries(): void
+    public function testCacheParseAuthors(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new GoogleBooksMatch($cacheDir);
+        $cache = new GoogleBooksCache($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/google/series/', '*.en.json');
+        $fileList = $cache::getFiles($cacheDir . '/google/authors/', '*.en.40.json');
+        foreach ($fileList as $cacheFile) {
+            $query = str_replace($cacheDir . '/google/authors/', '', $cacheFile);
+            $query = str_replace('.en.40.json', '', $query);
+            $results = file_get_contents($cacheFile);
+            $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
+            $authors = $cache::parseSearch($matched);
+        }
+
+        $expected = count($cache->getAuthorQueries('en', 40));
+        $this->assertCount($expected, $fileList);
+    }
+
+    public function testCacheParseSeries(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        $cache = new GoogleBooksCache($cacheDir);
+
+        $fileList = $cache::getFiles($cacheDir . '/google/series/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/google/series/', '', $cacheFile);
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$series = $match->parseSearchPage($query, $content);
-            $series = GoogleBooksVolume::parseResult($matched);
+            $series = $cache::parseSearch($matched);
         }
 
-        $expected = count($match->getSeriesQueries('en'));
+        $expected = count($cache->getSeriesQueries('en'));
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseTitles(): void
+    public function testCacheParseTitles(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new GoogleBooksMatch($cacheDir);
+        $cache = new GoogleBooksCache($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/google/titles/', '*.en.json');
+        $fileList = $cache::getFiles($cacheDir . '/google/titles/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/google/titles/', '', $cacheFile);
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$titles = $match->parseSearchPage($query, $content);
-            $titles = GoogleBooksVolume::parseResult($matched);
+            $titles = $cache::parseSearch($matched);
         }
 
-        $expected = count($match->getTitleQueries('en'));
+        $expected = count($cache->getTitleQueries('en'));
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseVolume(): void
+    public function testCacheParseVolume(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new GoogleBooksMatch($cacheDir);
+        $cache = new GoogleBooksCache(cacheDir: $cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/google/volumes/', '*.en.json');
+        $fileList = $cache::getFiles($cacheDir . '/google/volumes/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $volumeId = str_replace($cacheDir . '/google/volumes/', '', $cacheFile);
             $volumeId = str_replace('.en.json', '', $volumeId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$volume = $match->parseSearchPage($volumeId, $content);
-            $volume = GoogleBooksVolume::parse($matched);
+            $volume = $cache::parseVolume($matched);
         }
 
-        $expected = count($match->getVolumeIds('en'));
+        $expected = count($cache->getVolumeIds('en'));
         $this->assertCount($expected, $fileList);
     }
 }

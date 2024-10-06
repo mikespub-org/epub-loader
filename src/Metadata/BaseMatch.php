@@ -6,19 +6,16 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Metadata\Sources;
-
-use Exception;
+namespace Marsender\EPubLoader\Metadata;
 
 class BaseMatch
 {
     public const ENTITY_URL = 'http://www.wikidata.org/entity/';
     public const ENTITY_PATTERN = '/^\w+$/';
-    public const CACHE_TYPES = [];
     public const SLEEP_TIME = 50000;
 
-    /** @var string|null */
-    protected $cacheDir;
+    /** @var BaseCache|null */
+    protected $cache;
     /** @var string */
     protected $lang;
     /** @var string|int */
@@ -32,48 +29,28 @@ class BaseMatch
      */
     public function __construct($cacheDir = null, $lang = 'en', $limit = 10)
     {
-        $this->cacheDir = $cacheDir;
-        if (!empty($this->cacheDir)) {
-            $this->prepareCacheDir();
-        }
+        $this->setCache($cacheDir);
         $this->lang = $lang;
         $this->limit = $limit;
     }
 
     /**
-     * Summary of prepareCacheDir
-     * @throws \Exception
+     * Summary of setCache
+     * @param string|null $cacheDir
      * @return void
      */
-    protected function prepareCacheDir()
+    public function setCache($cacheDir)
     {
-        foreach (static::CACHE_TYPES as $cacheType) {
-            $makeDir = $this->cacheDir . '/' . $cacheType;
-            if (!is_dir($makeDir) && !mkdir($makeDir, 0o755, true)) {
-                throw new Exception('Cannot create directory: ' . $makeDir);
-            }
-        }
+        $this->cache = new BaseCache($cacheDir);
     }
 
     /**
-     * Summary of loadCache
-     * @param string $cacheFile
+     * Summary of getCache
      * @return mixed
      */
-    public function loadCache($cacheFile)
+    public function getCache()
     {
-        return json_decode(file_get_contents($cacheFile), true);
-    }
-
-    /**
-     * Summary of saveCache
-     * @param string $cacheFile
-     * @param mixed $data
-     * @return void
-     */
-    public function saveCache($cacheFile, $data)
-    {
-        file_put_contents($cacheFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        return $this->cache;
     }
 
     /**
@@ -134,10 +111,10 @@ class BaseMatch
             return '';
         }
         $url = match ($type) {
-            'google' => GoogleBooksMatch::link($value),
-            'wd' => WikiDataMatch::link($value),
-            'olid' => OpenLibraryMatch::link($value),
-            'goodreads' => GoodReadsMatch::link($value),
+            'google' => GoogleBooks\GoogleBooksMatch::link($value),
+            'wd' => WikiData\WikiDataMatch::link($value),
+            'olid' => OpenLibrary\OpenLibraryMatch::link($value),
+            'goodreads' => GoodReads\GoodReadsMatch::link($value),
             'amazon' => 'https://www.amazon.com/dp/' . $value,
             'isbn' => 'https://search.worldcat.org/search?q=bn:' . $value,
             'url' => str_contains($value, '://') ? $value : '',

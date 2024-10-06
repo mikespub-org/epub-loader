@@ -6,22 +6,21 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Metadata\Sources;
+namespace Marsender\EPubLoader\Metadata\WikiData;
 
-use Marsender\EPubLoader\Import\BaseImport;
-use Wikidata\Entity;
-use Wikidata\SearchResult;
+use Marsender\EPubLoader\Metadata\BaseMatch;
 use Wikidata\Wikidata;
 
 class WikiDataMatch extends BaseMatch
 {
     public const ENTITY_URL = 'http://www.wikidata.org/entity/';
     public const ENTITY_PATTERN = '/^Q\d+$/';
-    public const CACHE_TYPES = ['wikidata/authors', 'wikidata/works/author', 'wikidata/works/name', 'wikidata/works/title', 'wikidata/series/author', 'wikidata/series/title', 'wikidata/entities'];
     public const AUTHOR_PROPERTY = 'P50';
 
     /** @var Wikidata|null */
     protected $api = null;
+    /** @var WikiDataCache */
+    protected $cache;
 
     /**
      * Summary of getApi
@@ -31,6 +30,16 @@ class WikiDataMatch extends BaseMatch
     {
         $this->api ??= new Wikidata();
         return $this->api;
+    }
+
+    /**
+     * Summary of setCache
+     * @param string|null $cacheDir
+     * @return void
+     */
+    public function setCache($cacheDir)
+    {
+        $this->cache = new WikiDataCache($cacheDir);
     }
 
     /**
@@ -48,20 +57,16 @@ class WikiDataMatch extends BaseMatch
         // Find match on Wikidata
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/authors/' . $query . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthorQuery($query, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         $results = $this->getApi()->search($query, $lang, $limit);
         $matched = [];
         foreach ($results as $id => $result) {
             $matched[$id] = (array) $result;
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
     }
@@ -88,18 +93,6 @@ class WikiDataMatch extends BaseMatch
     }
 
     /**
-     * Summary of getAuthorQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getAuthorQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/wikidata/authors/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
-    }
-
-    /**
      * Summary of findWorksByAuthorProperty
      * @param array<mixed> $author
      * @param string|null $lang Language (default: en)
@@ -114,11 +107,9 @@ class WikiDataMatch extends BaseMatch
         if (empty($entityId)) {
             return [];
         }
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/works/author/' . $entityId . '.' . $lang . '.' . $limit . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthorWork($entityId, $lang, $limit);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // Find literary works from author
         $propId = static::AUTHOR_PROPERTY;
@@ -136,24 +127,9 @@ class WikiDataMatch extends BaseMatch
         foreach ($results as $id => $result) {
             $matched[$id] = (array) $result;
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getAuthorWorkIds
-     * @param string|null $lang Language (default: en)
-     * @param string|int|null $limit Max count of returning items (default: 100)
-     * @return array<string, mixed>
-     */
-    public function getAuthorWorkIds($lang = null, $limit = 100)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/wikidata/works/author/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -168,11 +144,9 @@ class WikiDataMatch extends BaseMatch
         $lang ??= $this->lang;
         $limit ??= $this->limit;
         $query = $author['name'];
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/works/name/' . $query . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthorWorkQuery($query, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // Use P2093 when author property is unknown or does not exist
         $propId = 'P2093';
@@ -181,23 +155,9 @@ class WikiDataMatch extends BaseMatch
         foreach ($results as $id => $result) {
             $matched[$id] = (array) $result;
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getAuthorWorkQueries
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getAuthorWorkQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/wikidata/works/name/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -214,34 +174,18 @@ class WikiDataMatch extends BaseMatch
         }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/works/title/' . $query . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getTitleQuery($query, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         $results = $this->getApi()->search($query, $lang, $limit);
         $matched = [];
         foreach ($results as $id => $result) {
             $matched[$id] = (array) $result;
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getTitleQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getTitleQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/wikidata/works/title/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -280,11 +224,9 @@ class WikiDataMatch extends BaseMatch
         if (empty($entityId)) {
             return [];
         }
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/series/author/' . $entityId . '.' . $lang . '.' . $limit . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getAuthorSeries($entityId, $lang, $limit);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         // Find series of creative works from author
         //$propId = static::AUTHOR_PROPERTY;
@@ -302,24 +244,9 @@ class WikiDataMatch extends BaseMatch
         foreach ($results as $id => $result) {
             $matched[$id] = (array) $result;
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getAuthorSeriesIds
-     * @param string|null $lang Language (default: en)
-     * @param string|int|null $limit Max count of returning items (default: 100)
-     * @return array<string, mixed>
-     */
-    public function getAuthorSeriesIds($lang = null, $limit = 100)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/wikidata/series/author/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -336,34 +263,18 @@ class WikiDataMatch extends BaseMatch
         }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/series/title/' . $query . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getSeriesQuery($query, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         $results = $this->getApi()->search($query, $lang, $limit);
         $matched = [];
         foreach ($results as $id => $result) {
             $matched[$id] = (array) $result;
         }
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $matched);
-        }
+        $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
         return $matched;
-    }
-
-    /**
-     * Summary of getSeriesQueries (url encoded)
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getSeriesQueries($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/wikidata/series/title/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -375,56 +286,15 @@ class WikiDataMatch extends BaseMatch
     public function getEntity($entityId, $lang = null)
     {
         $lang ??= $this->lang;
-        if ($this->cacheDir) {
-            $cacheFile = $this->cacheDir . '/wikidata/entities/' . $entityId . '.' . $lang . '.json';
-            if (is_file($cacheFile)) {
-                return $this->loadCache($cacheFile);
-            }
+        $cacheFile = $this->cache->getEntity($entityId, $lang);
+        if ($this->cache->hasCache($cacheFile)) {
+            return $this->cache->loadCache($cacheFile);
         }
         $result = $this->getApi()->get($entityId, $lang);
         $entity = $result->toArray();
         $entity = json_decode(json_encode($entity), true);
-        if ($this->cacheDir) {
-            $this->saveCache($cacheFile, $entity);
-        }
+        $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);
-        return $entity;
-    }
-
-    /**
-     * Summary of getEntityIds
-     * @param string|null $lang Language (default: en)
-     * @return array<string, mixed>
-     */
-    public function getEntityIds($lang = null)
-    {
-        $lang ??= $this->lang;
-        $baseDir = $this->cacheDir . '/wikidata/entities/';
-        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
-    }
-
-    /**
-     * Summary of parseSearchResult
-     * @param array<mixed> $data
-     * @param string $lang
-     * @return SearchResult
-     */
-    public static function parseSearchResult($data, $lang = 'en')
-    {
-        return new SearchResult($data, $lang);
-    }
-
-    /**
-     * Summary of parseEntity
-     * @param array<mixed> $data
-     * @param string $lang
-     * @return Entity
-     */
-    public static function parseEntity($data, $lang = 'en')
-    {
-        $entity = new Entity($data, $lang);
-        // @todo this generates warnings for missing prop, propertyLabel, qualifier etc.
-        $entity->parseProperties($data['properties'] ?? []);
         return $entity;
     }
 }

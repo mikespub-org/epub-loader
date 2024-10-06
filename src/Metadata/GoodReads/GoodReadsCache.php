@@ -1,0 +1,172 @@
+<?php
+/**
+ * GoodReadsCache class - @todo
+ *
+ * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
+ * @author     mikespub
+ */
+
+namespace Marsender\EPubLoader\Metadata\GoodReads;
+
+use Marsender\EPubLoader\Metadata\BaseCache;
+use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
+
+class GoodReadsCache extends BaseCache
+{
+    public const CACHE_TYPES = [
+        'goodreads/author/list',
+        'goodreads/book/show',
+        'goodreads/series',
+        'goodreads/search',
+    ];
+
+    /**
+     * Summary of getSearchQuery (url encoded)
+     * Path: '/goodreads/search/' . urlencode($query) . '.json'
+     * @param string $query
+     * @return string
+     */
+    public function getSearchQuery($query)
+    {
+        $cacheFile = $this->cacheDir . '/goodreads/search/' . urlencode($query) . '.json';
+        return $cacheFile;
+    }
+
+    /**
+     * Summary of getSearchQueries (url encoded)
+     * Path: '/goodreads/search/'
+     * @return array<string, mixed>
+     */
+    public function getSearchQueries()
+    {
+        $baseDir = $this->cacheDir . '/goodreads/search/';
+        return static::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
+     * Summary of getAuthor
+     * Path: '/goodreads/author/list/' . $authorId . '.json'
+     * @param string $authorId
+     * @return string
+     */
+    public function getAuthor($authorId)
+    {
+        $cacheFile = $this->cacheDir . '/goodreads/author/list/' . $authorId . '.json';
+        return $cacheFile;
+    }
+
+    /**
+     * Summary of getAuthorIds
+     * Path: '/goodreads/author/list/'
+     * @return array<string, mixed>
+     */
+    public function getAuthorIds()
+    {
+        $baseDir = $this->cacheDir . '/goodreads/author/list/';
+        return static::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
+     * Summary of getSeries
+     * Path: '/goodreads/series/' . $seriesId . '.json'
+     * @param string $seriesId
+     * @return string
+     */
+    public function getSeries($seriesId)
+    {
+        $cacheFile = $this->cacheDir . '/goodreads/series/' . $seriesId . '.json';
+        return $cacheFile;
+    }
+
+    /**
+     * Summary of getSeriesIds
+     * Path: '/goodreads/series/'
+     * @return array<string, mixed>
+     */
+    public function getSeriesIds()
+    {
+        $baseDir = $this->cacheDir . '/goodreads/series/';
+        return static::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
+     * Summary of getBook
+     * Path: '/goodreads/book/show/' . $bookId . '.json'
+     * @param string $bookId
+     * @return string
+     */
+    public function getBook($bookId)
+    {
+        $bookId = static::bookid($bookId);
+        $cacheFile = $this->cacheDir . '/goodreads/book/show/' . $bookId . '.json';
+        return $cacheFile;
+    }
+
+    /**
+     * Summary of getBookIds
+     * Path: '/goodreads/book/show/'
+     * @return array<string, mixed>
+     */
+    public function getBookIds()
+    {
+        $baseDir = $this->cacheDir . '/goodreads/book/show/';
+        return static::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
+     * Summary of bookid
+     * @param string $bookId
+     * @return string
+     */
+    public static function bookid($bookId)
+    {
+        if (str_contains($bookId, '.')) {
+            [$bookId, $title] = explode('.', $bookId);
+        }
+        if (str_contains($bookId, '-')) {
+            [$bookId, $title] = explode('-', $bookId);
+        }
+        return $bookId;
+    }
+
+    /**
+     * Parse JSON data for GoodReads search result
+     *
+     * @param array<mixed> $data
+     *
+     * @return SearchResult
+     */
+    public static function parseSearch($data)
+    {
+        $result = SearchResult::fromJson($data);
+        return $result;
+    }
+
+    /**
+     * Parse JSON data for GoodReads series result
+     *
+     * @param array<mixed> $data
+     *
+     * @return SeriesResult
+     */
+    public static function parseSeries($data)
+    {
+        $result = SeriesResult::fromJson($data);
+        return $result;
+    }
+
+    /**
+     * Parse JSON data for a GoodReads book
+     *
+     * @param array<mixed> $data
+     *
+     * @return BookResult
+     */
+    public static function parseBook($data)
+    {
+        $bookResult = BookResult::fromJson($data);
+        return $bookResult;
+    }
+}

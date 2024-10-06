@@ -8,10 +8,9 @@
 
 namespace Marsender\EPubLoader\Tests;
 
-use Marsender\EPubLoader\Import\BaseImport;
 use Marsender\EPubLoader\Import\JsonImport;
 use Marsender\EPubLoader\Import\DataCapture;
-use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
+use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryCache;
 use PHPUnit\Framework\TestCase;
 
 class OpenLibraryTest extends TestCase
@@ -230,111 +229,106 @@ class OpenLibraryTest extends TestCase
         $this->assertCount(0, $errors);
     }
 
-    public function testMatchParseAuthorSearch(): void
+    public function testCacheParseAuthorSearch(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new OpenLibraryMatch($cacheDir);
+        $cache = new OpenLibraryCache($cacheDir);
 
-        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/authors/', '*.en.json');
+        $fileList = $cache::getFiles($cacheDir . '/openlibrary/authors/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/openlibrary/authors/', '', $cacheFile);
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$authors = $match->parseSearchPage($query, $content);
-            $authors = OpenLibraryMatch::parseAuthorSearch($matched);
+            $authors = $cache::parseAuthorSearch($matched);
         }
 
-        $expected = count($match->getAuthorQueries('en'));
+        $expected = count($cache->getAuthorQueries('en'));
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseWorksByAuthor(): void
+    public function testCacheParseWorksByAuthor(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new OpenLibraryMatch($cacheDir);
+        $cache = new OpenLibraryCache($cacheDir);
 
-        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/works/author/', '*.en.100.json');
+        $fileList = $cache::getFiles($cacheDir . '/openlibrary/works/author/', '*.en.100.json');
         foreach ($fileList as $cacheFile) {
             $authorId = str_replace($cacheDir . '/openlibrary/works/author/', '', $cacheFile);
             $authorId = str_replace('.en.100.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$works = $match->parseAuthorPage($authorId, $content);
-            $works = OpenLibraryMatch::parseWorkSearch($matched);
+            $works = $cache::parseWorkSearch($matched);
         }
 
-        $expected = count($match->getAuthorWorkIds('en', 100));
+        $expected = count($cache->getAuthorWorkIds('en', 100));
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseWorksByTitle(): void
+    public function testCacheParseWorksByTitle(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new OpenLibraryMatch($cacheDir);
+        $cache = new OpenLibraryCache($cacheDir);
 
-        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/works/title/', '*.json');
+        $fileList = $cache::getFiles($cacheDir . '/openlibrary/works/title/', '*.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/openlibrary/works/title/', '', $cacheFile);
             $query = str_replace('.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            //$works = $match->parseSearchPage($query, $content);
-            $works = OpenLibraryMatch::parseWorkSearch($matched);
+            $works = $cache::parseWorkSearch($matched);
         }
 
-        $expected = count($match->getTitleQueries());
+        $expected = count($cache->getTitleQueries());
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseAuthorEntity(): void
+    public function testCacheParseAuthorEntity(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new OpenLibraryMatch($cacheDir);
+        $cache = new OpenLibraryCache($cacheDir);
         //$patterns = ['.remote_ids.properties' => '^\w+$'];
         //$patterns = ['.remoteIds.properties' => '^\w+$'];
         //$capture = new DataCapture($patterns);
 
-        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/entities/', '*A.en.json');
+        $fileList = $cache::getFiles($cacheDir . '/openlibrary/entities/', '*A.en.json');
         foreach ($fileList as $cacheFile) {
             $authorId = str_replace($cacheDir . '/openlibrary/entities/', '', $cacheFile);
             $authorId = str_replace('.en.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
             //$capture->analyze($matched);
-            //$author = $match->parseSearchPage($authorId, $content);
-            $author = OpenLibraryMatch::parseAuthorEntity($matched);
+            $author = $cache::parseAuthorEntity($matched);
             //$capture->analyze($author);
         }
         //$cacheFile = $cacheDir . '/openlibrary/authorentity.report.json';
         //$report = $capture->report($cacheFile);
 
-        $expected = count($match->getAuthorIds('en'));
+        $expected = count($cache->getAuthorIds('en'));
         $this->assertCount($expected, $fileList);
     }
 
-    public function testMatchParseWorkEntity(): void
+    public function testCacheParseWorkEntity(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        $match = new OpenLibraryMatch($cacheDir);
+        $cache = new OpenLibraryCache($cacheDir);
         //$patterns = [];
         //$capture = new DataCapture($patterns);
 
-        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/entities/', '*W.en.json');
+        $fileList = $cache::getFiles($cacheDir . '/openlibrary/entities/', '*W.en.json');
         foreach ($fileList as $cacheFile) {
             $workId = str_replace($cacheDir . '/openlibrary/entities/', '', $cacheFile);
             $workId = str_replace('.en.json', '', $workId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
             //$capture->analyze($matched);
-            //$work = $match->parseSearchPage($workId, $content);
-            $work = OpenLibraryMatch::parseWorkEntity($matched);
+            $work = $cache::parseWorkEntity($matched);
             //$capture->analyze($work);
         }
         //$cacheFile = $cacheDir . '/openlibrary/workentity.report.json';
         //$report = $capture->report($cacheFile);
 
-        $expected = count($match->getWorkIds('en'));
+        $expected = count($cache->getWorkIds('en'));
         $this->assertCount($expected, $fileList);
     }
 }

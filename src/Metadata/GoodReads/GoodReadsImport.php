@@ -1,13 +1,13 @@
 <?php
 /**
- * GoodReadsBook import class
+ * GoodReadsImport class
  *
  * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Import;
+namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
@@ -15,47 +15,8 @@ use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
 use Exception;
 
-class GoodReadsBook
+class GoodReadsImport
 {
-    /**
-     * Parse JSON data for GoodReads search result
-     *
-     * @param array<mixed> $data
-     *
-     * @return SearchResult
-     */
-    public static function parseSearch($data)
-    {
-        $result = SearchResult::fromJson($data);
-        return $result;
-    }
-
-    /**
-     * Parse JSON data for GoodReads series result
-     *
-     * @param array<mixed> $data
-     *
-     * @return SeriesResult
-     */
-    public static function parseSeries($data)
-    {
-        $result = SeriesResult::fromJson($data);
-        return $result;
-    }
-
-    /**
-     * Parse JSON data for a GoodReads book
-     *
-     * @param array<mixed> $data
-     *
-     * @return BookResult
-     */
-    public static function parse($data)
-    {
-        $bookResult = BookResult::fromJson($data);
-        return $bookResult;
-    }
-
     /**
      * Loads book infos from a GoodReads book
      *
@@ -165,14 +126,21 @@ class GoodReadsBook
     }
 
     /**
-     * Summary of import
+     * Summary of getBookInfos
      * @param string $dbPath
      * @param array<mixed> $data
-     * @return BookInfos
+     * @return BookInfos|SeriesResult|SearchResult
      */
-    public static function import($dbPath, $data)
+    public static function getBookInfos($dbPath, $data)
     {
-        $book = static::parse($data);
-        return static::load($dbPath, $book);
+        if (!empty($data["page"]) && $data["page"] == "/book/show/[book_id]") {
+            $book = GoodReadsCache::parseBook($data);
+            return static::load($dbPath, $book);
+        }
+        // don't load all books in search result here
+        if (array_keys($data)[0] == 0) {
+            return GoodReadsCache::parseSeries($data);
+        }
+        return GoodReadsCache::parseSearch($data);
     }
 }

@@ -9,7 +9,7 @@
 
 namespace Marsender\EPubLoader;
 
-use Marsender\EPubLoader\Import\BaseImport;
+use Marsender\EPubLoader\Metadata\BaseCache;
 use Exception;
 
 class RequestHandler
@@ -173,11 +173,11 @@ class RequestHandler
             }
             $epubPath = $dbConfig['epub_path'];
             if ($action == 'csv_import') {
-                $fileList = BaseImport::getFiles($dbPath, '*.csv');
+                $fileList = BaseCache::getFiles($dbPath, '*.csv');
             } elseif ($action == 'json_import') {
-                $fileList = BaseImport::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.json');
+                $fileList = BaseCache::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.json');
             } else {
-                $fileList = BaseImport::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+                $fileList = BaseCache::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             }
             $sizes[$dbPath]['count'] = count($fileList);
             $result['databases'][$dbNum] = array_merge($result['databases'][$dbNum], $sizes[$dbPath]);

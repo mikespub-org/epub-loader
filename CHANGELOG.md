@@ -4,6 +4,7 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Split off cache classes + move namespaces
   * Get available cache entries + expand tests
   * Add GoodReads Series action, paging and match
   * Split GoodReads namespace and add SeriesResult
