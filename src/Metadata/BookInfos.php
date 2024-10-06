@@ -32,6 +32,9 @@ class BookInfos
     /** @var array<mixed>|null */
     public $mAuthors = null;
 
+    /** @var array<string>|null */
+    public $mAuthorIds = null;
+
     public string $mLanguage = '';
 
     public string $mDescription = '';

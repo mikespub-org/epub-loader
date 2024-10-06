@@ -48,6 +48,7 @@ class OpenLibraryImport
             $bookInfos->mDescription = (string) $work->getDescription();
         }
         $authors = [];
+        $bookInfos->mAuthorIds = [];
         $entities = $work->getAuthors() ?? [];
         foreach ($entities as $author) {
             $authorId = (string) $author->getAuthor()?->getKey();
@@ -62,6 +63,7 @@ class OpenLibraryImport
             }
             $authorSort = BookInfos::getSortString($author['name']);
             $authors[$authorSort] = $author['name'];
+            $bookInfos->mAuthorIds[] = $authorId;
         }
         $bookInfos->mAuthors = $authors;
         $subjects = [];
@@ -79,6 +81,7 @@ class OpenLibraryImport
             $bookInfos->mCover = "https://covers.openlibrary.org/b/id/{$cover}-M.jpg";
         }
         // @todo ...
+        //$bookInfos->mSerie = '...';
 
         $bookInfos->mCreationDate = (string) $work->getCreated()?->getValue();
         // @todo no modification date here

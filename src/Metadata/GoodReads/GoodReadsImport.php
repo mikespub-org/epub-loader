@@ -74,6 +74,10 @@ class GoodReadsImport
         $authors[$authorSort] = $author;
         // @todo add authors from secondaryContributorEdges?
         $bookInfos->mAuthors = $authors;
+        $authorId = str_replace('https://www.goodreads.com/author/show/', '', (string) $contributors[$authorRef]->getWebUrl());
+        if (!empty($authorId)) {
+            $bookInfos->mAuthorIds = [ $authorId ];
+        }
         $bookInfos->mLanguage = (string) $book->getDetails()?->getLanguage()?->getName();
         $bookInfos->mDescription = (string) $book->getDescription();
         $subjects = [];

@@ -519,6 +519,65 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of checkBookLinks
+     * @param string $type
+     * @return array<mixed>
+     */
+    public function checkBookLinks($type)
+    {
+        // get books with author, series and identifier value for type
+        $sql = 'select identifiers.book as book, identifiers.val as value, author, series
+        from identifiers left join books on books.id = identifiers.book
+        left join books_authors_link on books.id = books_authors_link.book
+        left join books_series_link on books.id = books_series_link.book
+        where identifiers.type = ?';
+        $params = [];
+        $params[] = $type;
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute($params);
+        $links = [];
+        $authors = [];
+        $series = [];
+        while ($post = $stmt->fetchObject()) {
+            $links[$post->value] = (array) $post;
+            if (!empty($post->author)) {
+                $authors[$post->author] = 0;
+            }
+            if (!empty($post->series)) {
+                $series[$post->series] = 0;
+            }
+        }
+        // get author links
+        $sql = 'select id, link from authors
+        where id IN (' . str_repeat('?,', count(array_keys($authors)) - 1) . '?)
+        and link != ""';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute(array_keys($authors));
+        while ($post = $stmt->fetchObject()) {
+            $authors[$post->id] = $post->link;
+        }
+        // get series links
+        $sql = 'select id, link from series
+        where id IN (' . str_repeat('?,', count(array_keys($series)) - 1) . '?)
+        and link != ""';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute(array_keys($series));
+        while ($post = $stmt->fetchObject()) {
+            $series[$post->id] = $post->link;
+        }
+        // add links if available
+        foreach ($links as $value => $link) {
+            if (!empty($link['author']) && !empty($authors[$link['author']])) {
+                $links[$value]['author_link'] = $authors[$link['author']];
+            }
+            if (!empty($link['series']) && !empty($series[$link['series']])) {
+                $links[$value]['series_link'] = $series[$link['series']];
+            }
+        }
+        return $links;
+    }
+
+    /**
      * Summary of hasNotes
      * @return bool
      */

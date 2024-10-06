@@ -8,8 +8,10 @@
 
 namespace Marsender\EPubLoader\Tests;
 
+use Marsender\EPubLoader\CalibreDbLoader;
 use Marsender\EPubLoader\Import\JsonImport;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsImport;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use PHPUnit\Framework\TestCase;
 
@@ -458,5 +460,65 @@ class GoodReadsTest extends TestCase
 
         $expected = count($cache->getBookIds());
         $this->assertCount($expected, $fileList);
+    }
+
+    public function testCheckBookLinks(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbFile = $dbPath . '/metadata.db';
+        $db = new CalibreDbLoader($dbFile);
+        $links = $db->checkBookLinks('goodreads');
+
+        $cacheDir = dirname(__DIR__) . '/cache';
+        $cache = new GoodReadsCache($cacheDir);
+
+        $cacheFile = $dbPath . '/links.json';
+        file_put_contents($cacheFile, json_encode($links, JSON_PRETTY_PRINT));
+        $expected = count($cache->getBookIds());
+        $this->assertCount($expected, $links);
+
+        $authors = [];
+        $series = [];
+        foreach ($links as $value => $link) {
+            $cacheFile = $cache->getBook($value);
+            $data = $cache->loadCache($cacheFile);
+            $book = $cache::parseBook($data);
+            $bookInfo = GoodReadsImport::load($dbPath, $book);
+            if (!empty($bookInfo->mAuthorIds)) {
+                $authors[$link['author']] = $bookInfo->mAuthorIds;
+            }
+            if (!empty($bookInfo->mSerieId)) {
+                $series[$link['series']] = $bookInfo->mSerieId;
+            }
+        }
+        foreach ($authors as $authorId => $values) {
+            // @todo check/map with author link
+            foreach ($values as $value) {
+                $cacheFile = $cache->getAuthor($value);
+                $data = $cache->loadCache($cacheFile);
+                if (!empty($data)) {
+                    $books = $cache::parseSearch($data);
+                    // @todo check other book links
+                }
+            }
+        }
+        foreach ($series as $serieId => $value) {
+            // @todo check/map with series link
+            $cacheFile = $cache->getSeries($value);
+            $data = $cache->loadCache($cacheFile);
+            if (!empty($data)) {
+                $books = $cache::parseSeries($data);
+                // @todo check other book links
+            }
+        }
+        $cacheFile = $dbPath . '/authors.json';
+        file_put_contents($cacheFile, json_encode($authors, JSON_PRETTY_PRINT));
+        $cacheFile = $dbPath . '/series.json';
+        file_put_contents($cacheFile, json_encode($series, JSON_PRETTY_PRINT));
+        $stats = $db->getStats();
+        $expected = $stats['authors'];
+        $this->assertCount($expected, $authors);
+        $expected = $stats['series'];
+        $this->assertCount($expected, $series);
     }
 }

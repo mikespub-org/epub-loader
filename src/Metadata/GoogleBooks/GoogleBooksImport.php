@@ -49,6 +49,7 @@ class GoogleBooksImport
             $authors[$authorSort] = $author;
         }
         $bookInfos->mAuthors = $authors;
+        $bookInfos->mAuthorIds = $volumeInfo->getAuthors();
         $bookInfos->mLanguage = (string) $volumeInfo->getLanguage();
         $bookInfos->mDescription = (string) $volumeInfo->getDescription();
         $bookInfos->mSubjects = $volumeInfo->getCategories();
