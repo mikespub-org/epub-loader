@@ -539,7 +539,7 @@ class CalibreDbLoader
         $authors = [];
         $series = [];
         while ($post = $stmt->fetchObject()) {
-            $links[$post->value] = (array) $post;
+            $links[] = (array) $post;
             if (!empty($post->author)) {
                 $authors[$post->author] = 0;
             }
@@ -566,12 +566,12 @@ class CalibreDbLoader
             $series[$post->id] = $post->link;
         }
         // add links if available
-        foreach ($links as $value => $link) {
+        foreach ($links as $id => $link) {
             if (!empty($link['author']) && !empty($authors[$link['author']])) {
-                $links[$value]['author_link'] = $authors[$link['author']];
+                $links[$id]['author_link'] = $authors[$link['author']];
             }
             if (!empty($link['series']) && !empty($series[$link['series']])) {
-                $links[$value]['series_link'] = $series[$link['series']];
+                $links[$id]['series_link'] = $series[$link['series']];
             }
         }
         return $links;

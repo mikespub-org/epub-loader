@@ -72,12 +72,31 @@ class GoodReadsImport
         $author = (string) $contributors[$authorRef]->getName();
         $authorSort = BookInfos::getSortString($author);
         $authors[$authorSort] = $author;
-        // @todo add authors from secondaryContributorEdges?
-        $bookInfos->mAuthors = $authors;
         $authorId = str_replace('https://www.goodreads.com/author/show/', '', (string) $contributors[$authorRef]->getWebUrl());
+        $bookInfos->mAuthorIds = [];
         if (!empty($authorId)) {
-            $bookInfos->mAuthorIds = [ $authorId ];
+            $bookInfos->mAuthorIds[] = $authorId;
         }
+        // add authors from secondaryContributorEdges if they are Author
+        $others = $book->getSecondaryContributorEdges() ?? [];
+        foreach ($others as $edge) {
+            // ignore others like Editor, Afterword, Tradutor etc.
+            if (empty($edge['role']) || $edge['role'] != 'Author') {
+                continue;
+            }
+            $authorRef = $edge['node']['__ref'];
+            if (empty($contributors[$authorRef])) {
+                throw new Exception('Invalid secondary authorRef for GoodReads book: ' . $authorRef);
+            }
+            $author = (string) $contributors[$authorRef]->getName();
+            $authorSort = BookInfos::getSortString($author);
+            $authors[$authorSort] = $author;
+            $authorId = str_replace('https://www.goodreads.com/author/show/', '', (string) $contributors[$authorRef]->getWebUrl());
+            if (!empty($authorId)) {
+                $bookInfos->mAuthorIds[] = $authorId;
+            }
+        }
+        $bookInfos->mAuthors = $authors;
         $bookInfos->mLanguage = (string) $book->getDetails()?->getLanguage()?->getName();
         $bookInfos->mDescription = (string) $book->getDescription();
         $subjects = [];

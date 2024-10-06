@@ -10,10 +10,12 @@ namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\CalibreDbLoader;
 use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsImport;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use PHPUnit\Framework\TestCase;
+use Exception;
 
 class GoodReadsTest extends TestCase
 {
@@ -472,28 +474,46 @@ class GoodReadsTest extends TestCase
         $cacheDir = dirname(__DIR__) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
 
-        $cacheFile = $dbPath . '/links.json';
+        $cacheFile = $cacheDir . '/goodreads/links.json';
         file_put_contents($cacheFile, json_encode($links, JSON_PRETTY_PRINT));
         $expected = count($cache->getBookIds());
         $this->assertCount($expected, $links);
 
+        $books = [];
         $authors = [];
         $series = [];
-        foreach ($links as $value => $link) {
-            $cacheFile = $cache->getBook($value);
-            $data = $cache->loadCache($cacheFile);
-            $book = $cache::parseBook($data);
-            $bookInfo = GoodReadsImport::load($dbPath, $book);
-            if (!empty($bookInfo->mAuthorIds)) {
+        $invalid = [];
+        foreach ($links as $id => $link) {
+            if (empty($books[$link['value']])) {
+                $cacheFile = $cache->getBook($link['value']);
+                $data = $cache->loadCache($cacheFile);
+                $book = $cache::parseBook($data);
+                try {
+                    $books[$link['value']] = GoodReadsImport::load($dbPath, $book);
+                } catch (Exception $e) {
+                    unset($data['locales']);
+                    $invalid[$link['value']] = $data;
+                    $books[$link['value']] = new BookInfos();
+                    continue;
+                }
+            }
+            $bookInfo = $books[$link['value']];
+            // limit # of authors for matching here
+            if (!empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
                 $authors[$link['author']] = $bookInfo->mAuthorIds;
             }
             if (!empty($bookInfo->mSerieId)) {
                 $series[$link['series']] = $bookInfo->mSerieId;
             }
         }
+        $seen = [];
         foreach ($authors as $authorId => $values) {
             // @todo check/map with author link
             foreach ($values as $value) {
+                if (!empty($seen[$value])) {
+                    continue;
+                }
+                $seen[$value] = 1;
                 $cacheFile = $cache->getAuthor($value);
                 $data = $cache->loadCache($cacheFile);
                 if (!empty($data)) {
@@ -502,7 +522,12 @@ class GoodReadsTest extends TestCase
                 }
             }
         }
+        $seen = [];
         foreach ($series as $serieId => $value) {
+            if (!empty($seen[$value])) {
+                continue;
+            }
+            $seen[$value] = 1;
             // @todo check/map with series link
             $cacheFile = $cache->getSeries($value);
             $data = $cache->loadCache($cacheFile);
@@ -511,9 +536,11 @@ class GoodReadsTest extends TestCase
                 // @todo check other book links
             }
         }
-        $cacheFile = $dbPath . '/authors.json';
+        $cacheFile = $cacheDir . '/goodreads/invalid.json';
+        file_put_contents($cacheFile, json_encode($invalid, JSON_PRETTY_PRINT));
+        $cacheFile = $cacheDir . '/goodreads/authors.json';
         file_put_contents($cacheFile, json_encode($authors, JSON_PRETTY_PRINT));
-        $cacheFile = $dbPath . '/series.json';
+        $cacheFile = $cacheDir . '/goodreads/series.json';
         file_put_contents($cacheFile, json_encode($series, JSON_PRETTY_PRINT));
         $stats = $db->getStats();
         $expected = $stats['authors'];
