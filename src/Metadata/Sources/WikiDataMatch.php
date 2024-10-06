@@ -8,6 +8,7 @@
 
 namespace Marsender\EPubLoader\Metadata\Sources;
 
+use Marsender\EPubLoader\Import\BaseImport;
 use Wikidata\Entity;
 use Wikidata\SearchResult;
 use Wikidata\Wikidata;
@@ -87,6 +88,18 @@ class WikiDataMatch extends BaseMatch
     }
 
     /**
+     * Summary of getAuthorQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getAuthorQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/wikidata/authors/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
+    }
+
+    /**
      * Summary of findWorksByAuthorProperty
      * @param array<mixed> $author
      * @param string|null $lang Language (default: en)
@@ -131,6 +144,19 @@ class WikiDataMatch extends BaseMatch
     }
 
     /**
+     * Summary of getAuthorWorkIds
+     * @param string|null $lang Language (default: en)
+     * @param string|int|null $limit Max count of returning items (default: 100)
+     * @return array<string, mixed>
+     */
+    public function getAuthorWorkIds($lang = null, $limit = 100)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/wikidata/works/author/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+    }
+
+    /**
      * Summary of findWorksByAuthorName
      * @param array<mixed> $author
      * @param string|null $lang Language (default: en)
@@ -163,6 +189,18 @@ class WikiDataMatch extends BaseMatch
     }
 
     /**
+     * Summary of getAuthorWorkQueries
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getAuthorWorkQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/wikidata/works/name/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
+    }
+
+    /**
      * Summary of findWorksByTitle
      * @param string $query
      * @param string|null $lang Language (default: en)
@@ -192,6 +230,18 @@ class WikiDataMatch extends BaseMatch
         }
         usleep(static::SLEEP_TIME);
         return $matched;
+    }
+
+    /**
+     * Summary of getTitleQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getTitleQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/wikidata/works/title/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -260,6 +310,19 @@ class WikiDataMatch extends BaseMatch
     }
 
     /**
+     * Summary of getAuthorSeriesIds
+     * @param string|null $lang Language (default: en)
+     * @param string|int|null $limit Max count of returning items (default: 100)
+     * @return array<string, mixed>
+     */
+    public function getAuthorSeriesIds($lang = null, $limit = 100)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/wikidata/series/author/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+    }
+
+    /**
      * Summary of findSeriesByName
      * @param string $query
      * @param string|null $lang Language (default: en)
@@ -292,6 +355,18 @@ class WikiDataMatch extends BaseMatch
     }
 
     /**
+     * Summary of getSeriesQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getSeriesQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/wikidata/series/title/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
+    }
+
+    /**
      * Summary of getEntity
      * @param string $entityId
      * @param string|null $lang Language (default: en)
@@ -314,6 +389,18 @@ class WikiDataMatch extends BaseMatch
         }
         usleep(static::SLEEP_TIME);
         return $entity;
+    }
+
+    /**
+     * Summary of getEntityIds
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getEntityIds($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/wikidata/entities/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**

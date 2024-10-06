@@ -8,6 +8,7 @@
 
 namespace Marsender\EPubLoader\Metadata\Sources;
 
+use Marsender\EPubLoader\Import\BaseImport;
 use Marsender\EPubLoader\Import\GoogleBooksVolume;
 use Marsender\EPubLoader\Metadata\BookInfos;
 
@@ -69,6 +70,19 @@ class GoogleBooksMatch extends BaseMatch
     }
 
     /**
+     * Summary of getAuthorQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @param string|int|null $limit Max count of returning items (default: 40)
+     * @return array<string, mixed>
+     */
+    public function getAuthorQueries($lang = null, $limit = 40)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/google/authors/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+    }
+
+    /**
      * Summary of findWorksByTitle
      * @param string $query
      * @param array<mixed>|null $author
@@ -111,6 +125,18 @@ class GoogleBooksMatch extends BaseMatch
         }
         usleep(static::SLEEP_TIME);
         return $matched;
+    }
+
+    /**
+     * Summary of getTitleQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getTitleQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/google/titles/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -159,6 +185,18 @@ class GoogleBooksMatch extends BaseMatch
     }
 
     /**
+     * Summary of getSeriesQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getSeriesQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/google/series/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
+    }
+
+    /**
      * Summary of getVolume
      * @param string $volumeId
      * @param string|null $lang Language (default: en)
@@ -181,6 +219,18 @@ class GoogleBooksMatch extends BaseMatch
         }
         usleep(static::SLEEP_TIME);
         return $entity;
+    }
+
+    /**
+     * Summary of getVolumeIds
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getVolumeIds($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/google/volumes/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**

@@ -10,6 +10,7 @@ namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\Import\JsonImport;
 use Marsender\EPubLoader\Import\GoogleBooksVolume;
+use Marsender\EPubLoader\Metadata\Sources\GoogleBooksMatch;
 use PHPUnit\Framework\TestCase;
 
 class GoogleBooksTest extends TestCase
@@ -134,9 +135,9 @@ class GoogleBooksTest extends TestCase
     public function testMatchParseAuthors(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new GoogleBooksMatch($cacheDir);
+        $match = new GoogleBooksMatch($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/google/authors/', '*.json');
+        $fileList = JsonImport::getFiles($cacheDir . '/google/authors/', '*.en.40.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/google/authors/', '', $cacheFile);
             $query = str_replace('.en.40.json', '', $query);
@@ -149,16 +150,34 @@ class GoogleBooksTest extends TestCase
             $authors = GoogleBooksVolume::parseResult($matched);
         }
 
-        $expected = 1832;
+        $expected = count($match->getAuthorQueries('en', 40));
         $this->assertCount($expected, $fileList);
+    }
+
+    public function testFindSeriesByName(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        $match = new GoogleBooksMatch($cacheDir);
+        $author = [
+            'name' => 'Trudi Canavan',
+        ];
+        $query = 'Black Magician Trilogy';
+        $series = $match->findSeriesByName($query, $author);
+
+        $expected = 'books#volumes';
+        $this->assertEquals($expected, $series['kind']);
+        $expected = 41;
+        $this->assertEquals($expected, $series['totalItems']);
+        $expected = 40;
+        $this->assertCount($expected, $series['items']);
     }
 
     public function testMatchParseSeries(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new GoogleBooksMatch($cacheDir);
+        $match = new GoogleBooksMatch($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/google/series/', '*.json');
+        $fileList = JsonImport::getFiles($cacheDir . '/google/series/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/google/series/', '', $cacheFile);
             $query = str_replace('.en.json', '', $query);
@@ -168,16 +187,16 @@ class GoogleBooksTest extends TestCase
             $series = GoogleBooksVolume::parseResult($matched);
         }
 
-        $expected = 2;
+        $expected = count($match->getSeriesQueries('en'));
         $this->assertCount($expected, $fileList);
     }
 
     public function testMatchParseTitles(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new GoogleBooksMatch($cacheDir);
+        $match = new GoogleBooksMatch($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/google/titles/', '*.json');
+        $fileList = JsonImport::getFiles($cacheDir . '/google/titles/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/google/titles/', '', $cacheFile);
             $query = str_replace('.en.json', '', $query);
@@ -187,16 +206,16 @@ class GoogleBooksTest extends TestCase
             $titles = GoogleBooksVolume::parseResult($matched);
         }
 
-        $expected = 38;
+        $expected = count($match->getTitleQueries('en'));
         $this->assertCount($expected, $fileList);
     }
 
     public function testMatchParseVolume(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new GoogleBooksMatch($cacheDir);
+        $match = new GoogleBooksMatch($cacheDir);
 
-        $fileList = JsonImport::getFiles($cacheDir . '/google/volumes/', '*.json');
+        $fileList = JsonImport::getFiles($cacheDir . '/google/volumes/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $volumeId = str_replace($cacheDir . '/google/volumes/', '', $cacheFile);
             $volumeId = str_replace('.en.json', '', $volumeId);
@@ -206,7 +225,7 @@ class GoogleBooksTest extends TestCase
             $volume = GoogleBooksVolume::parse($matched);
         }
 
-        $expected = 16;
+        $expected = count($match->getVolumeIds('en'));
         $this->assertCount($expected, $fileList);
     }
 }

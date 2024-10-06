@@ -147,7 +147,7 @@ class BaseExport
         $filename = '';
         $linenum = 0;
         if (headers_sent($filename, $linenum)) {
-            $error = sprintf('Http headers already sent by file: %s ligne %d', $filename, $linenum);
+            $error = sprintf('Http headers already sent by file: %s line %d', $filename, $linenum);
             throw new Exception($error);
         }
 

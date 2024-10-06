@@ -176,7 +176,7 @@ class ActionHandler
 
     /**
      * Summary of csv_export
-     * @return string
+     * @return string|null
      */
     public function csv_export()
     {
@@ -192,6 +192,11 @@ class ActionHandler
             foreach ($errors as $file => $error) {
                 $this->addError($file, $error);
             }
+        }
+        // Download export
+        if ($this->request->get('download')) {
+            $export->download();
+            return null;
         }
         // Save export
         $export->SaveToFile();
@@ -379,7 +384,9 @@ class ActionHandler
 
         // Update the book identifier
         if (!is_null($bookId) && !is_null($matchId)) {
-            $this->updateBookIdentifier('wd', $bookId, $matchId);
+            if (!$this->updateBookIdentifier('wd', $bookId, $matchId)) {
+                $this->addError($this->dbFileName, "Failed updating wd identifier for bookId {$bookId} to {$matchId}");
+            }
         }
 
         // Find match on Wikidata
@@ -428,7 +435,7 @@ class ActionHandler
         }
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList];
+        return ['books' => $books, 'authorId' => $authorId, 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList];
     }
 
     /**
@@ -485,7 +492,7 @@ class ActionHandler
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['series' => $series, 'authorId' => $authorId, 'author' => $authors[$authorId], 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList, 'paging' => $paging];
+        return ['series' => $series, 'authorId' => $authorId, 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList, 'paging' => $paging];
     }
 
     /**
@@ -579,7 +586,7 @@ class ActionHandler
         $langList = GoogleBooksMatch::getLanguages();
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'lang' => $lang, 'langList' => $langList];
+        return ['books' => $books, 'authorId' => $authorId, 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'lang' => $lang, 'langList' => $langList];
     }
 
     /**
@@ -739,7 +746,7 @@ class ActionHandler
         }
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched['docs'], 'authors' => $authorList];
+        return ['books' => $books, 'authorId' => $authorId, 'bookId' => $bookId, 'matched' => $matched['docs'], 'authors' => $authorList];
     }
 
     /**
@@ -946,7 +953,7 @@ class ActionHandler
         }
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'author' => $authors[$authorId], 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'matchId' => $matchId];
+        return ['books' => $books, 'authorId' => $authorId, 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'matchId' => $matchId];
     }
 
     /**
@@ -1037,7 +1044,7 @@ class ActionHandler
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['series' => $series, 'authorId' => $authorId, 'author' => $authors[$authorId], 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList, 'paging' => $paging];
+        return ['series' => $series, 'authorId' => $authorId, 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList, 'paging' => $paging];
     }
 
     /**

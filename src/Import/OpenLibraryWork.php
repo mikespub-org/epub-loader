@@ -10,12 +10,26 @@
 namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\OpenLibrary\AuthorEntity;
 use Marsender\EPubLoader\Metadata\OpenLibrary\WorkEntity;
 use Exception;
 use Marsender\EPubLoader\Metadata\Sources\OpenLibraryMatch;
 
 class OpenLibraryWork
 {
+    /**
+     * Parse JSON data for an OpenLibrary author
+     *
+     * @param array<mixed> $data
+     *
+     * @return AuthorEntity
+     */
+    public static function parseAuthor($data)
+    {
+        $author = AuthorEntity::fromJson($data);
+        return $author;
+    }
+
     /**
      * Parse JSON data for an OpenLibrary work
      *

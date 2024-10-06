@@ -65,7 +65,7 @@ class OpenLibraryTest extends TestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/ol_work/0/?matchId=OL13066A">OL13066A</a>';
+        $expected = '<a href="/phpunit/ol_work/0/4?matchId=OL13066A">OL13066A</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'H. G. Wells';
         $this->assertStringContainsString($expected, $output);
@@ -233,9 +233,9 @@ class OpenLibraryTest extends TestCase
     public function testMatchParseAuthorSearch(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new OpenLibraryMatch($cacheDir);
+        $match = new OpenLibraryMatch($cacheDir);
 
-        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/authors/', '*.json');
+        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/authors/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $query = str_replace($cacheDir . '/openlibrary/authors/', '', $cacheFile);
             $query = str_replace('.en.json', '', $query);
@@ -245,16 +245,16 @@ class OpenLibraryTest extends TestCase
             $authors = OpenLibraryMatch::parseAuthorSearch($matched);
         }
 
-        $expected = 1817;
+        $expected = count($match->getAuthorQueries('en'));
         $this->assertCount($expected, $fileList);
     }
 
     public function testMatchParseWorksByAuthor(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new OpenLibraryMatch($cacheDir);
+        $match = new OpenLibraryMatch($cacheDir);
 
-        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/works/author/', '*.json');
+        $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/works/author/', '*.en.100.json');
         foreach ($fileList as $cacheFile) {
             $authorId = str_replace($cacheDir . '/openlibrary/works/author/', '', $cacheFile);
             $authorId = str_replace('.en.100.json', '', $authorId);
@@ -264,14 +264,14 @@ class OpenLibraryTest extends TestCase
             $works = OpenLibraryMatch::parseWorkSearch($matched);
         }
 
-        $expected = 1691;
+        $expected = count($match->getAuthorWorkIds('en', 100));
         $this->assertCount($expected, $fileList);
     }
 
     public function testMatchParseWorksByTitle(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new OpenLibraryMatch($cacheDir);
+        $match = new OpenLibraryMatch($cacheDir);
 
         $fileList = BaseImport::getFiles($cacheDir . '/openlibrary/works/title/', '*.json');
         foreach ($fileList as $cacheFile) {
@@ -283,14 +283,14 @@ class OpenLibraryTest extends TestCase
             $works = OpenLibraryMatch::parseWorkSearch($matched);
         }
 
-        $expected = 10;
+        $expected = count($match->getTitleQueries());
         $this->assertCount($expected, $fileList);
     }
 
     public function testMatchParseAuthorEntity(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new OpenLibraryMatch($cacheDir);
+        $match = new OpenLibraryMatch($cacheDir);
         //$patterns = ['.remote_ids.properties' => '^\w+$'];
         //$patterns = ['.remoteIds.properties' => '^\w+$'];
         //$capture = new DataCapture($patterns);
@@ -309,14 +309,14 @@ class OpenLibraryTest extends TestCase
         //$cacheFile = $cacheDir . '/openlibrary/authorentity.report.json';
         //$report = $capture->report($cacheFile);
 
-        $expected = 27;
+        $expected = count($match->getAuthorIds('en'));
         $this->assertCount($expected, $fileList);
     }
 
     public function testMatchParseWorkEntity(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
-        //$match = new OpenLibraryMatch($cacheDir);
+        $match = new OpenLibraryMatch($cacheDir);
         //$patterns = [];
         //$capture = new DataCapture($patterns);
 
@@ -334,7 +334,7 @@ class OpenLibraryTest extends TestCase
         //$cacheFile = $cacheDir . '/openlibrary/workentity.report.json';
         //$report = $capture->report($cacheFile);
 
-        $expected = 27;
+        $expected = count($match->getWorkIds('en'));
         $this->assertCount($expected, $fileList);
     }
 }

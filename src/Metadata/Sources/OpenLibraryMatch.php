@@ -8,6 +8,7 @@
 
 namespace Marsender\EPubLoader\Metadata\Sources;
 
+use Marsender\EPubLoader\Import\BaseImport;
 use Marsender\EPubLoader\Metadata\OpenLibrary\AuthorEntity;
 use Marsender\EPubLoader\Metadata\OpenLibrary\AuthorSearchResult;
 use Marsender\EPubLoader\Metadata\OpenLibrary\WorkEntity;
@@ -77,10 +78,22 @@ class OpenLibraryMatch extends BaseMatch
     }
 
     /**
+     * Summary of getAuthorQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getAuthorQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/openlibrary/authors/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.json', true);
+    }
+
+    /**
      * Summary of findWorksByAuthorId
      * @param string $matchId
      * @param string|null $lang Language (default: en)
-     * @param string|int|null $limit Max count of returning items (default: 10)
+     * @param string|int|null $limit Max count of returning items (default: 100)
      * @return array<string, mixed>
      */
     public function findWorksByAuthorId($matchId, $lang = null, $limit = 100)
@@ -107,6 +120,19 @@ class OpenLibraryMatch extends BaseMatch
         }
         usleep(static::SLEEP_TIME);
         return $matched;
+    }
+
+    /**
+     * Summary of getAuthorWorkIds
+     * @param string|null $lang Language (default: en)
+     * @param string|int|null $limit Max count of returning items (default: 100)
+     * @return array<string, mixed>
+     */
+    public function getAuthorWorkIds($lang = null, $limit = 100)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/openlibrary/works/author/';
+        return BaseImport::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -144,6 +170,18 @@ class OpenLibraryMatch extends BaseMatch
     }
 
     /**
+     * Summary of getTitleQueries (url encoded)
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getTitleQueries($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/openlibrary/works/title/';
+        return BaseImport::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
      * Summary of getAuthor
      * @param string $authorId
      * @param string|null $lang Language (default: en)
@@ -167,6 +205,18 @@ class OpenLibraryMatch extends BaseMatch
         }
         usleep(static::SLEEP_TIME);
         return $entity;
+    }
+
+    /**
+     * Summary of getAuthorIds
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getAuthorIds($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/openlibrary/entities/';
+        return BaseImport::getFiles($baseDir, '*A.' . $lang . '.json', true);
     }
 
     /**
@@ -196,6 +246,18 @@ class OpenLibraryMatch extends BaseMatch
         }
         usleep(static::SLEEP_TIME);
         return $entity;
+    }
+
+    /**
+     * Summary of getWorkIds
+     * @param string|null $lang Language (default: en)
+     * @return array<string, mixed>
+     */
+    public function getWorkIds($lang = null)
+    {
+        $lang ??= $this->lang;
+        $baseDir = $this->cacheDir . '/openlibrary/entities/';
+        return BaseImport::getFiles($baseDir, '*W.' . $lang . '.json', true);
     }
 
     /**

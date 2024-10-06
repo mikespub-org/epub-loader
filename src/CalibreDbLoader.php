@@ -145,7 +145,7 @@ class CalibreDbLoader
             $paging['first'] = $prefix . 'offset=0';
             $paging['prev'] = $prefix . 'offset=' . (string) ($offset - $this->limit);
         }
-        $max = $this->limit * intdiv($count, $this->limit);
+        $max = $this->limit * intdiv($count - 1, $this->limit);
         if ($offset < $max) {
             $paging['next'] = $prefix . 'offset=' . (string) ($offset + $this->limit);
             $paging['last'] = $prefix . 'offset=' . (string) $max;

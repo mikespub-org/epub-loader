@@ -130,6 +130,49 @@ class AppIndexTest extends TestCase
     }
 
     /**
+     * Summary of testAppCsvDownload
+     * @return void
+     */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    public function testAppCsvDownload(): void
+    {
+        $_SERVER['PATH_INFO'] = '/csv_export/0';
+        $_GET['download'] = '1';
+        putenv('PHPUNIT_TESTING=1');
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = "'Alice''s Adventures in Wonderland - Lewis Carroll'";
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+        unset($_GET['download']);
+        putenv('PHPUNIT_TESTING=');
+    }
+
+    public function testAppJsonImport(): void
+    {
+        $_SERVER['PATH_INFO'] = '/json_import/0';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>EPub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/json_import">Import JSON files from Lookup into new Calibre database</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '/tests/BaseWithSomeBooks/./metadata_db_prefs_backup.json - 0 files OK - 0 files Error';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    /**
      * Summary of testAppDbLoad
      * @return void
      */
