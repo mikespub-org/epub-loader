@@ -26,7 +26,8 @@ Main features are:
   - import CSV records into new Calibre database
   - import JSON files from Lookup into new Calibre database
 - Export:
-  - export CSV records from Calibre database
+  - export CSV records with available ebooks
+  - dump CSV records from Calibre database
 - Lookup:
   - match ebooks and authors with WikiData
   - match ebooks and authors with Google Books
@@ -93,6 +94,6 @@ class ExtraActions extends ActionHandler
 
 This package is available under the GNU General Public License v2 or later - see [LICENSE](LICENSE)
 
-EPub Loader was first distributed as resource for COPS - Calibre OPDS (and HTML) PHP Server. This fork is now a separate package that can work alone or be integrated with other web applications.
+EPub Loader was first distributed as [resource for COPS](https://github.com/seblucas/cops/tree/master/resources/epub-loader) - Calibre OPDS (and HTML) PHP Server. This fork is now a separate package that can work alone or be integrated with other web applications.
 
 Copyright (C) 2013-2021 Didier Corbière

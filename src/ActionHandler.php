@@ -223,7 +223,7 @@ class ActionHandler
         // Init csv file
         $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
         // Add the epub files from the import file
-        [$message, $errors] = $import->loadFromCsvFile($dbPath, $fileName);
+        [$message, $errors] = $import->loadFromPath($dbPath, $fileName);
         if (!empty($errors)) {
             foreach ($errors as $file => $error) {
                 $this->addError($file, $error);

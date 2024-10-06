@@ -1,6 +1,6 @@
 <?php
 /**
- * BaseImport class
+ * ImportTarget class
  *
  * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
@@ -9,10 +9,11 @@
 
 namespace Marsender\EPubLoader\Import;
 
+use Marsender\EPubLoader\Metadata\BookInfos;
 use PDO;
 use Exception;
 
-class BaseImport
+abstract class ImportTarget
 {
     /**
      * Calibre database sql file that comes unmodified from Calibre project:
@@ -55,6 +56,19 @@ class BaseImport
     {
         $this->saveBookIds();
     }
+
+    /**
+     * Add a new book into the db
+     *
+     * @param BookInfos $inBookInfo BookInfo object
+     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param string $sortField Add 'calibre_database_field_sort' field
+     *
+     * @throws Exception if error
+     *
+     * @return void
+     */
+    abstract public function addBook($inBookInfo, $inBookId, $sortField = 'sort');
 
     /**
      * Create an sqlite database

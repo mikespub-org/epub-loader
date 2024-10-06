@@ -101,7 +101,7 @@ class AppIndexTest extends TestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/csv_export">Export CSV records from Calibre database</a>';
+        $expected = '<a href="/phpunit/csv_export">Export CSV records with available epub files</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = '/tests/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $output);

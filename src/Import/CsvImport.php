@@ -12,7 +12,7 @@ namespace Marsender\EPubLoader\Import;
 use Marsender\EPubLoader\Metadata\BookInfos;
 use Exception;
 
-class CsvImport extends BookImport
+class CsvImport extends SourceImport
 {
     public const CSV_SEPARATOR = "\t";
     public const CSV_ENCLOSURE = "'";
@@ -23,7 +23,7 @@ class CsvImport extends BookImport
      * @param string $fileName
      * @return array{string, array<mixed>}
      */
-    public function loadFromCsvFile($inBasePath, $fileName)
+    public function loadFromPath($inBasePath, $fileName)
     {
         $handle = fopen($fileName, 'r');
         $headers = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE);
@@ -48,7 +48,7 @@ class CsvImport extends BookImport
 
     /**
      * Loads book infos from an export/import array
-     * @see \Marsender\EPubLoader\Export\BookExport::addBook()
+     * @see \Marsender\EPubLoader\Export\ExportCsvFile::addBook()
      *
      * @param string $inBasePath base directory
      * @param array<mixed> $inArray CSV import info (one book per line)

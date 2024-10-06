@@ -73,7 +73,8 @@ $gConfig['groups']['Import'] = [
     'json_import' => 'Import JSON files from Lookup into new Calibre database',
 ];
 $gConfig['groups']['Export'] = [
-    'csv_export' => 'Export CSV records from Calibre database',
+    'csv_export' => 'Export CSV records with available epub files',
+    'csv_dump' => 'Dump CSV records from Calibre database',
 ];
 $gConfig['groups']['Lookup'] = [
     'authors' => 'Authors in database',

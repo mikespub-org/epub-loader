@@ -1,6 +1,6 @@
 <?php
 /**
- * BaseExport class
+ * ExportTarget class
  *
  * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
@@ -9,9 +9,10 @@
 
 namespace Marsender\EPubLoader\Export;
 
+use Marsender\EPubLoader\Metadata\BookInfos;
 use Exception;
 
-class BaseExport
+abstract class ExportTarget
 {
     /** @var array<mixed>|null */
     protected $mProperties = null;
@@ -42,6 +43,17 @@ class BaseExport
 
         $this->mProperties = [];
     }
+
+    /**
+     * Add a new book to the export
+     *
+     * @param BookInfos $inBookInfo BookInfo object
+     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @throws Exception if error
+     *
+     * @return void
+     */
+    abstract public function addBook($inBookInfo, $inBookId = 0);
 
     /**
      * Summary of clearProperties

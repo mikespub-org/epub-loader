@@ -19,7 +19,7 @@ use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryImport;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataCache;
 use Exception;
 
-class JsonImport extends BookImport
+class JsonImport extends SourceImport
 {
     /**
      * Load books from JSON file
