@@ -52,7 +52,8 @@ class BookInfos
 
     public string $mSerie = '';
 
-    public string $mSerieId = '';
+    /** @var array<string>|null */
+    public $mSerieIds = null;
 
     public string $mSerieIndex = '';
 

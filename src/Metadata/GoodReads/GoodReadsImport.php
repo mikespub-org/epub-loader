@@ -119,17 +119,23 @@ class GoodReadsImport
         }
         //$bookInfos->mRights = $inArray[$i++];
         $bookInfos->mPublisher = (string) $book->getDetails()?->getPublisher();
+        $seriesMap = $state->getSeriesMap();
         $bookSeries = $book->getBookSeries() ?? [];
+        $bookInfos->mSerieIds = [];
         foreach ($bookSeries as $series) {
-            $bookInfos->mSerieIndex = (string) $series->getUserPosition();
             $seriesRef = $series->getSeries()?->getRef();
-            $seriesMap = $state->getSeriesMap();
             if (empty($seriesRef) || empty($seriesMap) || empty($seriesMap[$seriesRef])) {
                 throw new Exception('Invalid seriesRef for GoodReads book');
             }
-            $bookInfos->mSerie = (string) $seriesMap[$seriesRef]->getTitle();
-            $bookInfos->mSerieId = str_replace('https://www.goodreads.com/series/', '', (string) $seriesMap[$seriesRef]->getWebUrl());
-            break;
+            // use only the 1st series for name & index here
+            if ($bookInfos->mSerieIndex == '') {
+                $bookInfos->mSerieIndex = (string) $series->getUserPosition();
+            }
+            if ($bookInfos->mSerie == '') {
+                $bookInfos->mSerie = (string) $seriesMap[$seriesRef]->getTitle();
+            }
+            // save ids of the other series here for matching?
+            $bookInfos->mSerieIds[] = str_replace('https://www.goodreads.com/series/', '', (string) $seriesMap[$seriesRef]->getWebUrl());
         }
         // timestamp in milliseconds since the epoch for Javascript
         $timestamp = $book->getDetails()?->getPublicationTime() ?? $work->getDetails()?->getPublicationTime();

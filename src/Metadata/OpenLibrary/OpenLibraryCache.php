@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
+use Exception;
 
 class OpenLibraryCache extends BaseCache
 {
@@ -119,7 +120,10 @@ class OpenLibraryCache extends BaseCache
     public function getAuthorIds($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/openlibrary/entities/';
-        return static::getFiles($baseDir, '*A.' . $lang . '.json', true);
+        // filter by *A and add it back
+        return array_map(function ($id) {
+            return $id . 'A';
+        }, static::getFiles($baseDir, '*A.' . $lang . '.json', true));
     }
 
     /**
@@ -147,7 +151,68 @@ class OpenLibraryCache extends BaseCache
     public function getWorkIds($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/openlibrary/entities/';
-        return static::getFiles($baseDir, '*W.' . $lang . '.json', true);
+        // filter by *W and add it back
+        return array_map(function ($id) {
+            return $id . 'W';
+        }, static::getFiles($baseDir, '*W.' . $lang . '.json', true));
+    }
+
+    /**
+     * Summary of getStats
+     * @return array<mixed>
+     */
+    public function getStats()
+    {
+        return [
+            'authors' => count($this->getAuthorQueries()),
+            'works/title' => count($this->getTitleQueries()),
+            'works/author' => count($this->getAuthorWorkIds()),
+            'entities/A' => count($this->getAuthorIds()),
+            'entities/W' => count($this->getWorkIds()),
+        ];
+    }
+
+    /**
+     * Summary of getEntries
+     * @param string $cacheType
+     * @param int|null $offset
+     * @return array<mixed>
+     */
+    public function getEntries($cacheType, $offset = null)
+    {
+        $offset ??= 0;
+        $entries = match ($cacheType) {
+            'authors' => $this->getAuthorQueries(),
+            'works/title' => $this->getTitleQueries(),
+            'works/author' => $this->getAuthorWorkIds(),
+            'entities/A' => $this->getAuthorIds(),
+            'entities/W' => $this->getWorkIds(),
+            default => throw new Exception('Invalid cache type'),
+        };
+        $entries = array_slice($entries, $offset, static::$limit);
+        return $entries;
+    }
+
+    /**
+     * Summary of getEntry
+     * @param string $cacheType
+     * @param string $cacheEntry
+     * @return array<mixed>|null
+     */
+    public function getEntry($cacheType, $cacheEntry)
+    {
+        $cacheFile = match ($cacheType) {
+            'authors' => $this->getAuthorQuery($cacheEntry),
+            'works/title' => $this->getTitleQuery($cacheEntry),
+            'works/author' => $this->getAuthorWork($cacheEntry),
+            'entities/A' => $this->getAuthor($cacheEntry),
+            'entities/W' => $this->getWork($cacheEntry),
+            default => throw new Exception('Invalid cache type'),
+        };
+        if ($this->hasCache($cacheFile)) {
+            return $this->loadCache($cacheFile);
+        }
+        return null;
     }
 
     /**

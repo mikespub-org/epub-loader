@@ -220,4 +220,76 @@ class AppIndexTest extends TestCase
 
         unset($_SERVER['PATH_INFO']);
     }
+
+    /**
+     * Summary of testAppCacheStats
+     * @return void
+     */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    public function testAppCacheStats(): void
+    {
+        $_SERVER['PATH_INFO'] = '/caches/0';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>EPub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/caches">Cache statistics</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/caches/0?refresh=1" title="Refresh">Stats Updated</a>';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    /**
+     * Summary of testAppCacheEntries
+     * @return void
+     */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    public function testAppCacheEntries(): void
+    {
+        $_SERVER['PATH_INFO'] = '/caches/0/goodreads/author/list';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>EPub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/caches">Cache statistics</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<b>Cache Entries</b>';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
+
+    /**
+     * Summary of testAppInternal
+     * @return void
+     */
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    public function testAppInternal(): void
+    {
+        $_SERVER['PATH_INFO'] = '/test/0';
+
+        ob_start();
+        $headers = headers_list();
+        require dirname(__DIR__) . '/app/index.php';
+        $output = ob_get_clean();
+
+        $expected = '<title>EPub Loader</title>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = '<a href="/phpunit/test">Test action (not visible)</a>';
+        $this->assertStringContainsString($expected, $output);
+        $expected = 'ok';
+        $this->assertStringContainsString($expected, $output);
+
+        unset($_SERVER['PATH_INFO']);
+    }
 }

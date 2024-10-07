@@ -11,6 +11,7 @@ namespace Marsender\EPubLoader\Metadata\WikiData;
 use Marsender\EPubLoader\Metadata\BaseCache;
 use Wikidata\Entity;
 use Wikidata\SearchResult;
+use Exception;
 
 class WikiDataCache extends BaseCache
 {
@@ -201,6 +202,70 @@ class WikiDataCache extends BaseCache
     {
         $baseDir = $this->cacheDir . '/wikidata/entities/';
         return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+    }
+
+    /**
+     * Summary of getStats
+     * @return array<mixed>
+     */
+    public function getStats()
+    {
+        return [
+            'authors' => count($this->getAuthorQueries()),
+            'works/title' => count($this->getTitleQueries()),
+            'works/author' => count($this->getAuthorWorkIds()),
+            'works/name' => count($this->getAuthorWorkQueries()),
+            'series/title' => count($this->getSeriesQueries()),
+            'series/author' => count($this->getAuthorSeriesIds()),
+            'entities' => count($this->getEntityIds()),
+        ];
+    }
+
+    /**
+     * Summary of getEntries
+     * @param string $cacheType
+     * @param int|null $offset
+     * @return array<mixed>
+     */
+    public function getEntries($cacheType, $offset = null)
+    {
+        $offset ??= 0;
+        $entries = match ($cacheType) {
+            'authors' => $this->getAuthorQueries(),
+            'works/title' => $this->getTitleQueries(),
+            'works/author' => $this->getAuthorWorkIds(),
+            'works/name' => $this->getAuthorWorkQueries(),
+            'series/title' => $this->getSeriesQueries(),
+            'series/author' => $this->getAuthorSeriesIds(),
+            'entities' => $this->getEntityIds(),
+            default => throw new Exception('Invalid cache type'),
+        };
+        $entries = array_slice($entries, $offset, static::$limit);
+        return $entries;
+    }
+
+    /**
+     * Summary of getEntry
+     * @param string $cacheType
+     * @param string $cacheEntry
+     * @return array<mixed>|null
+     */
+    public function getEntry($cacheType, $cacheEntry)
+    {
+        $cacheFile = match ($cacheType) {
+            'authors' => $this->getAuthorQuery($cacheEntry),
+            'works/title' => $this->getTitleQuery($cacheEntry),
+            'works/author' => $this->getAuthorWork($cacheEntry),
+            'works/name' => $this->getAuthorWorkQuery($cacheEntry),
+            'series/title' => $this->getSeriesQuery($cacheEntry),
+            'series/author' => $this->getAuthorSeries($cacheEntry),
+            'entities' => $this->getEntity($cacheEntry),
+            default => throw new Exception('Invalid cache type'),
+        };
+        if ($this->hasCache($cacheFile)) {
+            return $this->loadCache($cacheFile);
+        }
+        return null;
     }
 
     /**

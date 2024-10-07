@@ -1,25 +1,30 @@
+{# more is used for pagination of cache entries: .../cacheName/cacheType #}
+{% set more = "" %}
+{% if paging.itemId is defined %}
+	{% set more = '/' ~ paging.itemId %}
+{% endif %}
 <tr>
 	<td>
 		{% if paging.first %}
-			<a href="{{endpoint}}/{{action}}/{{dbNum}}?{{paging.first}}">&nbsp;|&lt;&nbsp;</a>
+			<a href="{{endpoint}}/{{action}}/{{dbNum}}{{more}}?{{paging.first}}">&nbsp;|&lt;&nbsp;</a>
 		{% else %}
 		{% endif %}
 	</td>
 	<td>
 		{% if paging.prev %}
-			<a href="{{endpoint}}/{{action}}/{{dbNum}}?{{paging.prev}}">&nbsp;&lt;&nbsp;</a>
+			<a href="{{endpoint}}/{{action}}/{{dbNum}}{{more}}?{{paging.prev}}">&nbsp;&lt;&nbsp;</a>
 		{% else %}
 		{% endif %}
 	</td>
 	<td>
 		{% if paging.next %}
-			<a href="{{endpoint}}/{{action}}/{{dbNum}}?{{paging.next}}">&nbsp;&gt;&nbsp;</a>
+			<a href="{{endpoint}}/{{action}}/{{dbNum}}{{more}}?{{paging.next}}">&nbsp;&gt;&nbsp;</a>
 		{% else %}
 		{% endif %}
 	</td>
 	<td>
 		{% if paging.last %}
-			<a href="{{endpoint}}/{{action}}/{{dbNum}}?{{paging.last}}">&nbsp;&gt;|&nbsp;</a>
+			<a href="{{endpoint}}/{{action}}/{{dbNum}}{{more}}?{{paging.last}}">&nbsp;&gt;|&nbsp;</a>
 		{% else %}
 		{% endif %}
 	</td>

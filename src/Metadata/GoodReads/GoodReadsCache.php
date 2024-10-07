@@ -12,6 +12,7 @@ use Marsender\EPubLoader\Metadata\BaseCache;
 use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
+use Exception;
 
 class GoodReadsCache extends BaseCache
 {
@@ -113,6 +114,61 @@ class GoodReadsCache extends BaseCache
     {
         $baseDir = $this->cacheDir . '/goodreads/book/show/';
         return static::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
+     * Summary of getStats
+     * @return array<mixed>
+     */
+    public function getStats()
+    {
+        return [
+            'author/list' => count($this->getAuthorIds()),
+            'book/show' => count($this->getBookIds()),
+            'series' => count($this->getSeriesIds()),
+            'search' => count($this->getSearchQueries()),
+        ];
+    }
+
+    /**
+     * Summary of getEntries
+     * @param string $cacheType
+     * @param int|null $offset
+     * @return array<mixed>
+     */
+    public function getEntries($cacheType, $offset = null)
+    {
+        $offset ??= 0;
+        $entries = match ($cacheType) {
+            'author/list' => $this->getAuthorIds(),
+            'book/show' => $this->getBookIds(),
+            'series' => $this->getSeriesIds(),
+            'search' => $this->getSearchQueries(),
+            default => throw new Exception('Invalid cache type'),
+        };
+        $entries = array_slice($entries, $offset, static::$limit);
+        return $entries;
+    }
+
+    /**
+     * Summary of getEntry
+     * @param string $cacheType
+     * @param string $cacheEntry
+     * @return array<mixed>|null
+     */
+    public function getEntry($cacheType, $cacheEntry)
+    {
+        $cacheFile = match ($cacheType) {
+            'author/list' => $this->getAuthor($cacheEntry),
+            'book/show' => $this->getBook($cacheEntry),
+            'series' => $this->getSeries($cacheEntry),
+            'search' => $this->getSearchQuery($cacheEntry),
+            default => throw new Exception('Invalid cache type'),
+        };
+        if ($this->hasCache($cacheFile)) {
+            return $this->loadCache($cacheFile);
+        }
+        return null;
     }
 
     /**

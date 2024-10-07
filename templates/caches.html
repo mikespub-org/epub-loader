@@ -1,0 +1,123 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="title">
+	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
+	{% block findlinks %}
+	{% endblock findlinks %}
+</div>
+<table width="100%">
+	<tr>
+		<th>Db num</th>
+		<th>Db name</th>
+		<th>Authors</th>
+		<th>Books</th>
+		<th>Series</th>
+		<th>Action</th>
+		<th>Db Path</th>
+		<th>Epub path</th>
+		<th>Nb Files</th>
+	</tr>
+	<tr>
+		<td>{{dbNum}}</td>
+		<td>{{dbConfig.name}}</td>
+		<td>
+			{{dbConfig.authors}}
+			{% if actions.wd_author %}
+				<a href="{{endpoint}}/wd_author/{{dbNum}}/{{itemId}}" title="WikiData Author">WD</a>
+			{% endif %}
+			{% if actions.ol_author %}
+				<a href="{{endpoint}}/ol_author/{{dbNum}}/{{itemId}}" title="OpenLibrary Author">OL</a>
+			{% endif %}
+			{% if actions.gr_author %}
+				<a href="{{endpoint}}/gr_author/{{dbNum}}/{{itemId}}" title="GoodReads Author">GR</a>
+			{% endif %}
+		</td>
+		<td>
+			{{dbConfig.books}}
+			{% if actions.wd_books %}
+				<a href="{{endpoint}}/wd_books/{{dbNum}}/{{itemId}}" title="WikiData Books">WD</a>
+			{% endif %}
+			{% if actions.gb_books %}
+				<a href="{{endpoint}}/gb_books/{{dbNum}}/{{itemId}}" title="Google Books">GB</a>
+			{% endif %}
+			{% if actions.ol_books %}
+				<a href="{{endpoint}}/ol_books/{{dbNum}}/{{itemId}}" title="OpenLibrary Works">OL</a>
+			{% endif %}
+			{% if actions.gr_books %}
+				<a href="{{endpoint}}/gr_books/{{dbNum}}/{{itemId}}" title="GoodReads Books">GR</a>
+			{% endif %}
+		</td>
+		<td>
+			{{dbConfig.series}}
+			{% if actions.wd_series %}
+				<a href="{{endpoint}}/wd_series/{{dbNum}}/{{itemId}}" title="WikiData Series">WD</a>
+			{% endif %}
+			{% if actions.gr_series %}
+				<a href="{{endpoint}}/gr_series/{{dbNum}}/{{itemId}}" title="GoodReads Series">GR</a>
+			{% endif %}
+		</td>
+		<td>{{actionTitle}}</td>
+		<td>{{dbConfig.db_path}}</td>
+		<td>{{dbConfig.epub_path}}</td>
+		<td>{{dbConfig.count}}</td>
+	</tr>
+</table>
+<p>Stats Updated: {{statsUpdated}}</p>
+<p>
+	{% if not cacheName %}
+		<b>Cache Statistics</b>
+	{% else %}
+		<b><a href="{{endpoint}}/{{action}}/{{dbNum}}">Cache Statistics</a></b>
+	{% endif %}
+	(for all databases)
+</p>
+<ul>
+{% for cache, info in caches %}
+	{% if not cacheName %}
+	<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cache|lower}}">{{cache}}</a>
+		<ul>
+			{% for key, val in info %}
+			<li>{{key}}: {{val}}</li>
+			{% endfor %}
+		</ul>
+	</li>
+	{% elseif cacheName == cache|lower %}
+	<li>{% if not cacheType %}
+			<b>{{cache}}</b>
+		{% else %}
+			<b><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cache|lower}}">{{cache}}</a></b>
+		{% endif %}
+		<ul>
+			{% for key, val in info %}
+			<li>
+				{% if cacheType == key %}
+					{% if cacheEntry %}
+					<b><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cache|lower}}/{{key}}">{{key}}</a></b>: {{val}}
+					{% else %}
+					<b>{{key}}</b>: {{val}}
+					{% endif %}
+				{% else %}
+					<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cache|lower}}/{{key}}">{{key}}</a>: {{val}}
+				{% endif %}
+			</li>
+			{% endfor %}
+		</ul>
+	</li>
+	{% endif %}
+{% endfor %}
+</ul>
+<p><a href="{{endpoint}}/{{action}}/{{dbNum}}?refresh=1" title="Refresh">Stats Updated</a>: {{cacheUpdated}}</p>
+{% if cacheEntry %}
+<p><b>Cache Entry {{cacheEntry}}</b></p>
+{% if cacheName == 'goodreads' %}
+See GoodReads
+{% endif %}
+<pre>
+{{entry|raw}}
+</pre>
+{% endif %}
+{% if entries %}
+	{{ include('entries.html') }}
+{% endif %}
+{% endblock content %}

@@ -123,11 +123,12 @@ class CalibreDbLoader
      * @param int|null $count
      * @param string|null $sort
      * @param int|null $offset
+     * @param int|null $limit
      * @return array<mixed>|null
      */
-    public function getCountPaging($count = null, $sort = null, $offset = null)
+    public static function getCountPaging($count = null, $sort = null, $offset = null, $limit = null)
     {
-        if (empty($count) || $count <= $this->limit) {
+        if (empty($count) || empty($limit) || $count <= $limit) {
             return null;
         }
         $offset ??= 0;
@@ -143,11 +144,11 @@ class CalibreDbLoader
         ];
         if (!empty($offset)) {
             $paging['first'] = $prefix . 'offset=0';
-            $paging['prev'] = $prefix . 'offset=' . (string) ($offset - $this->limit);
+            $paging['prev'] = $prefix . 'offset=' . (string) ($offset - $limit);
         }
-        $max = $this->limit * intdiv($count - 1, $this->limit);
+        $max = $limit * intdiv($count - 1, $limit);
         if ($offset < $max) {
-            $paging['next'] = $prefix . 'offset=' . (string) ($offset + $this->limit);
+            $paging['next'] = $prefix . 'offset=' . (string) ($offset + $limit);
             $paging['last'] = $prefix . 'offset=' . (string) $max;
         }
         return $paging;
@@ -230,7 +231,7 @@ class CalibreDbLoader
     public function getAuthorPaging($sort = null, $offset = null)
     {
         $count = $this->getAuthorCount();
-        return $this->getCountPaging($count, $sort, $offset);
+        return $this->getCountPaging($count, $sort, $offset, $this->limit);
     }
 
     /**
@@ -348,7 +349,7 @@ class CalibreDbLoader
         // get the total of all books per author
         $count = $this->getBookCount();
         $total = array_sum(array_values($count));
-        return $this->getCountPaging($total, $sort, $offset);
+        return $this->getCountPaging($total, $sort, $offset, $this->limit);
     }
 
     /**
@@ -499,7 +500,7 @@ class CalibreDbLoader
         // get the total of all series per author
         $count = $this->getSeriesCount();
         $total = array_sum(array_values($count));
-        return $this->getCountPaging($total, $sort, $offset);
+        return $this->getCountPaging($total, $sort, $offset, $this->limit);
     }
 
     /**

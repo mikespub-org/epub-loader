@@ -14,6 +14,7 @@ use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsImport;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use Exception;
 
@@ -484,11 +485,22 @@ class GoodReadsTest extends TestCase
         $series = [];
         $invalid = [];
         foreach ($links as $id => $link) {
+            if (empty($link['value'])) {
+                continue;
+            }
             if (empty($books[$link['value']])) {
                 $cacheFile = $cache->getBook($link['value']);
+                if (!$cache->hasCache($cacheFile)) {
+                    continue;
+                }
                 $data = $cache->loadCache($cacheFile);
-                $book = $cache::parseBook($data);
+                if (empty($data)) {
+                    $invalid[$link['value']] = $data;
+                    $books[$link['value']] = new BookInfos();
+                    continue;
+                }
                 try {
+                    $book = $cache::parseBook($data);
                     $books[$link['value']] = GoodReadsImport::load($dbPath, $book);
                 } catch (Exception $e) {
                     unset($data['locales']);
@@ -499,11 +511,11 @@ class GoodReadsTest extends TestCase
             }
             $bookInfo = $books[$link['value']];
             // limit # of authors for matching here
-            if (!empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
-                $authors[$link['author']] = $bookInfo->mAuthorIds;
+            if (!empty($link['author']) && !empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
+                $authors[$link['author']] = array_filter($bookInfo->mAuthorIds);
             }
-            if (!empty($bookInfo->mSerieId)) {
-                $series[$link['series']] = $bookInfo->mSerieId;
+            if (!empty($link['series']) && !empty($bookInfo->mSerieIds) && count($bookInfo->mSerieIds) < 4) {
+                $series[$link['series']] = array_filter($bookInfo->mSerieIds);
             }
         }
         $seen = [];
@@ -515,6 +527,9 @@ class GoodReadsTest extends TestCase
                 }
                 $seen[$value] = 1;
                 $cacheFile = $cache->getAuthor($value);
+                if (!$cache->hasCache($cacheFile)) {
+                    continue;
+                }
                 $data = $cache->loadCache($cacheFile);
                 if (!empty($data)) {
                     $books = $cache::parseSearch($data);
@@ -523,17 +538,22 @@ class GoodReadsTest extends TestCase
             }
         }
         $seen = [];
-        foreach ($series as $serieId => $value) {
-            if (!empty($seen[$value])) {
-                continue;
-            }
-            $seen[$value] = 1;
+        foreach ($series as $serieId => $values) {
             // @todo check/map with series link
-            $cacheFile = $cache->getSeries($value);
-            $data = $cache->loadCache($cacheFile);
-            if (!empty($data)) {
-                $books = $cache::parseSeries($data);
-                // @todo check other book links
+            foreach ($values as $value) {
+                if (!empty($seen[$value])) {
+                    continue;
+                }
+                $seen[$value] = 1;
+                $cacheFile = $cache->getSeries($value);
+                if (!$cache->hasCache($cacheFile)) {
+                    continue;
+                }
+                $data = $cache->loadCache($cacheFile);
+                if (!empty($data)) {
+                    $books = $cache::parseSeries($data);
+                    // @todo check other book links
+                }
             }
         }
         $cacheFile = $cacheDir . '/goodreads/invalid.json';
@@ -547,5 +567,59 @@ class GoodReadsTest extends TestCase
         $this->assertCount($expected, $authors);
         $expected = $stats['series'];
         $this->assertCount($expected, $series);
+    }
+
+    #[Depends('testCheckBookLinks')]
+    public function testCheckSeriesMatch(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbFile = $dbPath . '/metadata.db';
+        $db = new CalibreDbLoader($dbFile);
+
+        $cacheDir = dirname(__DIR__) . '/cache';
+        $cache = new GoodReadsCache($cacheDir);
+
+        $cacheFile = $cacheDir . '/goodreads/links.json';
+        $links = json_decode(file_get_contents($cacheFile), true);
+        $cacheFile = $cacheDir . '/goodreads/authors.json';
+        $authors = json_decode(file_get_contents($cacheFile), true);
+        $cacheFile = $cacheDir . '/goodreads/series.json';
+        $series = json_decode(file_get_contents($cacheFile), true);
+
+        $todo = [];
+        foreach ($links as $id => $link) {
+            if (empty($link['series']) || empty($series[$link['series']])) {
+                continue;
+            }
+            if (empty($link['series_link'])) {
+                $todo[$link['series']] = 1;
+            }
+            // @todo check against existing links too?
+        }
+        $check = [];
+        $matches = [];
+        foreach ($todo as $seriesId => $one) {
+            $info = $db->getSeries($seriesId);
+            foreach ($info as $key => $data) {
+                $info[$key]['slug'] = str_replace([' ', '.'], ['-', ''], strtolower($data['name']));
+                foreach ($series[$seriesId] as $matchId) {
+                    if (str_ends_with($matchId, $info[$key]['slug'])) {
+                        $info[$key]['match'] = $matchId;
+                        $matches[$seriesId] = $matchId;
+                        break;
+                    }
+                }
+            }
+            $check[$seriesId] = [
+                'info' => $info,
+                'cache' => $series[$seriesId],
+            ];
+        }
+        $check['matches'] = $matches;
+        $cacheFile = $cacheDir . '/goodreads/check.json';
+        file_put_contents($cacheFile, json_encode($check, JSON_PRETTY_PRINT));
+        $cacheFile = $cacheDir . '/goodreads/matches.json';
+        file_put_contents($cacheFile, json_encode($matches, JSON_PRETTY_PRINT));
+        $this->assertTrue(count($matches) > 0);
     }
 }

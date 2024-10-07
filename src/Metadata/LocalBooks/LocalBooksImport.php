@@ -75,7 +75,7 @@ class LocalBooksImport
         // Tag sample in opf file:
         //   <meta content="Histoire de la Monarchie de Juillet" name="calibre:series"/>
         $bookInfos->mSerie = $ePub->getSeries();
-        //$bookInfos->mSerieId = '';
+        //$bookInfos->mSerieIds = [];
         // Tag sample in opf file:
         //   <meta content="7" name="calibre:series_index"/>
         $bookInfos->mSerieIndex = $ePub->getSeriesIndex();

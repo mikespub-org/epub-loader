@@ -1,0 +1,21 @@
+{# included by caches.html #}
+<p><b>Cache Entries</b></p>
+{% if paging %}
+<table>
+	<tr>
+		{{ include('paging.html') }}
+	</tr>
+</table>
+{% endif %}
+<ul>
+	{% for entry in entries %}
+	<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a></li>
+	{% endfor %}
+</ul>
+{% if paging %}
+<table>
+	<tr>
+		{{ include('paging.html') }}
+	</tr>
+</table>
+{% endif %}

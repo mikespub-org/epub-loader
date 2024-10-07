@@ -90,6 +90,11 @@ $gConfig['groups']['Lookup'] = [
     'gr_author' => 'GoodReads authors',
     'gr_books' => 'GoodReads books for author',
     'gr_series' => 'GoodReads series',
+    'caches' => 'Cache statistics',
+];
+// internal actions are not shown on the main menu
+$gConfig['groups']['Internal'] = [
+    'test' => 'Test action (not visible)',
 ];
 $gConfig['groups']['Extra'] = [
     'notes' => 'Get Calibre Notes',

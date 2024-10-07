@@ -47,7 +47,7 @@ $path = $_SERVER['PATH_INFO'] ?? '/';
 if (str_starts_with((string) $path, '/')) {
     $path = substr((string) $path, 1);
 }
-[$action, $dbNum, $itemId, $other] = explode('/', $path . '///', 4);
+[$action, $dbNum, $itemId, $urlPath] = explode('/', $path . '///', 4);
 $action = $action ?: null;
 $dbNum = ($dbNum !== '') ? (int) $dbNum : null;
 $urlParams = $_GET;
@@ -74,7 +74,7 @@ if (!is_writable($cacheDir)) {
 
 // you can define extra actions for your app - see example.php
 $handler = new RequestHandler($gConfig, ExtraActions::class, $cacheDir);
-$result = $handler->request($action, $dbNum, $urlParams);
+$result = $handler->request($action, $dbNum, $urlParams, $urlPath);
 
 if ($handler->isDone()) {
     return;

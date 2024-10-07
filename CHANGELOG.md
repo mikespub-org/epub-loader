@@ -4,6 +4,8 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Add cache statistics action + check book links
+  * Remove support for single action files in app directory
   * Split off cache classes + move namespaces
   * Get available cache entries + expand tests
   * Add GoodReads Series action, paging and match

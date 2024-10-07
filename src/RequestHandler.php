@@ -33,6 +33,8 @@ class RequestHandler
     protected $gErrorArray;
     /** @var array<mixed> */
     protected $urlParams;
+    /** @var string|null */
+    protected $urlPath;
     /** @var bool */
     protected $handled = false;
 
@@ -82,62 +84,143 @@ class RequestHandler
      * @param string|null $action
      * @param string|int|null $dbNum
      * @param array<mixed> $urlParams
+     * @param string|null $urlPath after /action/dbNum/authorId
      * @return array<mixed>|string|null
      */
-    public function request($action = null, $dbNum = null, $urlParams = [])
+    public function request($action = null, $dbNum = null, $urlParams = [], $urlPath = null)
     {
         $this->urlParams = $urlParams;
-        $result = null;
-        // Html content
+        $this->urlPath = $urlPath;
         if (isset($action) && isset($dbNum)) {
-            $result = $this->doAction($action, $dbNum);
-            if (is_null($result) && empty($this->getErrors()) && !empty(getenv('PHPUNIT_TESTING'))) {
-                $this->handled = true;
-                return $result;
-            }
-            if (!is_array($result)) {
-                $result = ['result' => $result];
-            }
-            $result['action'] = $action;
-            $result['actionTitle'] = $this->gConfig['actions'][$action];
-            $result['dbNum'] = $dbNum;
-            $result['dbConfig'] = $this->gConfig['databases'][$dbNum];
-            $result['actions'] = $this->gConfig['actions'];
-            $result['databases'] = $this->gConfig['databases'];
-            $result['errors'] = $this->getErrors();
-            // check if the template file actually exists in output()
-            $this->template = $action . '.html';
-            return $result;
+            // Get result of the action
+            return $this->getAction($action, $dbNum);
         }
         if (!isset($action)) {
-            // Display the available action groups
-            $result = [];
-            $result['action'] = $action;
-            $result['dbNum'] = $dbNum;
-            $result['groups'] = $this->gConfig['groups'] ?? [];
-            $result['actions'] = $this->gConfig['actions'];
-            $result['databases'] = $this->gConfig['databases'];
-            $result['errors'] = $this->getErrors();
-            $this->template = 'actions.html';
-            return $result;
+            // Get available action groups
+            return $this->getActionGroups($action, $dbNum);
         }
         if (!array_key_exists($action, $this->gConfig['actions'])) {
-            $this->gErrorArray[$action] = 'Invalid action';
-            $result = [];
-            $result['action'] = $action;
-            $result['dbNum'] = $dbNum;
-            $result['actions'] = $this->gConfig['actions'];
-            $result['databases'] = $this->gConfig['databases'];
-            $result['errors'] = $this->getErrors();
-            return $result;
+            // Display invalid action
+            return $this->getInvalidAction($action, $dbNum);
         }
         // Display databases
+        return $this->getDatabases($action, $dbNum);
+    }
+
+    /**
+     * Summary of get
+     * @param string $name
+     * @param mixed $default
+     * @param ?string $pattern
+     * @return mixed
+     */
+    public function get($name, $default = null, $pattern = null)
+    {
+        if (!empty($this->urlParams) && isset($this->urlParams[$name]) && $this->urlParams[$name] != '') {
+            if (!isset($pattern) || preg_match($pattern, (string) $this->urlParams[$name])) {
+                return $this->urlParams[$name];
+            }
+        }
+        return $default;
+    }
+
+    /**
+     * Summary of getId
+     * @param string $name
+     * @return ?int
+     */
+    public function getId($name)
+    {
+        $value = $this->get($name, null, '/^\d+$/');
+        if (!is_null($value)) {
+            return (int) $value;
+        }
+        return null;
+    }
+
+    /**
+     * Summary of getPath
+     * @return string
+     */
+    public function getPath()
+    {
+        return trim($this->urlPath ?? '', '/');
+    }
+
+    /**
+     * Summary of getEndpoint
+     * @return string
+     */
+    public function getEndpoint()
+    {
+        return $this->gConfig['endpoint'];
+    }
+
+    /**
+     * Summary of getActionGroups
+     * @param string|null $action
+     * @param string|int|null $dbNum
+     * @return array<mixed>|string|null
+     */
+    protected function getActionGroups($action = null, $dbNum = null)
+    {
+        $result = [];
+        $result['action'] = $action;
+        $result['dbNum'] = $dbNum;
+        $result['groups'] = $this->gConfig['groups'] ?? [];
+        $result['actions'] = $this->gConfig['actions'];
+        $result['databases'] = $this->gConfig['databases'];
+        $result['errors'] = $this->getErrors();
+        $this->template = 'actions.html';
+        return $result;
+    }
+
+    /**
+     * Summary of getInvalidAction
+     * @param string $action
+     * @param string|int|null $dbNum
+     * @return array<mixed>|string|null
+     */
+    protected function getInvalidAction($action, $dbNum = null)
+    {
+        $this->gErrorArray[$action] = 'Invalid action';
+        $result = [];
+        $result['action'] = $action;
+        $result['dbNum'] = $dbNum;
+        $result['actions'] = $this->gConfig['actions'];
+        $result['databases'] = $this->gConfig['databases'];
+        $result['errors'] = $this->getErrors();
+        return $result;
+    }
+
+    /**
+     * Summary of getDatabases
+     * @param string $action
+     * @param string|int|null $dbNum
+     * @return array<mixed>|string|null
+     */
+    protected function getDatabases($action, $dbNum = null)
+    {
         $result = [];
         $result['action'] = $action;
         $result['dbNum'] = $dbNum;
         $result['actionTitle'] = $this->gConfig['actions'][$action];
         $result['actions'] = $this->gConfig['actions'];
         $result['databases'] = $this->gConfig['databases'];
+        $result = $this->getDatabaseStats($action, $result);
+        $result['errors'] = $this->getErrors();
+        $this->template = 'databases.html';
+        return $result;
+    }
+
+    /**
+     * Summary of getDatabaseStats
+     * @param string $action
+     * @param array<mixed> $result
+     * @return array<mixed>
+     */
+    protected function getDatabaseStats($action, $result)
+    {
         $cacheFile = null;
         $saveFile = false;
         $sizes = [];
@@ -145,7 +228,8 @@ class RequestHandler
         if (!empty($this->cacheDir)) {
             // cache database stats and file counts for 2 hours
             $cacheFile = $this->cacheDir . '/sizes.json';
-            if (file_exists($cacheFile) && filemtime($cacheFile) > time() - 2 * 60 * 60) {
+            $refresh = $this->get('refresh');
+            if (empty($refresh) && file_exists($cacheFile) && filemtime($cacheFile) > time() - 2 * 60 * 60) {
                 $content = file_get_contents($cacheFile);
                 $sizes = json_decode($content, true);
                 $result['statsUpdated'] = (string) intval((time() - filemtime($cacheFile)) / 60);
@@ -186,49 +270,38 @@ class RequestHandler
             file_put_contents($cacheFile, json_encode($sizes, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
             $result['statsUpdated'] = 'now';
         }
-        $result['errors'] = $this->getErrors();
-        $this->template = 'databases.html';
         return $result;
     }
 
     /**
-     * Summary of get
-     * @param string $name
-     * @param mixed $default
-     * @param ?string $pattern
-     * @return mixed
+     * Summary of getAction
+     * @param string $action
+     * @param string|int $dbNum
+     * @return array<mixed>|string|null
      */
-    public function get($name, $default = null, $pattern = null)
+    protected function getAction($action, $dbNum)
     {
-        if (!empty($this->urlParams) && isset($this->urlParams[$name]) && $this->urlParams[$name] != '') {
-            if (!isset($pattern) || preg_match($pattern, (string) $this->urlParams[$name])) {
-                return $this->urlParams[$name];
-            }
+        $result = $this->doAction($action, $dbNum);
+        if (is_null($result) && empty($this->getErrors()) && !empty(getenv('PHPUNIT_TESTING'))) {
+            $this->handled = true;
+            return $result;
         }
-        return $default;
-    }
-
-    /**
-     * Summary of getId
-     * @param string $name
-     * @return ?int
-     */
-    public function getId($name)
-    {
-        $value = $this->get($name, null, '/^\d+$/');
-        if (!is_null($value)) {
-            return (int) $value;
+        if (!is_array($result)) {
+            $result = ['result' => $result];
         }
-        return null;
-    }
-
-    /**
-     * Summary of getEndpoint
-     * @return string
-     */
-    public function getEndpoint()
-    {
-        return $this->gConfig['endpoint'];
+        $result['databases'] = $this->gConfig['databases'];
+        if ($action == 'caches') {
+            $result = $this->getDatabaseStats($action, $result);
+        }
+        $result['action'] = $action;
+        $result['actionTitle'] = $this->gConfig['actions'][$action];
+        $result['dbNum'] = $dbNum;
+        $result['dbConfig'] = $result['databases'][$dbNum];
+        $result['actions'] = $this->gConfig['actions'];
+        $result['errors'] = $this->getErrors();
+        // check if the template file actually exists in output()
+        $this->template = $action . '.html';
+        return $result;
     }
 
     /**
@@ -256,15 +329,10 @@ class RequestHandler
                 return null;
             }
         }
-        // @todo remove this in the future
+        // remove support for single action files in app directory (app/action_<something>.php)
         if (!$this->handlerClass::hasAction($action)) {
-            $fileName = sprintf('%s%s%s%saction_%s.php', dirname(__DIR__), DIRECTORY_SEPARATOR, 'app', DIRECTORY_SEPARATOR, $action);
-            if (!file_exists($fileName)) {
-                $this->gErrorArray[$fileName] = 'Incorrect action file: ' . $fileName;
-                return null;
-            }
-            $result = require($fileName);
-            return $result;
+            $this->gErrorArray[$action] = 'Incorrect action ' . $action . ' in class ' . $this->handlerClass;
+            return null;
         }
         $dbConfig['db_num'] = $dbNum;
         $dbConfig['create_db'] = $this->gConfig['create_db'];
@@ -309,7 +377,10 @@ class RequestHandler
     {
         $templateDir ??= $this->templateDir;
         $loader = new \Twig\Loader\FilesystemLoader($templateDir);
-        $twig = new \Twig\Environment($loader);
+        $twig = new \Twig\Environment($loader, [
+            'debug' => true,
+        ]);
+        $twig->addExtension(new \Twig\Extension\DebugExtension());
 
         $template ??= $this->template;
         // check if the template file actually exists under $templateDir here

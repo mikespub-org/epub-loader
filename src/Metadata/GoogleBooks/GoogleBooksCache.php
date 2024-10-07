@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
+use Exception;
 
 class GoogleBooksCache extends BaseCache
 {
@@ -119,6 +120,61 @@ class GoogleBooksCache extends BaseCache
     {
         $baseDir = $this->cacheDir . '/google/volumes/';
         return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+    }
+
+    /**
+     * Summary of getStats
+     * @return array<mixed>
+     */
+    public function getStats()
+    {
+        return [
+            'authors' => count($this->getAuthorQueries()),
+            'titles' => count($this->getTitleQueries()),
+            'series' => count($this->getSeriesQueries()),
+            'volumes' => count($this->getVolumeIds()),
+        ];
+    }
+
+    /**
+     * Summary of getEntries
+     * @param string $cacheType
+     * @param int|null $offset
+     * @return array<mixed>
+     */
+    public function getEntries($cacheType, $offset = null)
+    {
+        $offset ??= 0;
+        $entries = match ($cacheType) {
+            'authors' => $this->getAuthorQueries(),
+            'titles' => $this->getTitleQueries(),
+            'series' => $this->getSeriesQueries(),
+            'volumes' => $this->getVolumeIds(),
+            default => throw new Exception('Invalid cache type'),
+        };
+        $entries = array_slice($entries, $offset, static::$limit);
+        return $entries;
+    }
+
+    /**
+     * Summary of getEntry
+     * @param string $cacheType
+     * @param string $cacheEntry
+     * @return array<mixed>|null
+     */
+    public function getEntry($cacheType, $cacheEntry)
+    {
+        $cacheFile = match ($cacheType) {
+            'authors' => $this->getAuthorQuery($cacheEntry),
+            'titles' => $this->getTitleQuery($cacheEntry),
+            'series' => $this->getSeriesQuery($cacheEntry),
+            'volumes' => $this->getVolume($cacheEntry),
+            default => throw new Exception('Invalid cache type'),
+        };
+        if ($this->hasCache($cacheFile)) {
+            return $this->loadCache($cacheFile);
+        }
+        return null;
     }
 
     /**

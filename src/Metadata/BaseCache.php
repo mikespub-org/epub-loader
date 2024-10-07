@@ -30,6 +30,7 @@ class BaseCache
 {
     public const CACHE_TYPES = [];
 
+    public static int $limit = 500;
     /** @var string|null */
     protected $cacheDir;
 
@@ -163,5 +164,84 @@ class BaseCache
         sort($res);
 
         return $res;
+    }
+
+    /**
+     * Summary of getCacheStats
+     * @param string $cacheDir
+     * @return array<mixed>
+     */
+    public static function getCacheStats($cacheDir)
+    {
+        $caches = [];
+        if (empty($cacheDir) || !is_dir($cacheDir)) {
+            return $caches;
+        }
+        // cache labels for display
+        $labels = ['GoodReads', 'GoogleBooks', 'OpenLibrary', 'WikiData'];
+        foreach ($labels as $label) {
+            $name = strtolower($label);
+            $cache = static::getCacheInstance($cacheDir, $name);
+            $caches[$label] = $cache->getStats();
+        }
+        return $caches;
+    }
+
+    /**
+     * Summary of getCacheEntries
+     * @param string $cacheDir
+     * @param string $cacheName
+     * @param string $cacheType
+     * @param int|null $offset
+     * @return array<mixed>
+     */
+    public static function getCacheEntries($cacheDir, $cacheName, $cacheType, $offset = null)
+    {
+        $entries = [];
+        if (empty($cacheDir) || !is_dir($cacheDir)) {
+            return $entries;
+        }
+        $cache = static::getCacheInstance($cacheDir, $cacheName);
+        return $cache->getEntries($cacheType, $offset);
+    }
+
+    /**
+     * Summary of getCacheEntry
+     * @param string $cacheDir
+     * @param string $cacheName
+     * @param string $cacheType
+     * @param string $cacheEntry
+     * @return array<mixed>|null
+     */
+    public static function getCacheEntry($cacheDir, $cacheName, $cacheType, $cacheEntry)
+    {
+        $entry = null;
+        if (empty($cacheDir) || !is_dir($cacheDir)) {
+            return $entry;
+        }
+        // check for invalid path element in entry
+        if (empty($cacheEntry) || $cacheEntry != basename($cacheEntry)) {
+            throw new Exception(message: 'Invalid cache entry');
+        }
+        $cache = static::getCacheInstance($cacheDir, $cacheName);
+        return $cache->getEntry($cacheType, $cacheEntry);
+    }
+
+    /**
+     * Summary of getCacheInstance
+     * @param string $cacheDir
+     * @param string $cacheName
+     * @return GoodReads\GoodReadsCache|GoogleBooks\GoogleBooksCache|OpenLibrary\OpenLibraryCache|WikiData\WikiDataCache
+     */
+    public static function getCacheInstance($cacheDir, $cacheName)
+    {
+        $cacheName = strtolower($cacheName);
+        return match ($cacheName) {
+            'goodreads' => new GoodReads\GoodReadsCache($cacheDir),
+            'googlebooks' => new GoogleBooks\GoogleBooksCache($cacheDir),
+            'openlibrary' => new OpenLibrary\OpenLibraryCache($cacheDir),
+            'wikidata' => new WikiData\WikiDataCache($cacheDir),
+            default => throw new Exception('Invalid cache name'),
+        };
     }
 }

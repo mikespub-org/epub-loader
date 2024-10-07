@@ -81,7 +81,7 @@ class GoogleBooksImport
                 $info = $series->getVolumeSeries()[0];
                 // @todo get series name from id
                 $bookInfos->mSerie = (string) $info->getSeriesId();
-                $bookInfos->mSerieId = (string) $info->getSeriesId();
+                $bookInfos->mSerieIds = [ (string) $info->getSeriesId() ];
             }
         }
         $bookInfos->mCreationDate = (string) $volumeInfo->getPublishedDate();
