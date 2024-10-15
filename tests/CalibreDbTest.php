@@ -101,4 +101,22 @@ class CalibreDbTest extends TestCase
         ];
         $this->assertEquals($expected, $paging);
     }
+
+    public function testGetTriggers(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbFile = $dbPath . '/metadata.db';
+        $db = new CalibreDbLoader($dbFile);
+        $triggers = $db->getTriggers();
+
+        $expected = 'books_delete_trg';
+        $this->assertArrayHasKey($expected, $triggers);
+
+        $triggers = $db->getTriggers('books_series_link');
+
+        $this->assertArrayNotHasKey($expected, $triggers);
+
+        $expected = 'fkc_insert_books_series_link';
+        $this->assertArrayHasKey($expected, $triggers);
+    }
 }

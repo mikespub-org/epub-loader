@@ -579,6 +579,30 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getTriggers
+     * @param ?string $table
+     * @return array<mixed>
+     */
+    public function getTriggers($table = null)
+    {
+        $sql = 'select type, name, tbl_name, sql from sqlite_schema
+        where type = ?';
+        $params = [];
+        $params[] = 'trigger';
+        if (!empty($table)) {
+            $sql .= ' and tbl_name = ?';
+            $params[] = $table;
+        }
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute($params);
+        $triggers = [];
+        while ($post = $stmt->fetchObject()) {
+            $triggers[$post->name] = (array) $post;
+        }
+        return $triggers;
+    }
+
+    /**
      * Summary of hasNotes
      * @return bool
      */
