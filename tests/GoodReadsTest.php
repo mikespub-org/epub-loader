@@ -484,6 +484,7 @@ class GoodReadsTest extends TestCase
         $authors = [];
         $series = [];
         $invalid = [];
+        $missing = [];
         foreach ($links as $id => $link) {
             if (empty($link['value'])) {
                 continue;
@@ -514,8 +515,14 @@ class GoodReadsTest extends TestCase
             if (!empty($link['author']) && !empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
                 $authors[$link['author']] = array_filter($bookInfo->mAuthorIds);
             }
-            if (!empty($link['series']) && !empty($bookInfo->mSerieIds) && count($bookInfo->mSerieIds) < 4) {
-                $series[$link['series']] = array_filter($bookInfo->mSerieIds);
+            // check for matching or missing series
+            if (!empty($bookInfo->mSerieIds) && count($bookInfo->mSerieIds) < 4) {
+                if (!empty($link['series'])) {
+                    $series[$link['series']] = array_filter($bookInfo->mSerieIds);
+                } elseif (!empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
+                    $missing[$link['book']] ??= [];
+                    $missing[$link['book']][$link['author']] = array_filter($bookInfo->mSerieIds);
+                }
             }
         }
         $seen = [];
@@ -556,8 +563,29 @@ class GoodReadsTest extends TestCase
                 }
             }
         }
+        foreach ($missing as $bookId => $entries) {
+            foreach ($entries as $authorId => $values) {
+                foreach ($values as $value) {
+                    if (!empty($seen[$value])) {
+                        continue;
+                    }
+                    $seen[$value] = 1;
+                    $cacheFile = $cache->getSeries($value);
+                    if (!$cache->hasCache($cacheFile)) {
+                        continue;
+                    }
+                    $data = $cache->loadCache($cacheFile);
+                    if (!empty($data)) {
+                        $books = $cache::parseSeries($data);
+                        // @todo check other book links
+                    }
+                }
+            }
+        }
         $cacheFile = $cacheDir . '/goodreads/invalid.json';
         file_put_contents($cacheFile, json_encode($invalid, JSON_PRETTY_PRINT));
+        $cacheFile = $cacheDir . '/goodreads/missing.json';
+        file_put_contents($cacheFile, json_encode($missing, JSON_PRETTY_PRINT));
         $cacheFile = $cacheDir . '/goodreads/authors.json';
         file_put_contents($cacheFile, json_encode($authors, JSON_PRETTY_PRINT));
         $cacheFile = $cacheDir . '/goodreads/series.json';
@@ -593,19 +621,61 @@ class GoodReadsTest extends TestCase
             }
             if (empty($link['series_link'])) {
                 $todo[$link['series']] = 1;
+                continue;
             }
-            // @todo check against existing links too?
+            // check against existing links too
+            if (str_starts_with($link['series_link'], 'https://www.goodreads.com/series/')) {
+                $todo[$link['series']] = 1;
+                continue;
+            }
         }
         $check = [];
         $matches = [];
+        $partial = [];
+        $mismatch = [];
+        // @todo clean up duplicate series entries
         foreach ($todo as $seriesId => $one) {
             $info = $db->getSeries($seriesId);
             foreach ($info as $key => $data) {
-                $info[$key]['slug'] = str_replace([' ', '.'], ['-', ''], strtolower($data['name']));
+                $info[$key]['slug'] = str_replace([' ', '&', '*', "'", ':', '.', ',', '(', ')'], ['-', '-', '-', '-', '', '', '', '', ''], strtolower($data['name']));
                 foreach ($series[$seriesId] as $matchId) {
                     if (str_ends_with($matchId, $info[$key]['slug'])) {
                         $info[$key]['match'] = $matchId;
                         $matches[$seriesId] = $matchId;
+                        if (empty($info[$key]['link'])) {
+                            // @todo "UPDATE series SET link='https://www.goodreads.com/series/{$matchId}' WHERE id={$seriesId};\n";
+                        } elseif (!str_ends_with($info[$key]['link'], '/' . $matchId)) {
+                            $checkId = str_replace('https://www.goodreads.com/series/', '', $info[$key]['link']);
+                            if (!in_array($checkId, $series[$seriesId])) {
+                                $mismatch[$info[$key]['link']] = $info[$key];
+                                $info[$key]['oops'] = $series[$seriesId];
+                                // @todo "UPDATE series SET link='https://www.goodreads.com/series/{$matchId}' WHERE id={$seriesId};\n";
+                            } else {
+                                $info[$key]['options'] = $series[$seriesId];
+                            }
+                        }
+                        break;
+                    }
+                }
+                if (!empty($matches[$seriesId]) || strlen($info[$key]['slug']) < 4) {
+                    break;
+                }
+                foreach ($series[$seriesId] as $matchId) {
+                    if (str_contains($matchId, $info[$key]['slug'])) {
+                        $info[$key]['partial'] = $matchId;
+                        $partial[$seriesId] = $matchId;
+                        if (empty($info[$key]['link'])) {
+                            // @todo "UPDATE series SET link='https://www.goodreads.com/series/{$matchId}' WHERE id={$seriesId};\n";
+                        } elseif (!str_ends_with($info[$key]['link'], '/' . $matchId)) {
+                            $checkId = str_replace('https://www.goodreads.com/series/', '', $info[$key]['link']);
+                            if (!in_array($checkId, $series[$seriesId])) {
+                                $mismatch[$info[$key]['link']] = $info[$key];
+                                $info[$key]['oops'] = $series[$seriesId];
+                                // @todo "UPDATE series SET link='https://www.goodreads.com/series/{$matchId}' WHERE id={$seriesId};\n";
+                            } else {
+                                $info[$key]['options'] = $series[$seriesId];
+                            }
+                        }
                         break;
                     }
                 }
@@ -616,10 +686,16 @@ class GoodReadsTest extends TestCase
             ];
         }
         $check['matches'] = $matches;
+        $check['partial'] = $partial;
+        $check['mismatch'] = $mismatch;
         $cacheFile = $cacheDir . '/goodreads/check.json';
         file_put_contents($cacheFile, json_encode($check, JSON_PRETTY_PRINT));
         $cacheFile = $cacheDir . '/goodreads/matches.json';
         file_put_contents($cacheFile, json_encode($matches, JSON_PRETTY_PRINT));
+        $cacheFile = $cacheDir . '/goodreads/partial.json';
+        file_put_contents($cacheFile, json_encode($partial, JSON_PRETTY_PRINT));
+        $cacheFile = $cacheDir . '/goodreads/mismatch.json';
+        file_put_contents($cacheFile, json_encode($mismatch, JSON_PRETTY_PRINT));
         $this->assertTrue(count($matches) > 0);
     }
 }
