@@ -102,6 +102,80 @@ class CalibreDbTest extends TestCase
         $this->assertEquals($expected, $paging);
     }
 
+    public function testGetBooksBySeries(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbFile = $dbPath . '/metadata.db';
+        $db = new CalibreDbLoader($dbFile);
+        $books = $db->getBooksBySeries(1);
+
+        $expected = 2;
+        $this->assertCount($expected, $books);
+    }
+
+    public function testCheckBookLinks(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbFile = $dbPath . '/metadata.db';
+        $db = new CalibreDbLoader($dbFile);
+
+        $books = $db->checkBookLinks('goodreads');
+        $expected = 7;
+        $this->assertCount($expected, $books);
+
+        $expectedBooks = [
+            [
+                'book' => 1,
+                'value' => '102868',
+                'author' => 1,
+                'series' => 1,
+            ],
+            [
+                'book' => 4,
+                'value' => '4465',
+                'author' => 1,
+                'series' => null,
+            ],
+            [
+                'book' => 7,
+                'value' => '8921',
+                'author' => 1,
+                'series' => 1,
+            ],
+        ];
+
+        $books = $db->checkBookLinks('goodreads', 1);
+        $expected = count($expectedBooks);
+        $this->assertCount($expected, $books);
+
+        // filter books for series = 1
+        $expectedBooks = array_filter($expectedBooks, function ($book) {
+            return $book['series'] == 1;
+        });
+        $expectedBooks = array_values($expectedBooks);
+        $expected = 2;
+        $this->assertCount($expected, $expectedBooks);
+        // get bookId's and add extra dummy
+        $bookIdList = array_map(function ($book) {
+            return $book['book'];
+        }, $expectedBooks);
+        $bookIdList[] = 1234567890;
+        // get valueId's and add extra dummy
+        $valueIdList = array_map(function ($book) {
+            return $book['value'];
+        }, $expectedBooks);
+        $valueIdList[] = 1234567890;
+
+        $books = $db->checkBookLinks('goodreads', null, 1);
+        $this->assertEquals($expectedBooks, $books);
+
+        $books = $db->checkBookLinks('goodreads', null, null, $bookIdList);
+        $this->assertEquals($expectedBooks, $books);
+
+        $books = $db->checkBookLinks('goodreads', null, null, null, $valueIdList);
+        $this->assertEquals($expectedBooks, $books);
+    }
+
     public function testGetTriggers(): void
     {
         $dbPath = dirname(__DIR__) . '/cache/goodreads';

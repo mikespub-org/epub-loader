@@ -491,6 +491,7 @@ class ActionHandler
                 $matched = $wikimatch->findSeriesByAuthor($author);
             }
         }
+        $series = $this->addSeriesInfo($series, $seriesId, $sort, $offset);
         $paging = ($seriesId || $authorId) ? null : $this->db->getSeriesPaging($sort, $offset);
 
         $authorList = $this->getAuthorList();
@@ -708,6 +709,7 @@ class ActionHandler
         // Find match on OpenLibrary
         $openlibrary = new OpenLibraryMatch($this->cacheDir);
 
+        // Get OpenLibrary author Id (if any)
         $authId = $this->request->get('authId');
         $matched = null;
         if (!empty($bookId)) {
@@ -725,8 +727,8 @@ class ActionHandler
             $sort = $this->request->get('sort');
             $offset = $this->request->getId('offset');
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
-            $olid = $openlibrary->findAuthorId($author);
-            $matched = $openlibrary->findWorksByAuthorId($olid);
+            $authId = $openlibrary->findAuthorId($author);
+            $matched = $openlibrary->findWorksByAuthorId($authId);
         }
         usort($matched['docs'], function ($a, $b) {
             return $b['edition_count'] <=> $a['edition_count'];
@@ -897,10 +899,13 @@ class ActionHandler
             $this->updateBookIdentifier('goodreads', $bookId, $matchId);
         }
 
-        // Find match on OpenLibrary
+        // Find match on GoodReads
         $goodreads = new GoodReadsMatch($this->cacheDir);
 
+        // Get GoodReads author Id from gr_author.html (if any)
         $authId = $this->request->get('authId');
+        // Get GoodReads series Id from gr_series.html (if any)
+        $serId = $this->request->get('serId');
         $matched = null;
         if (!empty($bookId)) {
             $books = $this->db->getBooks($bookId);
@@ -933,11 +938,32 @@ class ActionHandler
             $found = $goodreads->getAuthor($authId);
             // remove books from other authors here?
             $matched = $found[$authId]['books'];
+        } elseif (!empty($serId)) {
+            $found = $goodreads->getSeries($serId);
+            $info = GoodReadsCache::parseSeries($found);
+            // id is not available in JSON data - this must be set by caller
+            $info->setId($serId);
+            $matched = [];
+            foreach ($info->getBookList() as $book) {
+                $matched[] = [
+                    'id' => $book->getBookId(),
+                    'title' => $book->getTitle(),
+                    'bare' => $book->getBookTitleBare(),
+                    'header' => $book->getSeriesHeader(),
+                    'url' => $book->getBookUrl(),
+                    'cover' => $book->getImageUrl(),
+                    'series' => [
+                        'id' => $info->getId(),
+                        'title' => $info->getTitle(),
+                        'index' => $book->getSeriesHeader(),
+                    ],
+                ];
+            }
         } else {
-            $olid = $goodreads->findAuthorId($author);
-            $found = $goodreads->getAuthor($olid);
+            $authId = $goodreads->findAuthorId($author);
+            $found = $goodreads->getAuthor($authId);
             // remove books from other authors here?
-            $matched = $found[$olid]['books'];
+            $matched = $found[$authId]['books'];
         }
 
         $authorList = $this->getAuthorList();
@@ -957,7 +983,7 @@ class ActionHandler
         }
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'matchId' => $matchId];
+        return ['books' => $books, 'authorId' => $authorId, 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'matchId' => $matchId, 'serId' => $serId];
     }
 
     /**
@@ -1025,7 +1051,18 @@ class ActionHandler
                     'count' => $info->getNumWorks(),
                     'description' => $info->getDescription(),
                     'link' => 'https://www.goodreads.com/series/' . $matchId,
+                    'books' => [],
                 ];
+                foreach ($info->getBookList() as $book) {
+                    $match['books'][] = [
+                        'id' => $book->getBookId(),
+                        'title' => $book->getTitle(),
+                        'bare' => $book->getBookTitleBare(),
+                        'header' => $book->getSeriesHeader(),
+                        'url' => $book->getBookUrl(),
+                        'cover' => $book->getImageUrl(),
+                    ];
+                }
                 $matched[] = $match;
             }
         } elseif (empty($authorId)) {
@@ -1044,6 +1081,7 @@ class ActionHandler
                 $matched = array_slice($matched, $offset, $this->db->limit);
             }
         }
+        $series = $this->addSeriesInfo($series, $seriesId, $sort, $offset);
         $paging = ($seriesId || $authorId) ? null : $this->db->getSeriesPaging($sort, $offset);
 
         $authorList = $this->getAuthorList();
@@ -1251,7 +1289,7 @@ class ActionHandler
      */
     protected function addBookCount($authors, $authorId = null)
     {
-        $bookcount = $this->db->getBookCount($authorId);
+        $bookcount = $this->db->getBookCountByAuthor($authorId);
         foreach ($authors as $id => $author) {
             if (isset($bookcount[$id])) {
                 $authors[$id]['books'] = $bookcount[$id];
@@ -1270,7 +1308,7 @@ class ActionHandler
      */
     protected function addSeriesCount($authors, $authorId = null)
     {
-        $seriescount = $this->db->getSeriesCount($authorId);
+        $seriescount = $this->db->getSeriesCountByAuthor($authorId);
         foreach ($authors as $id => $author) {
             if (isset($seriescount[$id])) {
                 $authors[$id]['series'] = $seriescount[$id];
@@ -1279,6 +1317,52 @@ class ActionHandler
             }
         }
         return $authors;
+    }
+
+    /**
+     * Summary of addSeriesInfo
+     * @param array<mixed> $series
+     * @param int|null $seriesId
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>
+     */
+    protected function addSeriesInfo($series, $seriesId = null, $sort = null, $offset = null)
+    {
+        $bookcount = [];
+        foreach ($series as $id => $serie) {
+            if (!isset($bookcount[$serie['id']])) {
+                // keep key assoc here
+                $bookcount = array_replace($bookcount, $this->db->getBookCountBySeries($serie['id']));
+                $bookcount[$serie['id']] ??= '';
+            }
+            $series[$id]['books'] = $bookcount[$serie['id']];
+            if (empty($serie['link'])) {
+                continue;
+            }
+            // @todo fix overlap with addAuthorLinks()
+            if (WikiDataMatch::isValidLink($serie['link'])) {
+                $series[$id]['entityType'] = 'wd_entity';
+                $series[$id]['entityId'] = WikiDataMatch::entity($serie['link']);
+                continue;
+            }
+            if (str_starts_with($serie['link'], GoodReadsMatch::SERIES_URL)) {
+                $series[$id]['entityType'] = 'gr_series';
+                $series[$id]['entityId'] = str_replace(GoodReadsMatch::SERIES_URL, '', $serie['link']);
+                continue;
+            }
+        }
+        // we order & slice here for books
+        if (!empty($sort) && in_array($sort, ['books'])) {
+            uasort($series, function ($a, $b) use ($sort) {
+                return $b[$sort] <=> $a[$sort];
+            });
+            $offset ??= 0;
+            if (count($series) > $this->db->limit) {
+                $series = array_slice($series, $offset, $this->db->limit, true);
+            }
+        }
+        return $series;
     }
 
     /**

@@ -26,7 +26,11 @@ class OpenLibraryImport
     public static function load($inBasePath, $work)
     {
         // @todo get from somewhere
-        $cacheDir = dirname(__DIR__, 2) . '/cache';
+        if (basename($inBasePath) == 'openlibrary') {
+            $cacheDir = dirname($inBasePath);
+        } else {
+            $cacheDir = dirname(__DIR__, 3) . '/cache';
+        }
         $match = new OpenLibraryMatch($cacheDir);
 
         $bookInfos = new BookInfos();

@@ -24,6 +24,7 @@
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}">Id</a></th>
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=author">AuthorId</a></th>
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=name">Name</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=books">Books</a></th>
 		<th>Action</th>
 		<th>Link</th>
 	</tr>
@@ -32,6 +33,7 @@
 		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/?seriesId={{item.id}}">{{item.id}}</a></td>
 		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}">{{item.author}}</a></td>
 		<td>{{item.name}}</td>
+		<td>{{item.books}}</td>
 		<td>{% if seriesId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}">Search</a>{% endif %}</td>
 		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>

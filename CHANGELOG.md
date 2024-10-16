@@ -4,6 +4,9 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Get books by series + add series info and books
+  * Check book links with author and series for GoodReads
+  * Restructure import/export classes with source & target
   * Add cache statistics action + check book links
   * Remove support for single action files in app directory
   * Split off cache classes + move namespaces
