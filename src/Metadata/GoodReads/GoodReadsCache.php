@@ -1,6 +1,6 @@
 <?php
 /**
- * GoodReadsCache class - @todo
+ * GoodReadsCache class
  *
  * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
  * @author     mikespub
@@ -149,16 +149,26 @@ class GoodReadsCache extends BaseCache
     }
 
     /**
-     * Summary of getBookTitles
-     * @return array<string, string>
+     * Summary of getBookInfos
+     * @return array<string, mixed>
      */
-    public function getBookTitles()
+    public function getBookInfos()
     {
+        $basePath = $this->cacheDir . '/goodreads';
         $books = [];
         foreach ($this->getBookIds() as $bookId) {
             $cacheFile = $this->getBook($bookId);
             $data = $this->loadCache($cacheFile);
-            // @todo too messy to load all - see GoodReadsImport::load()
+            if (empty($data)) {
+                $books[$bookId] = null;
+                continue;
+            }
+            try {
+                $bookResult = self::parseBook($data);
+                $books[$bookId] = GoodReadsImport::load($basePath, $bookResult);
+            } catch (Exception $e) {
+                $books[$bookId] = null;
+            }
         }
         return $books;
     }

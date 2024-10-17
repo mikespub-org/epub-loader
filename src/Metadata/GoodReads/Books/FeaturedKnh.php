@@ -6,8 +6,12 @@ class FeaturedKnh
 {
     public ?string $typename;
     public ?int $totalCount;
+    /** @var array<mixed>|null */
     public ?array $edges;
 
+    /**
+     * @param array<mixed>|null $edges
+     */
     public function __construct(
         ?string $typename,
         ?int $totalCount,
@@ -28,6 +32,9 @@ class FeaturedKnh
         return $this->totalCount;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     public function getEdges(): ?array
     {
         return $this->edges;

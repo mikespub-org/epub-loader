@@ -6,9 +6,13 @@ class Shelving
 {
     public ?string $typename;
     public ?Shelf $shelf;
+    /** @var array<mixed>|null */
     public ?array $taggings;
     public ?string $webUrl;
 
+    /**
+     * @param array<mixed>|null $taggings
+     */
     public function __construct(
         ?string $typename,
         ?Shelf $shelf,
@@ -31,6 +35,9 @@ class Shelving
         return $this->shelf;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     public function getTaggings(): ?array
     {
         return $this->taggings;

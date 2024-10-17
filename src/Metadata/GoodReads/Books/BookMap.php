@@ -13,6 +13,7 @@ class BookMap
     public ?string $description;
     public ?string $descriptionStrippedTrue;
     public ?PrimaryContributorEdge $primaryContributorEdge;
+    /** @var array<mixed>|null */
     public ?array $secondaryContributorEdges;
     public ?string $imageUrl;
     /** @var BookSeries[]|null */
@@ -27,6 +28,7 @@ class BookMap
     public ?Links $links;
 
     /**
+     * @param array<mixed>|null $secondaryContributorEdges
      * @param BookSeries[]|null $bookSeries
      * @param BookGenres[]|null $bookGenres
      */
@@ -117,6 +119,9 @@ class BookMap
         return $this->primaryContributorEdge;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     public function getSecondaryContributorEdges(): ?array
     {
         return $this->secondaryContributorEdges;

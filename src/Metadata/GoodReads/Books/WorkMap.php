@@ -8,6 +8,7 @@ class WorkMap
     public ?string $typename;
     public ?int $legacyId;
     public ?BestBook $bestBook;
+    /** @var array<mixed>|null */
     public ?array $choiceAwards;
     public ?Details $details;
     public ?Stats $stats;
@@ -20,6 +21,9 @@ class WorkMap
     public mixed $giveaways;
     public ?Editions $editions;
 
+    /**
+     * @param array<mixed>|null $choiceAwards
+     */
     public function __construct(
         ?string $id,
         ?string $typename,
@@ -74,6 +78,9 @@ class WorkMap
         return $this->bestBook;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     public function getChoiceAwards(): ?array
     {
         return $this->choiceAwards;

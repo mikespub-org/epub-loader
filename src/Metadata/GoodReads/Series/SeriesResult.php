@@ -103,7 +103,7 @@ class SeriesResult
                     $headers = $list->getSeriesHeaders() ?? [];
                     foreach ($series as $id => $serie) {
                         $book = $serie->getBook();
-                        $book->setSeriesHeader($headers[$id]);
+                        $book->setSeriesHeader($headers[$id] ?? null);
                         $info['bookList'][] = $book;
                     }
                     break;

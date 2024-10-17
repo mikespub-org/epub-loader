@@ -47,7 +47,7 @@ class OpenLibraryImport
         $bookInfos->mUri = (string) $bookInfos->mPath;
         $bookInfos->mTitle = (string) $work->getTitle();
         if (is_array($work->getDescription())) {
-            $bookInfos->mDescription = (string) $work->getDescription()['value'] ?? '';
+            $bookInfos->mDescription = (string) ($work->getDescription()['value'] ?? '');
         } else {
             $bookInfos->mDescription = (string) $work->getDescription();
         }
@@ -89,7 +89,7 @@ class OpenLibraryImport
 
         $bookInfos->mCreationDate = (string) $work->getCreated()?->getValue();
         // @todo no modification date here
-        $bookInfos->mModificationDate = (string) $work->getLastModified()?->getValue() ?? $bookInfos->mCreationDate;
+        $bookInfos->mModificationDate = (string) ($work->getLastModified()?->getValue() ?? $bookInfos->mCreationDate);
         // Timestamp is used to get latest ebooks
         $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
         $bookInfos->mIdentifiers = ['olid' => $bookInfos->mName];
@@ -106,6 +106,6 @@ class OpenLibraryImport
     public static function getBookInfos($dbPath, $data)
     {
         $work = OpenLibraryCache::parseWorkEntity($data);
-        return static::load($dbPath, $work);
+        return self::load($dbPath, $work);
     }
 }

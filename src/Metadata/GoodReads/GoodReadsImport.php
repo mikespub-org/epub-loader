@@ -164,7 +164,7 @@ class GoodReadsImport
     {
         if (!empty($data["page"]) && $data["page"] == "/book/show/[book_id]") {
             $book = GoodReadsCache::parseBook($data);
-            return static::load($dbPath, $book);
+            return self::load($dbPath, $book);
         }
         // don't load all books in search result here
         if (array_key_first($data) == 0) {

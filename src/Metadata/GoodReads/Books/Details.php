@@ -12,14 +12,22 @@ class Details
     public ?string $shelvesUrl;
     public ?int $publicationTime;
     public ?string $originalTitle;
+    /** @var array<mixed>|null */
     public ?array $awardsWon;
+    /** @var array<mixed>|null */
     public ?array $places;
+    /** @var array<mixed>|null */
     public ?array $characters;
     public ?string $publisher;
     public ?string $isbn;
     public ?string $isbn13;
     public ?Language $language;
 
+    /**
+     * @param array<mixed>|null $awardsWon
+     * @param array<mixed>|null $places
+     * @param array<mixed>|null $characters
+     */
     public function __construct(
         ?string $typename,
         ?string $asin,
@@ -94,16 +102,25 @@ class Details
         return $this->originalTitle;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     public function getAwardsWon(): ?array
     {
         return $this->awardsWon;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     public function getPlaces(): ?array
     {
         return $this->places;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     public function getCharacters(): ?array
     {
         return $this->characters;

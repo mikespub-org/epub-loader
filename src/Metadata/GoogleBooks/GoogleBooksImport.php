@@ -105,7 +105,7 @@ class GoogleBooksImport
     {
         if (!empty($data["kind"]) && $data["kind"] == "books#volume") {
             $volume = GoogleBooksCache::parseVolume($data);
-            return static::load($dbPath, $volume);
+            return self::load($dbPath, $volume);
         }
         // load all volumes in search result
         $result = GoogleBooksCache::parseSearch($data);
@@ -114,7 +114,7 @@ class GoogleBooksImport
         }
         $books = [];
         foreach ($result->getItems() as $volume) {
-            $books[] = static::load($dbPath, $volume);
+            $books[] = self::load($dbPath, $volume);
         }
         return $books;
     }

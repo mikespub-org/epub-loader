@@ -1011,7 +1011,8 @@ class ActionHandler
         if (!empty($matchId)) {
             $found = $goodreads->getBook($matchId);
             $dbPath = $this->dbConfig['db_path'];
-            $info = GoodReadsImport::getBookInfos($dbPath, $found);
+            $book = GoodReadsCache::parseBook($found);
+            $info = GoodReadsImport::load($dbPath, $book);
             $matched[] = [
                 'id' => GoodReadsMatch::entity($info->mUri),
                 'title' => $info->mTitle,
@@ -1127,7 +1128,6 @@ class ActionHandler
         if (!empty($matchId)) {
             $found = $goodreads->getSeries($matchId);
             if (!empty($found)) {
-                $dbPath = $this->dbConfig['db_path'];
                 $info = GoodReadsCache::parseSeries($found);
                 $info->setId($matchId);
                 $matched = [];
