@@ -16,6 +16,9 @@
 		</select>
 		<input type="submit" value="Find"/>
 		{{ include('links.html', {itemId: authorId}) }}
+		{% if not authorId %}
+		- <a href="{{endpoint}}/{{action}}/{{dbNum}}?findLinks=1">Find Series links</a>
+		{% endif %}
 	</form>
 </div>
 <form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}">
@@ -28,12 +31,17 @@
 		<th>Action</th>
 		<th>Link</th>
 	</tr>
+	{% if action == 'gr_series' %}
+		{% set bookAction = 'gr_books' %}
+	{% else %}
+		{% set bookAction = 'wd_books' %}
+	{% endif %}
 	{% for item in series %}
 	<tr>
 		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/?seriesId={{item.id}}">{{item.id}}</a></td>
 		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}">{{item.author}}</a></td>
 		<td>{{item.name}}</td>
-		<td>{{item.books}}</td>
+		<td><a href="{{endpoint}}/{{bookAction}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}" title="Books in Series">{{item.books}}</a></td>
 		<td>{% if seriesId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}">Search</a>{% endif %}</td>
 		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
 	</tr>

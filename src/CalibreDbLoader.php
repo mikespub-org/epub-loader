@@ -200,11 +200,11 @@ class CalibreDbLoader
         $sql = 'select id, name from authors';
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute();
-        $authors = [];
+        $names = [];
         while ($post = $stmt->fetchObject()) {
-            $authors[$post->id] = $post->name;
+            $names[$post->id] = $post->name;
         }
-        return $authors;
+        return $names;
     }
 
     /**
@@ -508,6 +508,32 @@ class CalibreDbLoader
     public function getSeriesByBook($bookId, $sort = null, $offset = null)
     {
         return $this->getSeries(null, null, $bookId, $sort, $offset);
+    }
+
+    /**
+     * Summary of getSeriesTitles
+     * @param int|null $authorId
+     * @return array<mixed>
+     */
+    public function getSeriesTitles($authorId = null)
+    {
+        if (!empty($authorId)) {
+            $series = $this->getSeriesByAuthor($authorId);
+            $titles = [];
+            foreach ($series as $id => $serie) {
+                $titles[$serie['id']] = $serie['name'];
+            }
+            return $titles;
+        }
+        // no limit for series titles!?
+        $sql = 'select id, name from series';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        $titles = [];
+        while ($post = $stmt->fetchObject()) {
+            $titles[$post->id] = $post->name;
+        }
+        return $titles;
     }
 
     /**

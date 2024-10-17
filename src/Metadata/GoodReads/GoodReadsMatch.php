@@ -206,13 +206,24 @@ class GoodReadsMatch extends BaseMatch
     }
 
     /**
+     * Summary of getCachedAuthorNames
+     * @internal using cached author lists
+     * @return mixed
+     */
+    public function getCachedAuthorNames()
+    {
+        return $this->cache->cachedMethod('goodreads/author_names.json', [$this->cache, 'getAuthorNames']);
+    }
+
+    /**
      * Summary of findAuthorByName
      * @param string $name
+     * @internal using cached author lists
      * @return array<mixed>
      */
     public function findAuthorByName($name)
     {
-        $authors = $this->cache->cachedMethod('goodreads/author_names.json', 'getAuthorNames');
+        $authors = $this->getCachedAuthorNames();
         // we could have several authors with the same name here
         $flipped = array_flip($authors);
         // exact match first
@@ -277,37 +288,57 @@ class GoodReadsMatch extends BaseMatch
     }
 
     /**
-     * Summary of findSeriesByTitle
-     * @param string $title
-     * @return array<mixed>
+     * Summary of getCachedSeriesTitles
+     * @internal using cached series
+     * @return mixed
      */
-    public function findSeriesByTitle($title)
+    public function getCachedSeriesTitles()
     {
-        $series = $this->cache->cachedMethod('goodreads/series_titles.json', 'getSeriesTitles');
+        return $this->cache->cachedMethod('goodreads/series_titles.json', [$this->cache, 'getSeriesTitles']);
+    }
+
+    /**
+     * Summary of findCachedSeriesId
+     * @param string $title
+     * @internal using cached series
+     * @return string|null
+     */
+    public function findCachedSeriesId($title)
+    {
+        $series = $this->getCachedSeriesTitles();
         // we could have several series with the same title here
         $flipped = array_flip($series);
         // exact match first
         if (array_key_exists($title, $flipped)) {
-            $seriesId = $flipped[$title];
-            $found = $this->getSeries($seriesId);
-            // id is not available in JSON data - this must be set by caller
-            if (!empty($found) && isset($found[0][1]['title'])) {
-                $found[0][1]['id'] = $seriesId;
-            }
-            return $found;
+            return $flipped[$title];
         }
         // support partial match?
         foreach ($series as $seriesId => $seriesTitle) {
             if (str_contains($seriesTitle, $title)) {
-                $found = $this->getSeries($seriesId);
-                // id is not available in JSON data - this must be set by caller
-                if (!empty($found) && isset($found[0][1]['title'])) {
-                    $found[0][1]['id'] = $seriesId;
-                }
-                return $found;
+                return $seriesId;
             }
         }
-        return [];
+        return null;
+    }
+
+    /**
+     * Summary of findSeriesByTitle
+     * @param string $title
+     * @internal using cached series
+     * @return array<mixed>
+     */
+    public function findSeriesByTitle($title)
+    {
+        $seriesId = $this->findCachedSeriesId($title);
+        if (empty($seriesId)) {
+            return [];
+        }
+        $found = $this->getSeries($seriesId);
+        // id is not available in JSON data - this must be set by caller
+        if (!empty($found) && isset($found[0][1]['title'])) {
+            $found[0][1]['id'] = $seriesId;
+        }
+        return $found;
     }
 
     /**

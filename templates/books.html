@@ -14,6 +14,18 @@
 			{% endif %}
 			{% endfor %}
 		</select>
+		{% if series is defined %}
+		Series <select name="seriesId">
+			<option value=""></option>
+			{% for id, name in series %}
+			{% if seriesId and seriesId == id %}
+			<option value="{{id}}" selected>{{name}}</option>
+			{% else %}
+			<option value="{{id}}">{{name}}</option>
+			{% endif %}
+			{% endfor %}
+		</select>
+		{% endif %}
 		<input type="submit" value="Find"/>
 		{{ include('links.html', {itemId: authorId}) }}
 	</form>

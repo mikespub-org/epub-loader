@@ -137,7 +137,7 @@ class WikiDataTest extends TestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/wd_entity/0/1?bookId=11&matchId=Q223131">Q223131</a>';
+        $expected = '<a href="/phpunit/wd_entity/0/1?seriesId=1&bookId=11&matchId=Q223131">Q223131</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'first Sherlock Holmes novel by Sir Arthur Conan Doyle';
         $this->assertStringContainsString($expected, $output);

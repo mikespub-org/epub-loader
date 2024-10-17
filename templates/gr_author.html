@@ -9,7 +9,6 @@
 {% endblock findlinks %}
 
 {% block lookup %}
-{% if authorId %}
 <div class="part">
 	<p><b>GoodReads Author</b></p>
 	{% if matched %}
@@ -24,7 +23,7 @@
 		<tr>
 			<td><a href="{{endpoint}}/gr_books/{{dbNum}}/{{authorId}}?authId={{match.id}}">{{match.id}}</a></td>
 			<td>{{match.name}}</td>
-			<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?matchId={{match.id}}">Match</a></td>
+			<td>{% if authorId %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?matchId={{match.id}}">Match</a>{% else %}Match{% endif %}</td>
 			<td>{% if match.id %}<a rel="external" target="_blank" href="https://www.goodreads.com/author/list/{{match.id}}">GoodReads</a>{% endif %}</td>
 		</tr>
 		{% if match.books %}
@@ -44,5 +43,4 @@
 		No match found
 	{% endif %}
 </div>
-{% endif %}
 {% endblock lookup %}

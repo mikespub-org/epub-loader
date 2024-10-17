@@ -16,18 +16,18 @@
 		</tr>
 		{% for match in matched %}
 		<tr>
-			<td><a href="{{endpoint}}/gr_books/{{dbNum}}/{{authorId}}?bookId={{bookId}}&matchId={{match.id}}">{{match.id}}</a></td>
+			<td><a href="{{endpoint}}/gr_books/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&bookId={{bookId}}&matchId={{match.id}}">{{match.id}}</a></td>
 			<td>{% if match.cover %}<img src="{{match.cover}}" height="100" />{% endif %}</td>
 			<td>{{match.title}}</td>
 			<td>{% if match.series.id %}<a rel="external" target="_blank" href="https://www.goodreads.com/series/{{match.series.id}}">{{match.series.title}} #{{match.series.index}}</a>{% endif %}</td>
 			<td>
 				{% if match.series.id %}
 					{% if not serId %}
-						<a href="{{endpoint}}/gr_books/{{dbNum}}/{{authorId}}?serId={{match.series.id}}" title="GoodReads Books in Series">Series</a>
+						<a href="{{endpoint}}/gr_books/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&serId={{match.series.id}}" title="GoodReads Books in Series">Series</a>
 					{% endif %}
 				{% endif %}
 				{% if bookId %}
-					<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?bookId={{bookId}}&matchId={{match.id}}">Match</a>
+					<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&bookId={{bookId}}&matchId={{match.id}}">Match</a>
 				{% else %}
 					Match
 				{% endif %}

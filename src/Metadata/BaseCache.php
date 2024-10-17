@@ -122,11 +122,11 @@ class BaseCache
     /**
      * Summary of cachedMethod
      * @param string $filePath relative to cacheDir
-     * @param string $methodName
+     * @param callable $callable like [$this, 'getSomething']
      * @param array<mixed> $args
      * @return mixed
      */
-    public function cachedMethod($filePath, $methodName, ...$args)
+    public function cachedMethod($filePath, $callable, ...$args)
     {
         $cacheFile = $this->cacheDir . '/' . $filePath;
         if ($this->hasCache($cacheFile)) {
@@ -134,7 +134,7 @@ class BaseCache
                 return $this->loadCache($cacheFile);
             }
         }
-        $data = $this->{$methodName}(...$args);
+        $data = $callable(...$args);
         $this->saveCache($cacheFile, $data);
         return $data;
     }

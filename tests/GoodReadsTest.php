@@ -143,7 +143,7 @@ class GoodReadsTest extends TestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/gr_books/0/1?bookId=11&matchId=102868">102868</a>';
+        $expected = '<a href="/phpunit/gr_books/0/1?seriesId=1&bookId=11&matchId=102868">102868</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'A Study in Scarlet (Sherlock Holmes, #1)';
         $this->assertStringContainsString($expected, $output);

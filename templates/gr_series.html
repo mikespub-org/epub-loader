@@ -17,7 +17,7 @@
 		<tr>
 			<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?matchId={{match.id}}">{{match.id}}</a></td>
 			<td>{{match.title}}</td>
-			<td><a href="{{endpoint}}/gr_books/{{dbNum}}/{{authorId}}?serId={{match.id}}" title="GoodReads Books in Series">{{match.count}}</a></td>
+			<td><a href="{{endpoint}}/gr_books/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&serId={{match.id}}" title="GoodReads Books in Series">{{match.count}}</a></td>
 			<td>{% if seriesId %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&matchId={{match.id}}">Match</a>{% endif %}</td>
 			<td>{{match.description|raw}}</td>
 			<td><a rel="external" target="_blank" href="{{match.link}}">GoodReads</a></td>

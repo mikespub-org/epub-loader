@@ -139,6 +139,21 @@ class RequestHandler
     }
 
     /**
+     * Summary of set
+     * @param string $name
+     * @param mixed $value
+     * @return void
+     */
+    public function set($name, $value = null)
+    {
+        if (is_null($value)) {
+            unset($this->urlParams[$name]);
+            return;
+        }
+        $this->urlParams[$name] = $value;
+    }
+
+    /**
      * Summary of getPath
      * @return string
      */
