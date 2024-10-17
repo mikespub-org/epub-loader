@@ -42,7 +42,7 @@ class WikiDataCache extends BaseCache
      * Summary of getAuthorQueries
      * Path: '/wikidata/authors/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorQueries($lang = 'en')
     {
@@ -69,7 +69,7 @@ class WikiDataCache extends BaseCache
      * Path: '/wikidata/works/author/'
      * @param string $lang Language (default: en)
      * @param string|int $limit Max count of returning items (default: 100)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorWorkIds($lang = 'en', $limit = 100)
     {
@@ -94,7 +94,7 @@ class WikiDataCache extends BaseCache
      * Summary of getAuthorWorkQueries
      * Path: '/wikidata/works/name/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorWorkQueries($lang = 'en')
     {
@@ -119,7 +119,7 @@ class WikiDataCache extends BaseCache
      * Summary of getTitleQueries
      * Path: '/wikidata/works/title/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getTitleQueries($lang = 'en')
     {
@@ -146,7 +146,7 @@ class WikiDataCache extends BaseCache
      * Path: '/wikidata/series/author/'
      * @param string $lang Language (default: en)
      * @param string|int $limit Max count of returning items (default: 100)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorSeriesIds($lang = 'en', $limit = 100)
     {
@@ -171,7 +171,7 @@ class WikiDataCache extends BaseCache
      * Summary of getSeriesQueries
      * Path: '/wikidata/series/title/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getSeriesQueries($lang = 'en')
     {
@@ -196,7 +196,7 @@ class WikiDataCache extends BaseCache
      * Summary of getEntityIds
      * Path: '/wikidata/entities/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getEntityIds($lang = 'en')
     {

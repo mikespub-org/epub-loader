@@ -157,11 +157,10 @@ class GoodReadsMatch extends BaseMatch
         $matched = $this->findAuthors($query);
         // @todo Find author with highest books count!?
         if (count($matched) > 0) {
-            //$entityId = array_keys($matched)[0];
             uasort($matched, function ($a, $b) {
                 return count($b['books']) <=> count($a['books']);
             });
-            $entityId = array_keys($matched)[0];
+            $entityId = array_key_first($matched);
         }
         return $entityId;
     }
@@ -204,6 +203,30 @@ class GoodReadsMatch extends BaseMatch
             $this->cache->saveFile($cacheFile, $content);
             throw $e;
         }
+    }
+
+    /**
+     * Summary of findAuthorByName
+     * @param string $name
+     * @return array<mixed>
+     */
+    public function findAuthorByName($name)
+    {
+        $authors = $this->cache->cachedMethod('goodreads/author_names.json', 'getAuthorNames');
+        // we could have several authors with the same name here
+        $flipped = array_flip($authors);
+        // exact match first
+        if (array_key_exists($name, $flipped)) {
+            $authorId = $flipped[$name];
+            return $this->getAuthor($authorId);
+        }
+        // support partial match?
+        foreach ($authors as $authorId => $authorName) {
+            if (str_contains($authorName, $name)) {
+                return $this->getAuthor($authorId);
+            }
+        }
+        return [];
     }
 
     /**
@@ -251,6 +274,40 @@ class GoodReadsMatch extends BaseMatch
             $result[] = [$match[1], $data];
         }
         return $result;
+    }
+
+    /**
+     * Summary of findSeriesByTitle
+     * @param string $title
+     * @return array<mixed>
+     */
+    public function findSeriesByTitle($title)
+    {
+        $series = $this->cache->cachedMethod('goodreads/series_titles.json', 'getSeriesTitles');
+        // we could have several series with the same title here
+        $flipped = array_flip($series);
+        // exact match first
+        if (array_key_exists($title, $flipped)) {
+            $seriesId = $flipped[$title];
+            $found = $this->getSeries($seriesId);
+            // id is not available in JSON data - this must be set by caller
+            if (!empty($found) && isset($found[0][1]['title'])) {
+                $found[0][1]['id'] = $seriesId;
+            }
+            return $found;
+        }
+        // support partial match?
+        foreach ($series as $seriesId => $seriesTitle) {
+            if (str_contains($seriesTitle, $title)) {
+                $found = $this->getSeries($seriesId);
+                // id is not available in JSON data - this must be set by caller
+                if (!empty($found) && isset($found[0][1]['title'])) {
+                    $found[0][1]['id'] = $seriesId;
+                }
+                return $found;
+            }
+        }
+        return [];
     }
 
     /**

@@ -23,6 +23,7 @@ use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryMatch;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataMatch;
 use Exception;
 
+/** @phpstan-consistent-constructor */
 class ActionHandler
 {
     /** @var array<mixed> */
@@ -343,7 +344,7 @@ class ActionHandler
             $matched = $wikimatch->findAuthors($query);
             // Find works from author for 1st match
             if (count($matched) > 0) {
-                $firstId = array_keys($matched)[0];
+                $firstId = array_key_first($matched);
                 $matched[$firstId]['entries'] = $wikimatch->findWorksByAuthorProperty($author);
             }
             // https://www.googleapis.com/books/v1/volumes?q=inauthor:%22Anne+Bishop%22&langRestrict=en&startIndex=0&maxResults=40
@@ -377,7 +378,7 @@ class ActionHandler
         if (empty($authorId) && empty($bookId)) {
             //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
             //return null;
-            $authorId = array_keys($authors)[0];
+            $authorId = array_key_first($authors);
         }
 
         if (count($authors) < 1) {
@@ -455,7 +456,7 @@ class ActionHandler
         if (empty($authorId) && empty($seriesId)) {
             //$this->addError($this->dbFileName, "Please specify authorId and/or seriesId");
             //return null;
-            $authorId = array_keys($authors)[0];
+            $authorId = array_key_first($authors);
         }
 
         if (count($authors) < 1) {
@@ -463,6 +464,8 @@ class ActionHandler
             return null;
         }
         $author = $authors[$authorId];
+        $sort = $this->request->get('sort');
+        $offset = $this->request->getId('offset');
 
         // Find match on Wikidata
         $wikimatch = new WikiDataMatch($this->cacheDir);
@@ -472,7 +475,7 @@ class ActionHandler
         if (!empty($seriesId)) {
             $series = $this->db->getSeries($seriesId);
             // series can have multiple authors
-            $first = array_values($series)[0];
+            $first = reset($series);
             // Update the series link
             if (!empty($matchId) && empty($first['link'])) {
                 $link = WikiDataMatch::link($matchId);
@@ -484,8 +487,6 @@ class ActionHandler
             $query = $first['name'];
             $matched = $wikimatch->findSeriesByName($query);
         } else {
-            $sort = $this->request->get('sort');
-            $offset = $this->request->getId('offset');
             $series = $this->db->getSeriesByAuthor($authorId, $sort, $offset);
             if (count($series) > 0) {
                 $matched = $wikimatch->findSeriesByAuthor($author);
@@ -541,7 +542,7 @@ class ActionHandler
         if (empty($authorId) && empty($bookId)) {
             //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
             //return null;
-            $authorId = array_keys($authors)[0];
+            $authorId = array_key_first($authors);
         }
 
         if (count($authors) < 1) {
@@ -656,7 +657,7 @@ class ActionHandler
             });
             // @todo Find works from author with highest work_count!?
             //if (count($matched) > 0) {
-            //    $firstId = array_keys($matched)[0];
+            //    $firstId = array_key_first($matched);
             //    $matched[$firstId]['entries'] = $openlibrary->findWorksByAuthor($author);
             //}
         } elseif (!empty($matchId)) {
@@ -692,7 +693,7 @@ class ActionHandler
         if (empty($authorId) && empty($bookId)) {
             //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
             //return null;
-            $authorId = array_keys($authors)[0];
+            $authorId = array_key_first($authors);
         }
 
         if (count($authors) < 1) {
@@ -886,7 +887,7 @@ class ActionHandler
         if (empty($authorId) && empty($bookId)) {
             //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
             //return null;
-            $authorId = array_keys($authors)[0];
+            $authorId = array_key_first($authors);
         }
         if (count($authors) < 1) {
             $this->addError($this->dbFileName, "Please specify a valid authorId");
@@ -999,7 +1000,7 @@ class ActionHandler
         if (empty($authorId) && empty($seriesId)) {
             //$this->addError($this->dbFileName, "Please specify authorId and/or seriesId");
             //return null;
-            //$authorId = array_keys($authors)[0];
+            //$authorId = array_key_first($authors);
         }
 
         if (count($authors) < 1) {
@@ -1018,7 +1019,7 @@ class ActionHandler
         if (!empty($seriesId)) {
             $series = $this->db->getSeries($seriesId, $authorId, null, $sort, $offset);
             // series can have multiple authors
-            $first = array_values($series)[0];
+            $first = reset($series);
             // Update the series link
             if (!empty($matchId) && empty($first['link'])) {
                 $link = GoodReadsMatch::SERIES_URL . $matchId;
@@ -1044,6 +1045,36 @@ class ActionHandler
             if (!empty($found)) {
                 $dbPath = $this->dbConfig['db_path'];
                 $info = GoodReadsCache::parseSeries($found);
+                $info->setId($matchId);
+                $matched = [];
+                $match = [
+                    'id' => $matchId,
+                    'title' => $info->getTitle(),
+                    'count' => $info->getNumWorks(),
+                    'description' => $info->getDescription(),
+                    'link' => 'https://www.goodreads.com/series/' . $matchId,
+                    'books' => [],
+                ];
+                foreach ($info->getBookList() as $book) {
+                    $match['books'][] = [
+                        'id' => $book->getBookId(),
+                        'title' => $book->getTitle(),
+                        'bare' => $book->getBookTitleBare(),
+                        'header' => $book->getSeriesHeader(),
+                        'url' => $book->getBookUrl(),
+                        'cover' => $book->getImageUrl(),
+                    ];
+                }
+                $matched[] = $match;
+            }
+        } elseif (!empty($seriesId)) {
+            $first = reset($series);
+            $found = $goodreads->findSeriesByTitle($first['name']);
+            if (!empty($found)) {
+                // set in GoodReadsMatch::findSeriesByTitle()
+                $matchId = $found[0][1]['id'];
+                $info = GoodReadsCache::parseSeries($found);
+                $info->setId($matchId);
                 $matched = [];
                 $match = [
                     'id' => $matchId,
@@ -1068,10 +1099,10 @@ class ActionHandler
         } elseif (empty($authorId)) {
             $matched = [];
             // @todo show all availables series if no author is selected?
-            foreach ($goodreads->getCache()->getSeriesIds() as $id) {
+            foreach ($goodreads->getCache()->getSeriesTitles() as $id => $title) {
                 $matched[] = [
                     'id' => $id,
-                    'title' => '',
+                    'title' => $title,
                     'count' => '',
                     'description' => '',
                     'link' => 'https://www.goodreads.com/series/' . $id,
@@ -1383,6 +1414,19 @@ class ActionHandler
     public function getErrors()
     {
         return $this->gErrorArray;
+    }
+
+    /**
+     * Summary of getHandler
+     * @param string $action
+     * @param array<mixed> $dbConfig
+     * @param string|null $cacheDir
+     * @return static
+     */
+    public static function getHandler($action, $dbConfig, $cacheDir = null)
+    {
+        // @todo return specific action handler
+        return new static($dbConfig, $cacheDir);
     }
 
     /**

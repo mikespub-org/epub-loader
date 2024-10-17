@@ -38,7 +38,7 @@ class GoodReadsCache extends BaseCache
     /**
      * Summary of getSearchQueries (url encoded)
      * Path: '/goodreads/search/'
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getSearchQueries()
     {
@@ -61,12 +61,28 @@ class GoodReadsCache extends BaseCache
     /**
      * Summary of getAuthorIds
      * Path: '/goodreads/author/list/'
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorIds()
     {
         $baseDir = $this->cacheDir . '/goodreads/author/list/';
         return static::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
+     * Summary of getAuthorNames
+     * @return array<string, string>
+     */
+    public function getAuthorNames()
+    {
+        $authors = [];
+        foreach ($this->getAuthorIds() as $authorId) {
+            $cacheFile = $this->getAuthor($authorId);
+            $data = $this->loadCache($cacheFile);
+            // [authorId => author]
+            $authors[$authorId] = $data[$authorId]['name'];
+        }
+        return $authors;
     }
 
     /**
@@ -84,12 +100,28 @@ class GoodReadsCache extends BaseCache
     /**
      * Summary of getSeriesIds
      * Path: '/goodreads/series/'
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getSeriesIds()
     {
         $baseDir = $this->cacheDir . '/goodreads/series/';
         return static::getFiles($baseDir, '*.json', true);
+    }
+
+    /**
+     * Summary of getSeriesTitles
+     * @return array<string, string>
+     */
+    public function getSeriesTitles()
+    {
+        $series = [];
+        foreach ($this->getSeriesIds() as $seriesId) {
+            $cacheFile = $this->getSeries($seriesId);
+            $data = $this->loadCache($cacheFile);
+            // [["ReactComponents.SeriesHeader", [...]], ...]
+            $series[$seriesId] = $data[0][1]['title'];
+        }
+        return $series;
     }
 
     /**
@@ -108,7 +140,7 @@ class GoodReadsCache extends BaseCache
     /**
      * Summary of getBookIds
      * Path: '/goodreads/book/show/'
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getBookIds()
     {
@@ -117,8 +149,23 @@ class GoodReadsCache extends BaseCache
     }
 
     /**
+     * Summary of getBookTitles
+     * @return array<string, string>
+     */
+    public function getBookTitles()
+    {
+        $books = [];
+        foreach ($this->getBookIds() as $bookId) {
+            $cacheFile = $this->getBook($bookId);
+            $data = $this->loadCache($cacheFile);
+            // @todo too messy to load all - see GoodReadsImport::load()
+        }
+        return $books;
+    }
+
+    /**
      * Summary of getStats
-     * @return array<mixed>
+     * @return array<string, int>
      */
     public function getStats()
     {

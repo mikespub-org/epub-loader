@@ -465,6 +465,30 @@ class GoodReadsTest extends TestCase
         $this->assertCount($expected, $fileList);
     }
 
+    public function testFindAuthorByName(): void
+    {
+        $cacheDir = dirname(path: __DIR__) . '/cache';
+        $match = new GoodReadsMatch($cacheDir);
+
+        $name = 'Arthur Conan Doyle';
+        $authors = $match->findAuthorByName($name);
+
+        $expected = '2448.Arthur_Conan_Doyle';
+        $this->assertEquals($expected, array_key_first($authors));
+    }
+
+    public function testFindSeriesByTitle(): void
+    {
+        $cacheDir = dirname(path: __DIR__) . '/cache';
+        $match = new GoodReadsMatch($cacheDir);
+
+        $title = 'Sherlock Holmes';
+        $series = $match->findSeriesByTitle($title);
+
+        $expected = 'Sherlock Holmes Series';
+        $this->assertEquals($expected, $series[0][1]['title']);
+    }
+
     public function testCheckBookLinks(): void
     {
         $dbPath = dirname(__DIR__) . '/cache/goodreads';

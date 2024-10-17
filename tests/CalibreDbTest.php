@@ -30,8 +30,8 @@ class CalibreDbTest extends TestCase
 
         $expected = [
             'authors' => 4,
-            'books' => 7,
-            'series' => 3,
+            'books' => 10,
+            'series' => 4,
         ];
         $this->assertEquals($expected, $stats);
     }
@@ -75,7 +75,7 @@ class CalibreDbTest extends TestCase
             'first' => 'sort=name&offset=0',
             'prev' => 'sort=name&offset=0',
             'next' => 'sort=name&offset=4',
-            'last' => 'sort=name&offset=6',
+            'last' => 'sort=name&offset=8',
         ];
         $this->assertEquals($expected, $paging);
     }
@@ -97,7 +97,7 @@ class CalibreDbTest extends TestCase
             'first' => '',
             'prev' => '',
             'next' => 'sort=name&offset=1',
-            'last' => 'sort=name&offset=2',
+            'last' => 'sort=name&offset=3',
         ];
         $this->assertEquals($expected, $paging);
     }
@@ -120,7 +120,7 @@ class CalibreDbTest extends TestCase
         $db = new CalibreDbLoader($dbFile);
 
         $books = $db->checkBookLinks('goodreads');
-        $expected = 7;
+        $expected = 10;
         $this->assertCount($expected, $books);
 
         $expectedBooks = [
@@ -138,6 +138,12 @@ class CalibreDbTest extends TestCase
             ],
             [
                 'book' => 7,
+                'value' => '4947464',
+                'author' => 1,
+                'series' => 4,
+            ],
+            [
+                'book' => 10,
                 'value' => '8921',
                 'author' => 1,
                 'series' => 1,

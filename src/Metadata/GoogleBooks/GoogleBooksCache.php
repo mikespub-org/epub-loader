@@ -39,7 +39,7 @@ class GoogleBooksCache extends BaseCache
      * Path: '/google/authors/'
      * @param string $lang Language (default: en)
      * @param string|int $limit Max count of returning items (default: 40)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorQueries($lang = 'en', $limit = 40)
     {
@@ -64,7 +64,7 @@ class GoogleBooksCache extends BaseCache
      * Summary of getTitleQueries
      * Path: '/google/titles/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getTitleQueries($lang = 'en')
     {
@@ -89,7 +89,7 @@ class GoogleBooksCache extends BaseCache
      * Summary of getSeriesQueries
      * Path: '/google/series/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getSeriesQueries($lang = 'en')
     {
@@ -114,7 +114,7 @@ class GoogleBooksCache extends BaseCache
      * Summary of getVolumeIds
      * Path: '/google/volumes/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getVolumeIds($lang = 'en')
     {

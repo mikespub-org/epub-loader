@@ -39,7 +39,7 @@ class OpenLibraryCache extends BaseCache
      * Summary of getAuthorQueries
      * Path: '/openlibrary/authors/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorQueries($lang = 'en')
     {
@@ -66,7 +66,7 @@ class OpenLibraryCache extends BaseCache
      * Path: '/openlibrary/works/author/'
      * @param string $lang Language (default: en)
      * @param string|int $limit Max count of returning items (default: 100)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorWorkIds($lang = 'en', $limit = 100)
     {
@@ -90,7 +90,7 @@ class OpenLibraryCache extends BaseCache
      * Summary of getTitleQueries
      * Path: '/openlibrary/works/title/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getTitleQueries($lang = 'en')
     {
@@ -115,7 +115,7 @@ class OpenLibraryCache extends BaseCache
      * Summary of getAuthorIds
      * Path: '/openlibrary/entities/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getAuthorIds($lang = 'en')
     {
@@ -146,7 +146,7 @@ class OpenLibraryCache extends BaseCache
      * Summary of getWorkIds
      * Path: '/openlibrary/entities/'
      * @param string $lang Language (default: en)
-     * @return array<string, mixed>
+     * @return array<string>
      */
     public function getWorkIds($lang = 'en')
     {

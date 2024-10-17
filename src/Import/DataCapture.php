@@ -66,7 +66,7 @@ class DataCapture
             }
             $this->addProperties($item, $node, $path);
         } elseif ($type == 'array' && count($item) > 0) {
-            $first = array_keys($item)[0];
+            $first = array_key_first($item);
             if (!is_numeric($first)) {
                 $type = 'object';
                 $this->addProperties($item, $node, $path);

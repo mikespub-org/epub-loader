@@ -167,7 +167,7 @@ class GoodReadsImport
             return static::load($dbPath, $book);
         }
         // don't load all books in search result here
-        if (array_keys($data)[0] == 0) {
+        if (array_key_first($data) == 0) {
             return GoodReadsCache::parseSeries($data);
         }
         return GoodReadsCache::parseSearch($data);

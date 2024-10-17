@@ -87,7 +87,7 @@ class WikiDataMatch extends BaseMatch
         $matched = $this->findAuthors($query, $lang);
         // Find works from author for 1st match
         if (count($matched) > 0) {
-            $entityId = array_keys($matched)[0];
+            $entityId = array_key_first($matched);
         }
         return $entityId;
     }
@@ -204,7 +204,7 @@ class WikiDataMatch extends BaseMatch
         $matched = $this->findAuthors($query, $lang);
         // Find works from author for 1st match
         if (count($matched) > 0) {
-            $entityId = array_keys($matched)[0];
+            $entityId = array_key_first($matched);
         }
         return $entityId;
     }

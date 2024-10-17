@@ -31,6 +31,7 @@ class BaseCache
     public const CACHE_TYPES = [];
 
     public static int $limit = 500;
+    public static int $expires = 2 * 60 * 60;
     /** @var string|null */
     protected $cacheDir;
 
@@ -116,6 +117,26 @@ class BaseCache
             return;
         }
         file_put_contents($cacheFile, $content);
+    }
+
+    /**
+     * Summary of cachedMethod
+     * @param string $filePath relative to cacheDir
+     * @param string $methodName
+     * @param array<mixed> $args
+     * @return mixed
+     */
+    public function cachedMethod($filePath, $methodName, ...$args)
+    {
+        $cacheFile = $this->cacheDir . '/' . $filePath;
+        if ($this->hasCache($cacheFile)) {
+            if (filemtime($cacheFile) > time() - static::$expires) {
+                return $this->loadCache($cacheFile);
+            }
+        }
+        $data = $this->{$methodName}(...$args);
+        $this->saveCache($cacheFile, $data);
+        return $data;
     }
 
     /**
