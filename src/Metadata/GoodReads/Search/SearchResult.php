@@ -27,6 +27,11 @@ class SearchResult
         return $this->properties;
     }
 
+    public function getAuthorMap(string $key): ?AuthorMap
+    {
+        return $this->properties[$key] ?? null;
+    }
+
     /**
      * @param array<mixed> $data
      */

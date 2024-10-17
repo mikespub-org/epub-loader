@@ -625,6 +625,7 @@ class CalibreDbLoader
             $sql .= ' and value IN (' . str_repeat('?,', count($valueIdList) - 1) . '?)';
             $params = array_merge($params, $valueIdList);
         }
+        $sql .= ' order by book';
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($params);
         $links = [];

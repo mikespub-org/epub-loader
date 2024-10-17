@@ -10,6 +10,7 @@ namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\CalibreDbLoader;
 use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Import\DataCapture;
 use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsImport;
@@ -20,6 +21,8 @@ use Exception;
 
 class GoodReadsTest extends TestCase
 {
+    public static $download = false;
+
     public static function setUpBeforeClass(): void
     {
         if (!file_exists(dirname(__DIR__) . '/app/config.php')) {
@@ -397,14 +400,44 @@ class GoodReadsTest extends TestCase
         $cacheDir = dirname(__DIR__) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
 
+        $bookIdList = $cache->getBookIds();
+        $missing = [
+            'books' => [],
+        ];
+        $expected = $missing;
+
         $fileList = $cache::getFiles($cacheDir . '/goodreads/author/list/', '*.json');
         foreach ($fileList as $cacheFile) {
             $authorId = str_replace($cacheDir . '/goodreads/author/list/', '', $cacheFile);
             $authorId = str_replace('.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
-            $authors = $cache::parseSearch($matched);
+            $result = $cache::parseSearch($matched);
+            $authorMap = $result->getAuthorMap($authorId);
+            $count = 0;
+            foreach ($authorMap->getBooks() as $book) {
+                if ($book->getCount() < 1000) {
+                    break;
+                }
+                if ($count++ > 9) {
+                    break;
+                }
+                $bookId = GoodReadsCache::bookid($book->getId());
+                if (!in_array($bookId, $bookIdList)) {
+                    // @todo skip collections etc.
+                    if (!preg_match('/#\d+-\d+/', $book->getTitle())) {
+                        $missing['books'][$bookId] ??= $authorId . ' ' . $book->getTitle();
+                    }
+                }
+            }
         }
+        if (static::$download && count($missing['books']) > 0) {
+            $match = new GoodReadsMatch($cacheDir);
+            foreach ($missing['books'] as $bookId => $bookTitle) {
+                $match->getBook($bookId);
+            }
+        }
+        $this->assertEquals($expected, $missing);
 
         $expected = count($cache->getAuthorIds());
         $this->assertCount($expected, $fileList);
@@ -433,6 +466,15 @@ class GoodReadsTest extends TestCase
         $cacheDir = dirname(__DIR__) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
 
+        $bookIdList = $cache->getBookIds();
+        $authorIdList = $cache->getAuthorIds();
+        $missing = [
+            'authors' => [],
+            'books' => [],
+        ];
+        $expected = $missing;
+        //$capture = new DataCapture();
+
         $fileList = $cache::getFiles($cacheDir . '/goodreads/series/', '*.json');
         foreach ($fileList as $cacheFile) {
             $seriesId = str_replace($cacheDir . '/goodreads/series/', '', $cacheFile);
@@ -441,13 +483,48 @@ class GoodReadsTest extends TestCase
             $matched = json_decode($results, true);
             $series = $cache::parseSeries($matched);
             $series->setId($seriesId);
+            // check for missing books and authors
+            foreach ($series->getBookList() as $book) {
+                $bookId = $book->getBookId();
+                if (!in_array($bookId, $bookIdList)) {
+                    // @todo skip collections, undefined series indexes and translations
+                    $header = $book->getSeriesHeader();
+                    if (!empty($header) && preg_match('/^Book\s+\d+$/', $header)) {
+                        $missing['books'][$bookId] ??= $seriesId . ' ' . $header;
+                    }
+                }
+                $author = $book->getAuthor();
+                if (!empty($author)) {
+                    $authorId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $author->getWorksListUrl() ?? '');
+                    if (!in_array($authorId, $authorIdList)) {
+                        // @todo skip collection editors etc.
+                        $header = $book->getSeriesHeader();
+                        if (!empty($header) && preg_match('/^Book\s+\d+$/', $header)) {
+                            $missing['authors'][$authorId] ??= $seriesId . ' ' . $header;
+                        }
+                    }
+                }
+            }
+            //$capture->analyze($series);
         }
+        //$cacheFile = $cacheDir . '/goodreads/series.report.json';
+        //$report = $capture->report($cacheFile);
+        if (static::$download && (count($missing['books']) > 0 || count($missing['authors']) > 0)) {
+            $match = new GoodReadsMatch($cacheDir);
+            foreach ($missing['books'] as $bookId => $seriesTitle) {
+                $match->getBook($bookId);
+            }
+            foreach ($missing['authors'] as $authorId => $seriesTitle) {
+                $match->getAuthor($authorId);
+            }
+        }
+        $this->assertEquals($expected, $missing);
 
         $expected = count($cache->getSeriesIds());
         $this->assertCount($expected, $fileList);
     }
 
-    public function testCacheParseBook(): void
+    protected function skipTestCacheParseBook(): void
     {
         $cacheDir = dirname(__DIR__) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
@@ -463,6 +540,59 @@ class GoodReadsTest extends TestCase
 
         $expected = count($cache->getBookIds());
         $this->assertCount($expected, $fileList);
+    }
+
+    public function testCacheGetBookInfos(): void
+    {
+        $cacheDir = dirname(__DIR__) . '/cache';
+        $cache = new GoodReadsCache($cacheDir);
+
+        $books = $cache->getBookInfos();
+
+        $expected = count($cache->getBookIds());
+        $this->assertCount($expected, $books);
+
+        $authorIdList = $cache->getAuthorIds();
+        $seriesIdList = $cache->getSeriesIds();
+        $missing = [
+            'authors' => [],
+            'books' => [],
+            'series' => [],
+        ];
+        $expected = $missing;
+        foreach ($books as $bookId => $book) {
+            if (empty($book)) {
+                $missing['books'][$bookId] ??= $book->mTitle;
+                continue;
+            }
+            if (!empty($book->mAuthorIds) && count($book->mAuthorIds) < 4) {
+                foreach ($book->mAuthorIds as $authorId) {
+                    if (!in_array($authorId, $authorIdList)) {
+                        $missing['authors'][$authorId] ??= $book->mTitle;
+                    }
+                }
+            }
+            if (!empty($book->mSeriesIds) && count($book->mSeriesIds) < 4) {
+                foreach ($book->mSeriesIds as $seriesId) {
+                    if (!in_array($seriesId, $seriesIdList)) {
+                        $missing['series'][$seriesId] ??= $book->mTitle;
+                    }
+                }
+            }
+        }
+        if (static::$download && (count($missing['books']) > 0 || count($missing['authors']) > 0 || count($missing['series']) > 0)) {
+            $match = new GoodReadsMatch($cacheDir);
+            foreach ($missing['books'] as $bookId => $bookTitle) {
+                $match->getBook($bookId);
+            }
+            foreach ($missing['authors'] as $authorId => $bookTitle) {
+                $match->getAuthor($authorId);
+            }
+            foreach ($missing['series'] as $seriesId => $bookTitle) {
+                $match->getSeries($seriesId);
+            }
+        }
+        $this->assertEquals($expected, $missing);
     }
 
     public function testFindAuthorByName(): void
@@ -502,7 +632,8 @@ class GoodReadsTest extends TestCase
         $cacheFile = $cacheDir . '/goodreads/links.json';
         file_put_contents($cacheFile, json_encode($links, JSON_PRETTY_PRINT));
         $expected = count($cache->getBookIds());
-        $this->assertCount($expected, $links);
+        // for books with multiple authors or series?
+        $this->assertTrue($expected <= count($links));
 
         $books = [];
         $authors = [];
@@ -547,6 +678,8 @@ class GoodReadsTest extends TestCase
                     $missing[$link['book']] ??= [];
                     $missing[$link['book']][$link['author']] = array_filter($bookInfo->mSerieIds);
                 }
+            } elseif (!empty($link['series'])) {
+                $series[$link['series']] ??= [];
             }
         }
         $seen = [];

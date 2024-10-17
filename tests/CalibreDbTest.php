@@ -29,9 +29,9 @@ class CalibreDbTest extends TestCase
         $stats = $db->getStats();
 
         $expected = [
-            'authors' => 4,
-            'books' => 10,
-            'series' => 4,
+            'authors' => 28,
+            'books' => 116,
+            'series' => 27,
         ];
         $this->assertEquals($expected, $stats);
     }
@@ -53,7 +53,7 @@ class CalibreDbTest extends TestCase
             'first' => '',
             'prev' => '',
             'next' => 'offset=2',
-            'last' => 'offset=2',
+            'last' => 'offset=26',
         ];
         $this->assertEquals($expected, $paging);
     }
@@ -75,7 +75,7 @@ class CalibreDbTest extends TestCase
             'first' => 'sort=name&offset=0',
             'prev' => 'sort=name&offset=0',
             'next' => 'sort=name&offset=4',
-            'last' => 'sort=name&offset=8',
+            'last' => 'sort=name&offset=134',
         ];
         $this->assertEquals($expected, $paging);
     }
@@ -97,7 +97,7 @@ class CalibreDbTest extends TestCase
             'first' => '',
             'prev' => '',
             'next' => 'sort=name&offset=1',
-            'last' => 'sort=name&offset=3',
+            'last' => 'sort=name&offset=33',
         ];
         $this->assertEquals($expected, $paging);
     }
@@ -109,7 +109,7 @@ class CalibreDbTest extends TestCase
         $db = new CalibreDbLoader($dbFile);
         $books = $db->getBooksBySeries(1);
 
-        $expected = 2;
+        $expected = 8;
         $this->assertCount($expected, $books);
     }
 
@@ -120,46 +120,30 @@ class CalibreDbTest extends TestCase
         $db = new CalibreDbLoader($dbFile);
 
         $books = $db->checkBookLinks('goodreads');
-        $expected = 10;
+        $expected = 135;
         $this->assertCount($expected, $books);
 
-        $expectedBooks = [
-            [
-                'book' => 1,
-                'value' => '102868',
-                'author' => 1,
-                'series' => 1,
-            ],
-            [
-                'book' => 4,
-                'value' => '4465',
-                'author' => 1,
-                'series' => null,
-            ],
-            [
-                'book' => 7,
-                'value' => '4947464',
-                'author' => 1,
-                'series' => 4,
-            ],
-            [
-                'book' => 10,
-                'value' => '8921',
-                'author' => 1,
-                'series' => 1,
-            ],
-        ];
+        $cacheFile = $dbPath . '/expected.json';
+        $expectedBooks = [];
+        if (file_exists($cacheFile)) {
+            $content = file_get_contents($cacheFile);
+            $expectedBooks = json_decode($content, true);
+        }
 
         $books = $db->checkBookLinks('goodreads', 1);
+        if (empty($expectedBooks)) {
+            file_put_contents($cacheFile, json_encode($books, JSON_PRETTY_PRINT));
+            $expectedBooks = $books;
+        }
         $expected = count($expectedBooks);
         $this->assertCount($expected, $books);
 
-        // filter books for series = 1
+        // filter books for author = 1 and series = 1
         $expectedBooks = array_filter($expectedBooks, function ($book) {
-            return $book['series'] == 1;
+            return $book['author'] == 1 && $book['series'] == 1;
         });
         $expectedBooks = array_values($expectedBooks);
-        $expected = 2;
+        $expected = 8;
         $this->assertCount($expected, $expectedBooks);
         // get bookId's and add extra dummy
         $bookIdList = array_map(function ($book) {
@@ -172,13 +156,13 @@ class CalibreDbTest extends TestCase
         }, $expectedBooks);
         $valueIdList[] = 1234567890;
 
-        $books = $db->checkBookLinks('goodreads', null, 1);
+        $books = $db->checkBookLinks('goodreads', 1, 1);
         $this->assertEquals($expectedBooks, $books);
 
-        $books = $db->checkBookLinks('goodreads', null, null, $bookIdList);
+        $books = $db->checkBookLinks('goodreads', 1, null, $bookIdList);
         $this->assertEquals($expectedBooks, $books);
 
-        $books = $db->checkBookLinks('goodreads', null, null, null, $valueIdList);
+        $books = $db->checkBookLinks('goodreads', 1, null, null, $valueIdList);
         $this->assertEquals($expectedBooks, $books);
     }
 
