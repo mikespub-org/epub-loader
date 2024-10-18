@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
+use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
@@ -150,7 +151,7 @@ class GoodReadsCache extends BaseCache
 
     /**
      * Summary of getBookInfos
-     * @return array<string, mixed>
+     * @return array<string, ?BookInfos>
      */
     public function getBookInfos()
     {

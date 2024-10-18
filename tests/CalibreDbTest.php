@@ -9,18 +9,9 @@
 namespace Marsender\EPubLoader\Tests;
 
 use Marsender\EPubLoader\CalibreDbLoader;
-use PHPUnit\Framework\TestCase;
 
-class CalibreDbTest extends TestCase
+class CalibreDbTest extends BaseTestCase
 {
-    public static function setUpBeforeClass(): void
-    {
-        if (!file_exists(dirname(__DIR__) . '/app/config.php')) {
-            copy(dirname(__DIR__) . '/app/config.php.example', dirname(__DIR__) . '/app/config.php');
-        }
-        $_SERVER['SCRIPT_NAME'] = '/phpunit';
-    }
-
     public function testGetStats(): void
     {
         $dbPath = dirname(__DIR__) . '/cache/goodreads';

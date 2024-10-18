@@ -8,19 +8,9 @@
 
 namespace Marsender\EPubLoader\Tests;
 
-use PHPUnit\Framework\TestCase;
-
 #[\PHPUnit\Framework\Attributes\CoversClass(\Marsender\EPubLoader\App\ExtraActions::class)]
-class ExtraActionsTest extends TestCase
+class ExtraActionsTest extends BaseTestCase
 {
-    public static function setUpBeforeClass(): void
-    {
-        if (!file_exists(dirname(__DIR__) . '/app/config.php')) {
-            copy(dirname(__DIR__) . '/app/config.php.example', dirname(__DIR__) . '/app/config.php');
-        }
-        $_SERVER['SCRIPT_NAME'] = '/phpunit';
-    }
-
     /**
      * Summary of testAppHelloWorld
      * @return void
