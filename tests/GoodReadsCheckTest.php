@@ -12,6 +12,7 @@ use Marsender\EPubLoader\CalibreDbLoader;
 use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsImport;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use PHPUnit\Framework\Attributes\Depends;
 use Exception;
 
@@ -82,7 +83,7 @@ class GoodReadsCheckTest extends BaseTestCase
             if (!empty($link['series'])) {
                 $series[$link['series']] ??= [];
             }
-            if (!empty($bookInfo->mSerieIds) && count($bookInfo->mSerieIds) < 4) {
+            if (!empty($bookInfo->mSerieIds) && count($bookInfo->mSerieIds) < 10) {
                 if (!empty($link['series'])) {
                     foreach (array_filter($bookInfo->mSerieIds) as $serieId) {
                         $series[$link['series']][$serieId] ??= 0;
@@ -90,7 +91,10 @@ class GoodReadsCheckTest extends BaseTestCase
                     }
                 } elseif (!empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
                     $missing[$link['book']] ??= [];
-                    $missing[$link['book']][$link['author']] = array_filter($bookInfo->mSerieIds);
+                    foreach (array_filter($bookInfo->mSerieIds) as $serieId) {
+                        $missing[$link['book']][$serieId] ??= 0;
+                        $missing[$link['book']][$serieId] += 1;
+                    }
                 }
             }
         }
@@ -180,8 +184,10 @@ class GoodReadsCheckTest extends BaseTestCase
         $links = json_decode(file_get_contents($cacheFile), true);
         $cacheFile = $cacheDir . '/goodreads/authors.json';
         $authors = json_decode(file_get_contents($cacheFile), true);
-        $cacheFile = $cacheDir . '/goodreads/series.json';
-        $series = json_decode(file_get_contents($cacheFile), true);
+        foreach ($authors as $authorId => $matches) {
+            arsort($matches, SORT_NUMERIC);
+            $authors[$authorId] = $matches;
+        }
 
         $todo = [];
         foreach ($links as $id => $link) {
@@ -193,7 +199,7 @@ class GoodReadsCheckTest extends BaseTestCase
                 continue;
             }
             // check against existing links too
-            if (str_starts_with($link['author_link'], 'https://www.goodreads.com/author/list/')) {
+            if (str_starts_with($link['author_link'], GoodReadsMatch::AUTHOR_URL)) {
                 $todo[$link['author']] = 1;
                 continue;
             }
@@ -202,6 +208,7 @@ class GoodReadsCheckTest extends BaseTestCase
         $matches = [];
         $partial = [];
         $mismatch = [];
+        $update = '';
         // @todo clean up duplicate authors entries
         foreach ($todo as $authorId => $one) {
             $info = $db->getAuthors($authorId);
@@ -211,16 +218,21 @@ class GoodReadsCheckTest extends BaseTestCase
                     if (str_ends_with($matchId, $info[$key]['slug'])) {
                         $info[$key]['match'] = $matchId;
                         $matches[$authorId] = $matchId;
+                        $matchUrl = GoodReadsMatch::AUTHOR_URL . $matchId;
                         if (empty($info[$key]['link'])) {
-                            // @todo "UPDATE authors SET link='https://www.goodreads.com/author/list/{$matchId}' WHERE id={$authorId};\n";
+                            $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
                         } elseif (!str_ends_with($info[$key]['link'], '/' . $matchId)) {
-                            $checkId = str_replace('https://www.goodreads.com/author/list/', '', $info[$key]['link']);
-                            if (!in_array($checkId, $authors[$authorId])) {
+                            $checkId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $info[$key]['link']);
+                            if (!array_key_exists($checkId, $authors[$authorId])) {
                                 $mismatch[$info[$key]['link']] = $info[$key];
                                 $info[$key]['oops'] = $authors[$authorId];
-                                // @todo "UPDATE authors SET link='https://www.goodreads.com/author/list/{$matchId}' WHERE id={$authorId};\n";
+                                $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
                             } else {
-                                $info[$key]['options'] = $authors[$authorId];
+                                $firstId = array_key_first($authors[$authorId]);
+                                if ($checkId != $firstId) {
+                                    $info[$key]['options'] = $authors[$authorId];
+                                    $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
+                                }
                             }
                         }
                         break;
@@ -233,16 +245,21 @@ class GoodReadsCheckTest extends BaseTestCase
                     if (str_contains($matchId, $info[$key]['slug'])) {
                         $info[$key]['partial'] = $matchId;
                         $partial[$authorId] = $matchId;
+                        $matchUrl = GoodReadsMatch::AUTHOR_URL . $matchId;
                         if (empty($info[$key]['link'])) {
-                            // @todo "UPDATE authors SET link='https://www.goodreads.com/author/list/{$matchId}' WHERE id={$authorId};\n";
+                            $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
                         } elseif (!str_ends_with($info[$key]['link'], '/' . $matchId)) {
-                            $checkId = str_replace('https://www.goodreads.com/author/list/', '', $info[$key]['link']);
-                            if (!in_array($checkId, $authors[$authorId])) {
+                            $checkId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $info[$key]['link']);
+                            if (!array_key_exists($checkId, $authors[$authorId])) {
                                 $mismatch[$info[$key]['link']] = $info[$key];
                                 $info[$key]['oops'] = $authors[$authorId];
-                                // @todo "UPDATE authors SET link='https://www.goodreads.com/author/list/{$matchId}' WHERE id={$authorId};\n";
+                                $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
                             } else {
-                                $info[$key]['options'] = $authors[$authorId];
+                                $firstId = array_key_first($authors[$authorId]);
+                                if ($checkId != $firstId) {
+                                    $info[$key]['options'] = $authors[$authorId];
+                                    $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
+                                }
                             }
                         }
                         break;
@@ -265,6 +282,8 @@ class GoodReadsCheckTest extends BaseTestCase
         file_put_contents($cacheFile, json_encode($partial, JSON_PRETTY_PRINT));
         $cacheFile = $cacheDir . '/goodreads/authors_mismatch.json';
         file_put_contents($cacheFile, json_encode($mismatch, JSON_PRETTY_PRINT));
+        $cacheFile = $cacheDir . '/goodreads/authors_update.sql';
+        file_put_contents($cacheFile, $update);
         $this->assertTrue(count($matches) > 0);
     }
 
@@ -280,10 +299,12 @@ class GoodReadsCheckTest extends BaseTestCase
 
         $cacheFile = $cacheDir . '/goodreads/links.json';
         $links = json_decode(file_get_contents($cacheFile), true);
-        $cacheFile = $cacheDir . '/goodreads/authors.json';
-        $authors = json_decode(file_get_contents($cacheFile), true);
         $cacheFile = $cacheDir . '/goodreads/series.json';
         $series = json_decode(file_get_contents($cacheFile), true);
+        foreach ($series as $seriesId => $matches) {
+            arsort($matches, SORT_NUMERIC);
+            $series[$seriesId] = $matches;
+        }
 
         $todo = [];
         foreach ($links as $id => $link) {
@@ -295,7 +316,7 @@ class GoodReadsCheckTest extends BaseTestCase
                 continue;
             }
             // check against existing links too
-            if (str_starts_with($link['series_link'], 'https://www.goodreads.com/series/')) {
+            if (str_starts_with($link['series_link'], GoodReadsMatch::SERIES_URL)) {
                 $todo[$link['series']] = 1;
                 continue;
             }
@@ -304,6 +325,7 @@ class GoodReadsCheckTest extends BaseTestCase
         $matches = [];
         $partial = [];
         $mismatch = [];
+        $update = '';
         // @todo clean up duplicate series entries
         foreach ($todo as $seriesId => $one) {
             $info = $db->getSeries($seriesId);
@@ -313,16 +335,21 @@ class GoodReadsCheckTest extends BaseTestCase
                     if (str_ends_with($matchId, $info[$key]['slug'])) {
                         $info[$key]['match'] = $matchId;
                         $matches[$seriesId] = $matchId;
+                        $matchUrl = GoodReadsMatch::SERIES_URL . $matchId;
                         if (empty($info[$key]['link'])) {
-                            // @todo "UPDATE series SET link='https://www.goodreads.com/series/{$matchId}' WHERE id={$seriesId};\n";
+                            $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
                         } elseif (!str_ends_with($info[$key]['link'], '/' . $matchId)) {
-                            $checkId = str_replace('https://www.goodreads.com/series/', '', $info[$key]['link']);
-                            if (!in_array($checkId, $series[$seriesId])) {
+                            $checkId = str_replace(GoodReadsMatch::SERIES_URL, '', $info[$key]['link']);
+                            if (!array_key_exists($checkId, $series[$seriesId])) {
                                 $mismatch[$info[$key]['link']] = $info[$key];
                                 $info[$key]['oops'] = $series[$seriesId];
-                                // @todo "UPDATE series SET link='https://www.goodreads.com/series/{$matchId}' WHERE id={$seriesId};\n";
+                                $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
                             } else {
-                                $info[$key]['options'] = $series[$seriesId];
+                                $firstId = array_key_first($series[$seriesId]);
+                                if ($checkId != $firstId) {
+                                    $info[$key]['options'] = $series[$seriesId];
+                                    $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
+                                }
                             }
                         }
                         break;
@@ -335,16 +362,21 @@ class GoodReadsCheckTest extends BaseTestCase
                     if (str_contains($matchId, $info[$key]['slug'])) {
                         $info[$key]['partial'] = $matchId;
                         $partial[$seriesId] = $matchId;
+                        $matchUrl = GoodReadsMatch::SERIES_URL . $matchId;
                         if (empty($info[$key]['link'])) {
-                            // @todo "UPDATE series SET link='https://www.goodreads.com/series/{$matchId}' WHERE id={$seriesId};\n";
+                            $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
                         } elseif (!str_ends_with($info[$key]['link'], '/' . $matchId)) {
-                            $checkId = str_replace('https://www.goodreads.com/series/', '', $info[$key]['link']);
-                            if (!in_array($checkId, $series[$seriesId])) {
+                            $checkId = str_replace(GoodReadsMatch::SERIES_URL, '', $info[$key]['link']);
+                            if (!array_key_exists($checkId, $series[$seriesId])) {
                                 $mismatch[$info[$key]['link']] = $info[$key];
                                 $info[$key]['oops'] = $series[$seriesId];
-                                // @todo "UPDATE series SET link='https://www.goodreads.com/series/{$matchId}' WHERE id={$seriesId};\n";
+                                $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
                             } else {
-                                $info[$key]['options'] = $series[$seriesId];
+                                $firstId = array_key_first($series[$seriesId]);
+                                if ($checkId != $firstId) {
+                                    $info[$key]['options'] = $series[$seriesId];
+                                    $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
+                                }
                             }
                         }
                         break;
@@ -367,6 +399,57 @@ class GoodReadsCheckTest extends BaseTestCase
         file_put_contents($cacheFile, json_encode($partial, JSON_PRETTY_PRINT));
         $cacheFile = $cacheDir . '/goodreads/series_mismatch.json';
         file_put_contents($cacheFile, json_encode($mismatch, JSON_PRETTY_PRINT));
+        $cacheFile = $cacheDir . '/goodreads/series_update.sql';
+        file_put_contents($cacheFile, $update);
         $this->assertTrue(count($matches) > 0);
+    }
+
+    #[Depends('testCheckBookLinks')]
+    public function testCheckMissingMatch(): void
+    {
+        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbFile = $dbPath . '/metadata.db';
+        $db = new CalibreDbLoader($dbFile);
+
+        $cacheDir = dirname(__DIR__) . '/cache';
+        $cache = new GoodReadsCache($cacheDir);
+
+        $cacheFile = $cacheDir . '/goodreads/links.json';
+        $links = json_decode(file_get_contents($cacheFile), true);
+        $cacheFile = $cacheDir . '/goodreads/missing.json';
+        $missing = json_decode(file_get_contents($cacheFile), true);
+
+        $series = [];
+        foreach ($links as $id => $link) {
+            if (empty($link['series']) || empty($link['series_link'])) {
+                continue;
+            }
+            if (str_starts_with($link['series_link'], GoodReadsMatch::SERIES_URL)) {
+                $matchId = str_replace(GoodReadsMatch::SERIES_URL, '', $link['series_link']);
+                $series[$matchId] = $link['series'];
+            }
+        }
+
+        $todo = [];
+        $replace = '';
+        foreach ($missing as $bookId => $missed) {
+            $found = false;
+            foreach ($missed as $matchId => $count) {
+                if (array_key_exists($matchId, $series)) {
+                    $seriesId = $series[$matchId];
+                    $replace .= "REPLACE INTO books_series_link(book, series) VALUES({$bookId}, {$seriesId});\n";
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $todo[$bookId] = $missed;
+            }
+        }
+        $cacheFile = $cacheDir . '/goodreads/books_series_todo.json';
+        file_put_contents($cacheFile, json_encode($todo, JSON_PRETTY_PRINT));
+        $cacheFile = $cacheDir . '/goodreads/books_series_replace.sql';
+        file_put_contents($cacheFile, $replace);
+        $this->assertTrue(count($missing) > 0);
     }
 }
