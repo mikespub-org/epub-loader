@@ -92,8 +92,8 @@ class GoodReadsCheckTest extends BaseTestCase
                 } elseif (!empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
                     $missing[$link['book']] ??= [];
                     foreach (array_filter($bookInfo->mSerieIds) as $serieId) {
-                        $missing[$link['book']][$serieId] ??= 0;
-                        $missing[$link['book']][$serieId] += 1;
+                        // @todo only valid for first series here!
+                        $missing[$link['book']][$serieId] ??= $bookInfo->mSerieIndex;
                     }
                 }
             }
@@ -137,21 +137,19 @@ class GoodReadsCheckTest extends BaseTestCase
             }
         }
         foreach ($missing as $bookId => $entries) {
-            foreach ($entries as $authorId => $values) {
-                foreach ($values as $value) {
-                    if (!empty($seen[$value])) {
-                        continue;
-                    }
-                    $seen[$value] = 1;
-                    $cacheFile = $cache->getSeries($value);
-                    if (!$cache->hasCache($cacheFile)) {
-                        continue;
-                    }
-                    $data = $cache->loadCache($cacheFile);
-                    if (!empty($data)) {
-                        $books = $cache::parseSeries($data);
-                        // @todo check other book links
-                    }
+            foreach ($entries as $matchId => $value) {
+                if (!empty($seen[$matchId])) {
+                    continue;
+                }
+                $seen[$matchId] = 1;
+                $cacheFile = $cache->getSeries($matchId);
+                if (!$cache->hasCache($cacheFile)) {
+                    continue;
+                }
+                $data = $cache->loadCache($cacheFile);
+                if (!empty($data)) {
+                    $books = $cache::parseSeries($data);
+                    // @todo check other book links
                 }
             }
         }
@@ -210,66 +208,115 @@ class GoodReadsCheckTest extends BaseTestCase
         $mismatch = [];
         $update = '';
         // @todo clean up duplicate authors entries
+        $authorList = $db->getAuthors(null, 'books');
         foreach ($todo as $authorId => $one) {
-            $info = $db->getAuthors($authorId);
-            foreach ($info as $key => $data) {
-                $info[$key]['slug'] = preg_replace('/__+/', '_', str_replace([' ', '.'], ['_', '_'], $data['name']));
-                foreach ($authors[$authorId] as $matchId => $count) {
-                    if (str_ends_with($matchId, $info[$key]['slug'])) {
-                        $info[$key]['match'] = $matchId;
-                        $matches[$authorId] = $matchId;
-                        $matchUrl = GoodReadsMatch::AUTHOR_URL . $matchId;
-                        if (empty($info[$key]['link'])) {
+            $authorInfo = $authorList[$authorId];
+            $authorInfo['slug'] = preg_replace('/__+/', '_', str_replace([' ', '.', "'"], ['_', '_', '_'], $authorInfo['name']));
+            foreach ($authors[$authorId] as $matchId => $count) {
+                if (str_ends_with($matchId, $authorInfo['slug'])) {
+                    $authorInfo['match'] = $matchId;
+                    $matches[$authorId] = $matchId;
+                    $matchUrl = GoodReadsMatch::AUTHOR_URL . $matchId;
+                    if (empty($authorInfo['link'])) {
+                        $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
+                    } elseif (!str_ends_with($authorInfo['link'], '/' . $matchId)) {
+                        $checkId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $authorInfo['link']);
+                        if (!array_key_exists($checkId, $authors[$authorId])) {
+                            $mismatch[$authorInfo['link']] = $authorInfo;
+                            $authorInfo['oops'] = $authors[$authorId];
                             $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
-                        } elseif (!str_ends_with($info[$key]['link'], '/' . $matchId)) {
-                            $checkId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $info[$key]['link']);
-                            if (!array_key_exists($checkId, $authors[$authorId])) {
-                                $mismatch[$info[$key]['link']] = $info[$key];
-                                $info[$key]['oops'] = $authors[$authorId];
+                        } else {
+                            $firstId = array_key_first($authors[$authorId]);
+                            if ($checkId != $firstId) {
+                                $authorInfo['options'] = $authors[$authorId];
                                 $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
-                            } else {
-                                $firstId = array_key_first($authors[$authorId]);
-                                if ($checkId != $firstId) {
-                                    $info[$key]['options'] = $authors[$authorId];
-                                    $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
-                                }
                             }
                         }
-                        break;
                     }
-                }
-                if (!empty($matches[$authorId]) || strlen($info[$key]['slug']) < 4) {
                     break;
                 }
-                foreach ($authors[$authorId] as $matchId => $count) {
-                    if (str_contains($matchId, $info[$key]['slug'])) {
-                        $info[$key]['partial'] = $matchId;
-                        $partial[$authorId] = $matchId;
-                        $matchUrl = GoodReadsMatch::AUTHOR_URL . $matchId;
-                        if (empty($info[$key]['link'])) {
+            }
+            if (!empty($matches[$authorId]) || strlen($authorInfo['slug']) < 4) {
+                $check[$authorId] = [
+                    'info' => $authorInfo,
+                    'cache' => $authors[$authorId],
+                    'match' => $matches[$authorId] ?? $partial[$authorId] ?? null,
+                ];
+                continue;
+            }
+            foreach ($authors[$authorId] as $matchId => $count) {
+                if (str_contains($matchId, $authorInfo['slug'])) {
+                    $authorInfo['partial'] = $matchId;
+                    $partial[$authorId] = $matchId;
+                    $matchUrl = GoodReadsMatch::AUTHOR_URL . $matchId;
+                    if (empty($authorInfo['link'])) {
+                        $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
+                    } elseif (!str_ends_with($authorInfo['link'], '/' . $matchId)) {
+                        $checkId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $authorInfo['link']);
+                        if (!array_key_exists($checkId, $authors[$authorId])) {
+                            $mismatch[$authorInfo['link']] = $authorInfo;
+                            $authorInfo['oops'] = $authors[$authorId];
                             $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
-                        } elseif (!str_ends_with($info[$key]['link'], '/' . $matchId)) {
-                            $checkId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $info[$key]['link']);
-                            if (!array_key_exists($checkId, $authors[$authorId])) {
-                                $mismatch[$info[$key]['link']] = $info[$key];
-                                $info[$key]['oops'] = $authors[$authorId];
+                        } else {
+                            $firstId = array_key_first($authors[$authorId]);
+                            if ($checkId != $firstId) {
+                                $authorInfo['options'] = $authors[$authorId];
                                 $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
-                            } else {
-                                $firstId = array_key_first($authors[$authorId]);
-                                if ($checkId != $firstId) {
-                                    $info[$key]['options'] = $authors[$authorId];
-                                    $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
-                                }
                             }
                         }
-                        break;
                     }
+                    break;
                 }
             }
             $check[$authorId] = [
-                'info' => $info,
+                'info' => $authorInfo,
                 'cache' => $authors[$authorId],
+                'match' => $matches[$authorId] ?? $partial[$authorId] ?? null,
             ];
+        }
+        // @todo grab other authors here too
+        $goodreads = new GoodReadsMatch($cacheDir);
+        $bookCount = $db->getBookCountByAuthor();
+        foreach ($authorList as $authorId => $author) {
+            if (!empty($check[$authorId]) && !empty($check[$authorId]['match'])) {
+                continue;
+            }
+            if (!empty($author['link'])) {
+                continue;
+            }
+            if (empty($bookCount[$authorId])) {
+                continue;
+            }
+            $author['count'] = $bookCount[$authorId];
+            $matched = $goodreads->findAuthors($author['name']);
+            // @todo Find author with highest books count!?
+            uasort($matched, function ($a, $b) {
+                return count($b['books']) <=> count($a['books']);
+            });
+            $slug = preg_replace('/__+/', '_', str_replace([' ', '.', "'"], ['_', '_', '_'], $author['name']));
+            $matchIds = null;
+            foreach ($matched as $id => $value) {
+                if (str_ends_with($value['id'], '.' . $slug)) {
+                    $matchIds ??= [];
+                    $matchIds[] = $value['id'];
+                }
+            }
+            if (!empty($matchIds)) {
+                if (count($matchIds) < 2) {
+                    $matchUrl = GoodReadsMatch::AUTHOR_URL . $matchIds[0];
+                    $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
+                } else {
+                    // @todo check matching books
+                    $matchUrl = GoodReadsMatch::AUTHOR_URL . $matchIds[0];
+                    $update .= "# Options: " . implode(' ', $matchIds) . "\n";
+                    $update .= "# UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
+                }
+            }
+            foreach ($matched as $id => $value) {
+                $matched[$id]['books'] = count($value['books']);
+            }
+            $check[$authorId] ??= [];
+            $check[$authorId] = array_merge($check[$authorId], ['info' => $author, 'matchIds' => $matchIds, 'matched' => $matched]);
         }
         $check['matches'] = $matches;
         $check['partial'] = $partial;
@@ -434,10 +481,18 @@ class GoodReadsCheckTest extends BaseTestCase
         $replace = '';
         foreach ($missing as $bookId => $missed) {
             $found = false;
-            foreach ($missed as $matchId => $count) {
+            foreach ($missed as $matchId => $index) {
                 if (array_key_exists($matchId, $series)) {
                     $seriesId = $series[$matchId];
                     $replace .= "REPLACE INTO books_series_link(book, series) VALUES({$bookId}, {$seriesId});\n";
+                    // format index as float
+                    $replace .= "# Series Index: {$index}\n";
+                    $index = str_replace(['-', '·'], ['.', '.'], $index);
+                    if (str_contains($index, ',')) {
+                        $index = explode(',', $index)[0];
+                    }
+                    $index = (float) $index;
+                    $replace .= "UPDATE books SET series_index={$index} WHERE id={$bookId};\n";
                     $found = true;
                     break;
                 }
