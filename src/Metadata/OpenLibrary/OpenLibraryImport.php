@@ -10,6 +10,7 @@
 namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\OpenLibrary\Entities\WorkEntity;
 use Exception;
 
 class OpenLibraryImport

@@ -3,7 +3,7 @@
  * Based on https://jacobdekeizer.github.io/json-to-php-generator/
  */
 
-namespace Marsender\EPubLoader\Metadata\OpenLibrary;
+namespace Marsender\EPubLoader\Metadata\OpenLibrary\Entities;
 
 class AuthorEntity
 {

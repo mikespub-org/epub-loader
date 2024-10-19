@@ -9,6 +9,10 @@
 namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
+use Marsender\EPubLoader\Metadata\OpenLibrary\Entities\AuthorEntity;
+use Marsender\EPubLoader\Metadata\OpenLibrary\Entities\WorkEntity;
+use Marsender\EPubLoader\Metadata\OpenLibrary\Search\AuthorSearchResult;
+use Marsender\EPubLoader\Metadata\OpenLibrary\Search\WorkSearchResult;
 use Exception;
 
 class OpenLibraryCache extends BaseCache

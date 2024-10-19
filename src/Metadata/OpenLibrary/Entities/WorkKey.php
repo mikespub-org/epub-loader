@@ -1,6 +1,6 @@
 <?php
 
-namespace Marsender\EPubLoader\Metadata\OpenLibrary;
+namespace Marsender\EPubLoader\Metadata\OpenLibrary\Entities;
 
 class WorkKey
 {
