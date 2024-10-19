@@ -68,6 +68,8 @@ class BookInfos
     /** @var array<mixed>|null */
     public $mIdentifiers = null;
 
+    public string $mSource = '';
+
     /**
      * Format an date from a date
      *

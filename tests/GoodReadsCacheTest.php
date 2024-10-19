@@ -32,6 +32,9 @@ class GoodReadsCacheTest extends BaseTestCase
             $authorId = str_replace('.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $result = $cache::parseSearch($matched);
             $authorMap = $result->getAuthorMap($authorId);
             if (empty($authorMap)) {
@@ -77,6 +80,9 @@ class GoodReadsCacheTest extends BaseTestCase
             $query = str_replace('.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $authors = $cache::parseSearch($matched);
         }
 
@@ -104,6 +110,9 @@ class GoodReadsCacheTest extends BaseTestCase
             $seriesId = str_replace('.json', '', $seriesId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $series = $cache::parseSeries($matched);
             $series->setId($seriesId);
             // check for missing books and authors
@@ -158,6 +167,9 @@ class GoodReadsCacheTest extends BaseTestCase
             $bookId = str_replace('.json', '', $bookId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $book = $cache::parseBook($matched);
         }
 

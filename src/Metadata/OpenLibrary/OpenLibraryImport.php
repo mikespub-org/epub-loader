@@ -34,6 +34,7 @@ class OpenLibraryImport
         $match = new OpenLibraryMatch($cacheDir);
 
         $bookInfos = new BookInfos();
+        $bookInfos->mSource = 'openlibrary';
         $bookInfos->mBasePath = $inBasePath;
         // @todo check details format and/or links for epub, pdf etc.
         $bookInfos->mFormat = 'epub';

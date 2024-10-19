@@ -53,7 +53,7 @@ class OpenLibraryMatch extends BaseMatch
         $results = file_get_contents($url, false, $this->context);
         $matched = json_decode($results, true);
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -106,7 +106,7 @@ class OpenLibraryMatch extends BaseMatch
         $results = file_get_contents($url, false, $this->context);
         $matched = json_decode($results, true);
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -136,7 +136,7 @@ class OpenLibraryMatch extends BaseMatch
             $matched = json_decode($results, true);
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -154,11 +154,11 @@ class OpenLibraryMatch extends BaseMatch
             return $this->cache->loadCache($cacheFile);
         }
         // https://openlibrary.org/dev/docs/api/authors
-        $url = static::AUTHOR_URL . $authorId . '.json';
+        $url = self::AUTHOR_URL . $authorId . '.json';
         $result = file_get_contents($url, false, $this->context);
         $entity = json_decode($result, true);
         $this->cache->saveCache($cacheFile, $entity);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $entity;
     }
 
@@ -183,7 +183,7 @@ class OpenLibraryMatch extends BaseMatch
         $result = file_get_contents($url, false, $this->context);
         $entity = json_decode($result, true);
         $this->cache->saveCache($cacheFile, $entity);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $entity;
     }
 
@@ -195,9 +195,9 @@ class OpenLibraryMatch extends BaseMatch
     public static function link($entityId)
     {
         if (str_ends_with($entityId, 'A')) {
-            return static::AUTHOR_URL . $entityId;
+            return self::AUTHOR_URL . $entityId;
         }
-        return static::ENTITY_URL . $entityId;
+        return self::ENTITY_URL . $entityId;
     }
 
     /**
@@ -208,9 +208,9 @@ class OpenLibraryMatch extends BaseMatch
     public static function entity($link)
     {
         if (str_ends_with($link, 'A')) {
-            return str_replace(static::AUTHOR_URL, '', $link);
+            return str_replace(self::AUTHOR_URL, '', $link);
         }
-        return str_replace(static::ENTITY_URL, '', $link);
+        return str_replace(self::ENTITY_URL, '', $link);
     }
 
     /**
@@ -220,7 +220,7 @@ class OpenLibraryMatch extends BaseMatch
      */
     public static function isValidLink($link)
     {
-        if (!empty($link) && (str_starts_with($link, (string) static::ENTITY_URL) || str_starts_with($link, (string) static::AUTHOR_URL))) {
+        if (!empty($link) && (str_starts_with($link, (string) self::ENTITY_URL) || str_starts_with($link, (string) self::AUTHOR_URL))) {
             return true;
         }
         return false;

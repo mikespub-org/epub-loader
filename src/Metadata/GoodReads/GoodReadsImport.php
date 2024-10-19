@@ -46,6 +46,7 @@ class GoodReadsImport
         $work = $workMap[$workRef];
 
         $bookInfos = new BookInfos();
+        $bookInfos->mSource = 'goodreads';
         $bookInfos->mBasePath = $inBasePath;
         // @todo check details format and/or links for epub, pdf etc.
         $bookInfos->mFormat = 'epub';

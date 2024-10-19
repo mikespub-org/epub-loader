@@ -44,6 +44,9 @@ class GoogleBooksCacheTest extends BaseTestCase
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $series = $cache::parseSearch($matched);
         }
 
@@ -62,6 +65,9 @@ class GoogleBooksCacheTest extends BaseTestCase
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $titles = $cache::parseSearch($matched);
         }
 
@@ -80,6 +86,9 @@ class GoogleBooksCacheTest extends BaseTestCase
             $volumeId = str_replace('.en.json', '', $volumeId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $volume = $cache::parseVolume($matched);
         }
 

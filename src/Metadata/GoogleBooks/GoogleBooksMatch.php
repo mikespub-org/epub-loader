@@ -45,7 +45,7 @@ class GoogleBooksMatch extends BaseMatch
             '{limit}' => $limit,
             '{full}' => $full,
         ];
-        $url = str_replace(array_keys($replace), array_values($replace), static::QUERY_URL);
+        $url = str_replace(array_keys($replace), array_values($replace), self::QUERY_URL);
         $results = file_get_contents($url, false, $this->context);
         return $results;
     }
@@ -71,7 +71,7 @@ class GoogleBooksMatch extends BaseMatch
         $results = $this->getResults($query, $lang, $limit);
         $matched = json_decode($results, true);
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -112,7 +112,7 @@ class GoogleBooksMatch extends BaseMatch
             $matched = json_decode($results, true);
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -153,7 +153,7 @@ class GoogleBooksMatch extends BaseMatch
             $matched = json_decode($results, true);
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -174,7 +174,7 @@ class GoogleBooksMatch extends BaseMatch
         $result = file_get_contents($url, false, $this->context);
         $entity = json_decode($result, true);
         $this->cache->saveCache($cacheFile, $entity);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $entity;
     }
 

@@ -87,6 +87,35 @@ class GoodReadsCache extends BaseCache
     }
 
     /**
+     * Summary of getAuthorBooks
+     * @param string $authorId
+     * @return array<mixed>|null
+     */
+    public function getAuthorBooks($authorId)
+    {
+        $cacheFile = $this->getAuthor($authorId);
+        if (!$this->hasCache($cacheFile)) {
+            return null;
+        }
+        $data = $this->loadCache($cacheFile);
+        if (empty($data)) {
+            return null;
+        }
+        $result = self::parseSearch($data);
+        $authorMap = $result->getAuthorMap($authorId);
+        if (empty($authorMap)) {
+            return null;
+        }
+        $books = [];
+        $bookList = $authorMap->getBooks() ?? [];
+        foreach ($bookList as $book) {
+            $bookId = $book->getId() ?? count($books);
+            $books[$bookId] = (array) $book;
+        }
+        return $books;
+    }
+
+    /**
      * Summary of getSeries
      * Path: '/goodreads/series/' . $seriesId . '.json'
      * @param string $seriesId

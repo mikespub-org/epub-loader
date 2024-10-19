@@ -31,6 +31,7 @@ class GoogleBooksImport
         }
 
         $bookInfos = new BookInfos();
+        $bookInfos->mSource = 'google';
         $bookInfos->mBasePath = $inBasePath;
         // @todo check accessInfo for epub, pdf etc.
         $bookInfos->mFormat = 'epub';

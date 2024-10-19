@@ -17,6 +17,7 @@ use Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksImport;
 use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryCache;
 use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryImport;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataCache;
+use Marsender\EPubLoader\Metadata\WikiData\WikiDataImport;
 use Exception;
 
 class JsonImport extends SourceImport
@@ -106,9 +107,24 @@ class JsonImport extends SourceImport
                 $errors[$id] = $e->getMessage();
                 $nbError++;
             }
+        } elseif (!empty($data["id"]) && !empty($data["properties"]) && array_key_exists("wiki_url", $data)) {
+            try {
+                // Parse the JSON data
+                $entity = WikiDataCache::parseEntity($data);
+                if (!empty($entity) && $entity['type'] == 'book') {
+                    // Load the book infos
+                    $bookInfos = WikiDataImport::load($inBasePath, $entity);
+                    // Add the book
+                    $this->addBook($bookInfos, 0);
+                    $nbOk++;
+                }
+            } catch (Exception $e) {
+                $id = basename($fileName);
+                $errors[$id] = $e->getMessage();
+                $nbError++;
+            }
         } else {
             // @todo add more formats to support
-            //$entity = WikiDataCache::parseEntity($data);
         }
         $message = sprintf('Import ebooks from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError);
         return [$message, $errors];

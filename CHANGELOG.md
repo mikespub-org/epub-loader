@@ -4,6 +4,8 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Import wikidata books + author/series links
+  * Split tests by class + expand goodreads check
   * Get books by series + add series info and books
   * Check book links with author and series for GoodReads
   * Restructure import/export classes with source & target

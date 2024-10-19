@@ -43,6 +43,7 @@ class GoodReadsCheck extends BaseCheck
      */
     public function checkBookLinks($type = 'goodreads')
     {
+        $this->errors = [];
         $links = $this->db->checkBookLinks($type);
 
         $cacheFile = $this->cacheDir . $this->prefix . '/links.json';
@@ -236,6 +237,7 @@ class GoodReadsCheck extends BaseCheck
             $bookResult = $this->cache::parseBook($data);
             $bookInfo = GoodReadsImport::load($this->dbPath, $bookResult);
         } catch (Exception $e) {
+            $this->addError($bookId, $e->getMessage());
             return null;
         }
         return $bookInfo;
@@ -248,6 +250,7 @@ class GoodReadsCheck extends BaseCheck
      */
     public function checkAuthorMatch()
     {
+        $this->errors = [];
         $cacheFile = $this->cacheDir . $this->prefix . '/links.json';
         $links = json_decode(file_get_contents($cacheFile), true);
         $cacheFile = $this->cacheDir . $this->prefix . '/authors.json';
@@ -374,7 +377,7 @@ class GoodReadsCheck extends BaseCheck
                 try {
                     $this->match->getAuthor($matchId);
                 } catch (Exception $e) {
-                    echo $e->getMessage() . "\n";
+                    $this->addError($matchId, $e->getMessage());
                 }
                 continue;
             }
@@ -384,7 +387,7 @@ class GoodReadsCheck extends BaseCheck
                     try {
                         $this->match->getAuthor($matchId);
                     } catch (Exception $e) {
-                        echo $e->getMessage() . "\n";
+                        $this->addError($matchId, $e->getMessage());
                     }
                 }
                 continue;
@@ -406,6 +409,7 @@ class GoodReadsCheck extends BaseCheck
                     $matchIds[] = $value['id'];
                 }
             }
+            // less than 2 matches is easy
             if (empty($matchIds) || count($matchIds) < 2) {
                 if (!empty($matchIds)) {
                     $matchUrl = $this->match::AUTHOR_URL . $matchIds[0];
@@ -429,20 +433,48 @@ class GoodReadsCheck extends BaseCheck
                 if (str_contains($title, '(')) {
                     $title = trim(explode('(', $title)[0]);
                 }
+                $books[$bookId]['title'] = $title;
                 foreach ($matchIds as $matchId) {
                     foreach ($matched[$matchId]['books'] as $item) {
                         if ($item['title'] == $title) {
                             $foundId = $matchId;
-                            break;
+                            break 3;
                         }
                         if (str_contains($item['title'], $title)) {
                             $foundId = $matchId;
-                            break;
+                            break 3;
                         }
                     }
                 }
             }
             $update .= "# Options: " . implode(' ', $matchIds) . "\n";
+            if ($foundId) {
+                $matchUrl = $this->match::AUTHOR_URL . $foundId;
+                $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
+                foreach ($matched as $id => $value) {
+                    $matched[$id]['books'] = count($value['books']);
+                }
+                $check[$authorId] ??= [];
+                $check[$authorId] = array_merge($check[$authorId], ['info' => $author, 'matchIds' => $matchIds, 'matched' => $matched]);
+                break;
+            }
+            // @todo get books by author from cache!?
+            foreach ($books as $bookId => $book) {
+                $title = $book['title'];
+                foreach ($matchIds as $matchId) {
+                    $bookList = $this->cache->getAuthorBooks($matchId) ?? [];
+                    foreach ($bookList as $item) {
+                        if ($item['title'] == $title) {
+                            $foundId = $matchId;
+                            break 3;
+                        }
+                        if (str_contains($item['title'], $title)) {
+                            $foundId = $matchId;
+                            break 3;
+                        }
+                    }
+                }
+            }
             if ($foundId) {
                 $matchUrl = $this->match::AUTHOR_URL . $foundId;
                 $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
@@ -483,6 +515,7 @@ class GoodReadsCheck extends BaseCheck
      */
     public function checkSeriesMatch()
     {
+        $this->errors = [];
         $cacheFile = $this->cacheDir . $this->prefix . '/links.json';
         $links = json_decode(file_get_contents($cacheFile), true);
         $cacheFile = $this->cacheDir . $this->prefix . '/series.json';
@@ -605,7 +638,7 @@ class GoodReadsCheck extends BaseCheck
                 try {
                     $this->match->getSeries($matchId);
                 } catch (Exception $e) {
-                    echo $e->getMessage() . "\n";
+                    $this->addError($matchId, $e->getMessage());
                 }
                 continue;
             }
@@ -615,7 +648,7 @@ class GoodReadsCheck extends BaseCheck
                     try {
                         $this->match->getSeries($matchId);
                     } catch (Exception $e) {
-                        echo $e->getMessage() . "\n";
+                        $this->addError($matchId, $e->getMessage());
                     }
                 }
                 continue;
@@ -649,6 +682,7 @@ class GoodReadsCheck extends BaseCheck
      */
     public function checkBookSeriesMatch()
     {
+        $this->errors = [];
         $cacheFile = $this->cacheDir . $this->prefix . '/missing.json';
         $missing = json_decode(file_get_contents($cacheFile), true);
 
@@ -727,7 +761,7 @@ class GoodReadsCheck extends BaseCheck
             try {
                 $data = $this->match->getSeries($matchId);
             } catch (Exception $e) {
-                echo $e->getMessage() . "\n";
+                $this->addError($matchId, $e->getMessage());
             }
             if (empty($data)) {
                 continue;

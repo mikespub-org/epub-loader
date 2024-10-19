@@ -10,6 +10,9 @@
 namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
+use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryMatch;
+use Marsender\EPubLoader\Metadata\WikiData\WikiDataMatch;
 use PDO;
 use Exception;
 
@@ -247,7 +250,16 @@ class ImportCalibre extends ImportTarget
         if (empty($inBookInfo->mSerie)) {
             return;
         }
-        $idSerie = $this->addSeries($inBookInfo->mSerie);
+        $link = '';
+        if (!empty($inBookInfo->mSerieIds) && !empty($inBookInfo->mSerieIds[0]) && $inBookInfo->mSerieIds[0] != $inBookInfo->mSerie) {
+            $link = match ($inBookInfo->mSource) {
+                'goodreads' => GoodReadsMatch::SERIES_URL . $inBookInfo->mSerieIds[0],
+                'wikidata' => WikiDataMatch::link($inBookInfo->mSerieIds[0]),
+                // @todo other sources?
+                default => $inBookInfo->mSerieIds[0],
+            };
+        }
+        $idSerie = $this->addSeries($inBookInfo->mSerie, $link);
 
         // Add the book serie link
         $sql = 'replace into books_series_link(book, series) values(:idBook, :idSerie)';
@@ -260,9 +272,10 @@ class ImportCalibre extends ImportTarget
     /**
      * Summary of addSeries
      * @param string $inSerie series name
+     * @param string|null $inLink series link (if available)
      * @return int
      */
-    public function addSeries($inSerie)
+    public function addSeries($inSerie, $inLink = null)
     {
         // Get the serie id
         $sql = 'select id from series where name=:serie';
@@ -275,11 +288,13 @@ class ImportCalibre extends ImportTarget
             return $idSerie;
         }
         // Add a new serie
-        $sql = 'insert into series(name, sort) values(:serie, :sort)';
+        $sql = 'insert into series(name, sort, link) values(:serie, :sort, :link)';
         $stmt = $this->mDb->prepare($sql);
         $stmt->bindParam(':serie', $inSerie);
         $sortString = BookInfos::getSortString($inSerie);
         $stmt->bindParam(':sort', $sortString);
+        $link = $inLink ?? '';
+        $stmt->bindParam(':link', $link);
         $stmt->execute();
         // Get the serie id
         $sql = 'select id from series where name=:serie';
@@ -314,8 +329,21 @@ class ImportCalibre extends ImportTarget
         if (empty($inBookInfo->mAuthors)) {
             return;
         }
+        $inBookInfo->mAuthorIds ??= [];
+        $idx = 0;
         foreach ($inBookInfo->mAuthors as $authorSort => $author) {
-            $idAuthor = $this->addAuthor($author, $authorSort);
+            $link = '';
+            if (count($inBookInfo->mAuthorIds) > $idx && !empty($inBookInfo->mAuthorIds[$idx]) && $inBookInfo->mAuthorIds[$idx] != $author) {
+                $link = match ($inBookInfo->mSource) {
+                    'goodreads' => GoodReadsMatch::AUTHOR_URL . $inBookInfo->mAuthorIds[$idx],
+                    'openlibrary' => OpenLibraryMatch::AUTHOR_URL . $inBookInfo->mAuthorIds[$idx],
+                    'wikidata' => WikiDataMatch::link($inBookInfo->mAuthorIds[$idx]),
+                    // @todo other sources?
+                    default => $inBookInfo->mAuthorIds[$idx],
+                };
+            }
+            $idAuthor = $this->addAuthor($author, $authorSort, $link);
+            $idx++;
 
             // Add the book author link
             $sql = 'replace into books_authors_link(book, author) values(:idBook, :idAuthor)';
@@ -330,9 +358,10 @@ class ImportCalibre extends ImportTarget
      * Summary of addAuthor
      * @param string $author
      * @param string $authorSort
+     * @param string|null $authorLink
      * @return int
      */
-    public function addAuthor($author, $authorSort)
+    public function addAuthor($author, $authorSort, $authorLink = null)
     {
         // Get the author id
         $sql = 'select id from authors where name=:author';
@@ -345,11 +374,13 @@ class ImportCalibre extends ImportTarget
             return $idAuthor;
         }
         // Add a new author
-        $sql = 'insert into authors(name, sort) values(:author, :sort)';
+        $sql = 'insert into authors(name, sort, link) values(:author, :sort, :link)';
         $stmt = $this->mDb->prepare($sql);
         $stmt->bindParam(':author', $author);
         $sortString = BookInfos::getSortString($authorSort);
         $stmt->bindParam(':sort', $sortString);
+        $link = $authorLink ?? '';
+        $stmt->bindParam(':link', $link);
         $stmt->execute();
         // Get the author id
         $sql = 'select id from authors where name=:author';

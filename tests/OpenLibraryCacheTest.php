@@ -24,6 +24,9 @@ class OpenLibraryCacheTest extends BaseTestCase
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $authors = $cache::parseAuthorSearch($matched);
         }
 
@@ -42,6 +45,9 @@ class OpenLibraryCacheTest extends BaseTestCase
             $authorId = str_replace('.en.100.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $works = $cache::parseWorkSearch($matched);
         }
 
@@ -60,6 +66,9 @@ class OpenLibraryCacheTest extends BaseTestCase
             $query = str_replace('.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $works = $cache::parseWorkSearch($matched);
         }
 
@@ -81,6 +90,9 @@ class OpenLibraryCacheTest extends BaseTestCase
             $authorId = str_replace('.en.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             //$capture->analyze($matched);
             $author = $cache::parseAuthorEntity($matched);
             //$capture->analyze($author);
@@ -105,6 +117,9 @@ class OpenLibraryCacheTest extends BaseTestCase
             $workId = str_replace('.en.json', '', $workId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             //$capture->analyze($matched);
             $work = $cache::parseWorkEntity($matched);
             //$capture->analyze($work);

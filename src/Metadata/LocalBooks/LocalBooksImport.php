@@ -49,6 +49,7 @@ class LocalBooksImport
         // Load the book infos
         $bookInfos = new BookInfos();
 
+        $bookInfos->mSource = 'local';
         $bookInfos->mBasePath = $inBasePath;
         $bookInfos->mFormat = 'epub';
         $bookInfos->mPath = pathinfo($inFileName, PATHINFO_DIRNAME);

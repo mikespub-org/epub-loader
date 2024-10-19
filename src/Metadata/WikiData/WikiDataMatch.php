@@ -67,7 +67,7 @@ class WikiDataMatch extends BaseMatch
             $matched[$id] = (array) $result;
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -112,10 +112,10 @@ class WikiDataMatch extends BaseMatch
             return $this->cache->loadCache($cacheFile);
         }
         // Find literary works from author
-        $propId = static::AUTHOR_PROPERTY;
+        $propId = self::AUTHOR_PROPERTY;
         /**
         $propId = 'P31/wdt:P279* wd:Q7725634.
-        ?item wdt:' . static::AUTHOR_PROPERTY;
+        ?item wdt:' . self::AUTHOR_PROPERTY;
     $query = '
             SELECT ?item WHERE {
                 ?item wdt:' . $property . ' ' . $subject . '.
@@ -128,7 +128,7 @@ class WikiDataMatch extends BaseMatch
             $matched[$id] = (array) $result;
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -156,7 +156,7 @@ class WikiDataMatch extends BaseMatch
             $matched[$id] = (array) $result;
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -184,7 +184,7 @@ class WikiDataMatch extends BaseMatch
             $matched[$id] = (array) $result;
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -229,9 +229,9 @@ class WikiDataMatch extends BaseMatch
             return $this->cache->loadCache($cacheFile);
         }
         // Find series of creative works from author
-        //$propId = static::AUTHOR_PROPERTY;
+        //$propId = self::AUTHOR_PROPERTY;
         $propId = 'P31/wdt:P279* wd:Q7725310.
-        ?item wdt:' . static::AUTHOR_PROPERTY;
+        ?item wdt:' . self::AUTHOR_PROPERTY;
         /**
     $query = '
             SELECT ?item WHERE {
@@ -245,7 +245,7 @@ class WikiDataMatch extends BaseMatch
             $matched[$id] = (array) $result;
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -273,7 +273,7 @@ class WikiDataMatch extends BaseMatch
             $matched[$id] = (array) $result;
         }
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $matched;
     }
 
@@ -294,7 +294,7 @@ class WikiDataMatch extends BaseMatch
         $entity = $result->toArray();
         $entity = json_decode(json_encode($entity), true);
         $this->cache->saveCache($cacheFile, $entity);
-        usleep(static::SLEEP_TIME);
+        usleep(parent::SLEEP_TIME);
         return $entity;
     }
 }

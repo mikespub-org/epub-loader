@@ -27,6 +27,8 @@ class BaseCheck
     protected $db;
     /** @var string */
     protected $prefix;
+    /** @var array<mixed> */
+    protected $errors = [];
 
     /**
      * Summary of __construct
@@ -53,5 +55,25 @@ class BaseCheck
         $this->match = new BaseMatch($cacheDir);
         $this->db = new CalibreDbLoader($dbFile);
         $this->prefix = '';
+    }
+
+    /**
+     * Summary of addError
+     * @param string $file
+     * @param mixed $message
+     * @return void
+     */
+    public function addError($file, $message)
+    {
+        $this->errors[$file] = $message;
+    }
+
+    /**
+     * Summary of getErrors
+     * @return array<mixed>
+     */
+    public function getErrors()
+    {
+        return $this->errors;
     }
 }

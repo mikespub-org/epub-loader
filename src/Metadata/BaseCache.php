@@ -182,7 +182,8 @@ class BaseCache
             $res = array_merge($res, static::getFiles($path, $inPattern));
         }
 
-        sort($res);
+        // Sort in "natural" order for increasing id's
+        sort($res, SORT_NATURAL);
 
         return $res;
     }

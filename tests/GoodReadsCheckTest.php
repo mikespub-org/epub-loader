@@ -8,12 +8,7 @@
 
 namespace Marsender\EPubLoader\Tests;
 
-use Marsender\EPubLoader\CalibreDbLoader;
-use Marsender\EPubLoader\Metadata\BookInfos;
-use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCheck;
-use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsImport;
-use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use PHPUnit\Framework\Attributes\Depends;
 use Exception;
 
@@ -34,6 +29,10 @@ class GoodReadsCheckTest extends BaseTestCase
             echo $e->getMessage() . "\n";
             $result = false;
         }
+        $errors = $check->getErrors();
+        if (!empty($errors)) {
+            echo json_encode($errors, JSON_PRETTY_PRINT) . "\n";
+        }
         $this->assertTrue($result);
     }
 
@@ -52,6 +51,10 @@ class GoodReadsCheckTest extends BaseTestCase
         } catch (Exception $e) {
             echo $e->getMessage() . "\n";
             $result = false;
+        }
+        $errors = $check->getErrors();
+        if (!empty($errors)) {
+            echo json_encode($errors, JSON_PRETTY_PRINT) . "\n";
         }
         $this->assertTrue($result);
     }
@@ -72,6 +75,10 @@ class GoodReadsCheckTest extends BaseTestCase
             echo $e->getMessage() . "\n";
             $result = false;
         }
+        $errors = $check->getErrors();
+        if (!empty($errors)) {
+            echo json_encode($errors, JSON_PRETTY_PRINT) . "\n";
+        }
         $this->assertTrue($result);
     }
 
@@ -90,6 +97,10 @@ class GoodReadsCheckTest extends BaseTestCase
         } catch (Exception $e) {
             echo $e->getMessage() . "\n";
             $result = false;
+        }
+        $errors = $check->getErrors();
+        if (!empty($errors)) {
+            echo json_encode($errors, JSON_PRETTY_PRINT) . "\n";
         }
         $this->assertTrue($result);
     }

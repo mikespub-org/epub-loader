@@ -24,6 +24,9 @@ class WikiDataCacheTest extends BaseTestCase
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $authors = $cache::parseSearchResult($matched);
         }
 
@@ -42,6 +45,9 @@ class WikiDataCacheTest extends BaseTestCase
             $authorId = str_replace('.en.100.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $works = $cache::parseSearchResult($matched);
         }
 
@@ -60,6 +66,9 @@ class WikiDataCacheTest extends BaseTestCase
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $works = $cache::parseSearchResult($matched);
         }
 
@@ -78,6 +87,9 @@ class WikiDataCacheTest extends BaseTestCase
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $works = $cache::parseSearchResult($matched);
         }
 
@@ -96,6 +108,9 @@ class WikiDataCacheTest extends BaseTestCase
             $authorId = str_replace('.en.100.json', '', $authorId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $works = $cache::parseSearchResult($matched);
         }
 
@@ -114,6 +129,9 @@ class WikiDataCacheTest extends BaseTestCase
             $query = str_replace('.en.json', '', $query);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             $works = $cache::parseSearchResult($matched);
         }
 
@@ -128,18 +146,48 @@ class WikiDataCacheTest extends BaseTestCase
         //$patterns = ['.properties' => '^P\d+$'];
         //$capture = new DataCapture($patterns);
 
+        $properties = [];
         $fileList = $cache::getFiles($cacheDir . '/wikidata/entities/', '*.en.json');
         foreach ($fileList as $cacheFile) {
             $entityId = str_replace($cacheDir . '/wikidata/entities/', '', $cacheFile);
             $entityId = str_replace('.json', '', $entityId);
             $results = file_get_contents($cacheFile);
             $matched = json_decode($results, true);
+            if (is_null($matched)) {
+                continue;
+            }
             //$capture->analyze($matched);
             $work = $cache::parseEntity($matched);
-            //$capture->analyze($work);
+            if (!empty($work) && $work['type'] == 'book') {
+                //echo json_encode($work, JSON_PRETTY_PRINT) . "\n";
+            }
+            $instance = $matched['properties']['P31'] ?? [];
+            $instance['values'] ??= [];
+            foreach ($instance['values'] as $value) {
+                $key = $value['id'] . ': ' . $value['label'];
+                $properties[$key] ??= ['count' => 0, 'alone' => 0, 'properties' => []];
+                $properties[$key]['count'] += 1;
+                if (count($instance['values']) < 2) {
+                    $properties[$key]['alone'] += 1;
+                }
+                foreach ($matched['properties'] as $pid => $property) {
+                    $id = $property['id'] . ': ' . $property['label'];
+                    $properties[$key]['properties'][$id] ??= 0;
+                    $properties[$key]['properties'][$id] += 1;
+                }
+            }
         }
-        //$cacheFile = $cacheDir . '/wikidata/entity.report.json';
+        //$cacheFile = $cacheDir . '/wikidata/entities.report.json';
         //$report = $capture->report($cacheFile);
+        foreach ($properties as $key => $values) {
+            arsort($values['properties'], SORT_NUMERIC);
+            $properties[$key] = $values;
+        }
+        uasort($properties, function ($a, $b) {
+            return $b['count'] <=> $a['count'];
+        });
+        $cacheFile = $cacheDir . '/wikidata/entities.properties.json';
+        file_put_contents($cacheFile, json_encode($properties, JSON_PRETTY_PRINT));
 
         $expected = count($cache->getEntityIds('en'));
         $this->assertCount($expected, $fileList);
