@@ -6,7 +6,9 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Tests;
+namespace Marsender\EPubLoader\Tests\GoodReads;
+
+use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class GoodReadsAppTest extends BaseTestCase
 {

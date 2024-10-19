@@ -6,9 +6,10 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Tests;
+namespace Marsender\EPubLoader\Tests\GoodReads;
 
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCheck;
+use Marsender\EPubLoader\Tests\BaseTestCase;
 use PHPUnit\Framework\Attributes\Depends;
 use Exception;
 

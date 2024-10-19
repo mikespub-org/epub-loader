@@ -6,9 +6,10 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Tests;
+namespace Marsender\EPubLoader\Tests\GoogleBooks;
 
 use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class GoogleBooksImportTest extends BaseTestCase
 {

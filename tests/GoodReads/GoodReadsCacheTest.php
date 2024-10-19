@@ -6,10 +6,11 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Tests;
+namespace Marsender\EPubLoader\Tests\GoodReads;
 
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
+use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class GoodReadsCacheTest extends BaseTestCase
 {

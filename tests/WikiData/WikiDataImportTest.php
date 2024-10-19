@@ -6,36 +6,37 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Tests;
+namespace Marsender\EPubLoader\Tests\WikiData;
 
 use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Tests\BaseTestCase;
 
-class GoodReadsImportTest extends BaseTestCase
+class WikiDataImportTest extends BaseTestCase
 {
     public function testJsonImportFile(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbPath = dirname(__DIR__) . '/cache/wikidata';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
-        $jsonFile = $dbPath . '/book/show/7112495.json';
+        $jsonFile = $dbPath . '/entities/Q223131.en.json';
         [$message, $errors] = $import->loadFromJsonFile($dbPath, $jsonFile);
 
-        $expected = '/cache/goodreads/book/show/7112495.json - 1 files OK - 0 files Error';
+        $expected = '/cache/wikidata/entities/Q223131.en.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
         $this->assertCount(0, $errors);
     }
 
     public function testJsonImportPath(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbPath = dirname(__DIR__) . '/cache/wikidata';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
-        $jsonPath = 'book/show';
+        $jsonPath = 'entities';
         [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
 
-        $expected = '/cache/goodreads/book/show/7112495.json - 1 files OK - 0 files Error';
+        $expected = '/cache/wikidata/entities/Q223131.en.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
         $this->assertCount(0, $errors);
     }

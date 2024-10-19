@@ -6,18 +6,20 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Tests;
+namespace Marsender\EPubLoader\Tests\OpenLibrary;
 
-class WikiDataAppTest extends BaseTestCase
+use Marsender\EPubLoader\Tests\BaseTestCase;
+
+class OpenLibraryAppTest extends BaseTestCase
 {
     /**
-     * Summary of testAppCheckAuthors
+     * Summary of testAppFindAuthors
      * @return void
      */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCheckAuthors(): void
+    public function testAppFindAuthors(): void
     {
-        $_SERVER['PATH_INFO'] = '/wd_author/0';
+        $_SERVER['PATH_INFO'] = '/ol_author/0';
 
         ob_start();
         $headers = headers_list();
@@ -26,7 +28,7 @@ class WikiDataAppTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/wd_author/0">Some Books</a>';
+        $expected = '<a href="/phpunit/ol_author/0">Some Books</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'Arthur Conan Doyle';
         $this->assertStringContainsString($expected, $output);
@@ -35,13 +37,13 @@ class WikiDataAppTest extends BaseTestCase
     }
 
     /**
-     * Summary of testAppCheckAuthorLinks
+     * Summary of testAppFindAuthorLinks
      * @return void
      */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCheckAuthorLinks(): void
+    public function testAppFindAuthorLinks(): void
     {
-        $_SERVER['PATH_INFO'] = '/wd_author/0';
+        $_SERVER['PATH_INFO'] = '/ol_author/0';
         $_GET['findLinks'] = '1';
 
         ob_start();
@@ -51,7 +53,7 @@ class WikiDataAppTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/wd_entity/0/4?matchId=Q42511">Q42511</a>';
+        $expected = '<a href="/phpunit/ol_work/0/4?matchId=OL13066A">OL13066A</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'H. G. Wells';
         $this->assertStringContainsString($expected, $output);
@@ -61,13 +63,13 @@ class WikiDataAppTest extends BaseTestCase
     }
 
     /**
-     * Summary of testAppCheckAuthor
+     * Summary of testAppFindBooks
      * @return void
      */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCheckAuthor(): void
+    public function testAppFindBooks(): void
     {
-        $_SERVER['PATH_INFO'] = '/wd_author/0/1';
+        $_SERVER['PATH_INFO'] = '/ol_books/0/1';
 
         ob_start();
         $headers = headers_list();
@@ -76,31 +78,7 @@ class WikiDataAppTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/wd_entity/0/1?matchId=Q35610">Q35610</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = 'Arthur Conan Doyle';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    /**
-     * Summary of testAppCheckBooks
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCheckBooks(): void
-    {
-        $_SERVER['PATH_INFO'] = '/wd_books/0/1';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>EPub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/wd_books/0/1?bookId=11">Search</a>';
+        $expected = '<a href="/phpunit/ol_books/0/1?bookId=11">Search</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'A Study in Scarlet';
         $this->assertStringContainsString($expected, $output);
@@ -109,13 +87,13 @@ class WikiDataAppTest extends BaseTestCase
     }
 
     /**
-     * Summary of testAppCheckBookSearch
+     * Summary of testAppFindBookSearch
      * @return void
      */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCheckBookSearch(): void
+    public function testAppFindBookSearch(): void
     {
-        $_SERVER['PATH_INFO'] = '/wd_books/0/1';
+        $_SERVER['PATH_INFO'] = '/ol_books/0/1';
         $_GET['bookId'] = '11';
 
         ob_start();
@@ -125,9 +103,9 @@ class WikiDataAppTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/wd_entity/0/1?seriesId=1&bookId=11&matchId=Q223131">Q223131</a>';
+        $expected = '<a href="/phpunit/ol_work/0/1?bookId=11&matchId=OL262496W">OL262496W</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = 'first Sherlock Holmes novel by Sir Arthur Conan Doyle';
+        $expected = 'A Study in Scarlet';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
@@ -135,13 +113,13 @@ class WikiDataAppTest extends BaseTestCase
     }
 
     /**
-     * Summary of testAppCheckSeries
+     * Summary of testAppFindAuthor
      * @return void
      */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCheckSeries(): void
+    public function testAppFindAuthor(): void
     {
-        $_SERVER['PATH_INFO'] = '/wd_series/0/1';
+        $_SERVER['PATH_INFO'] = '/ol_author/0/1';
 
         ob_start();
         $headers = headers_list();
@@ -150,23 +128,23 @@ class WikiDataAppTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/wd_series/0/1?seriesId=1">Search</a>';
+        $expected = '<a href="/phpunit/ol_work/0/1?matchId=OL161167A">OL161167A</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = 'Sherlock Holmes';
+        $expected = 'A Study in Scarlet';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
     }
 
     /**
-     * Summary of testAppCheckBookSearch
+     * Summary of testAppFindWorkAuthor
      * @return void
      */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCheckSeriesSearch(): void
+    public function testAppFindWorkAuthor(): void
     {
-        $_SERVER['PATH_INFO'] = '/wd_series/0/1';
-        $_GET['seriesId'] = '1';
+        $_SERVER['PATH_INFO'] = '/ol_work/0/1';
+        $_GET['matchId'] = 'OL161167A';
 
         ob_start();
         $headers = headers_list();
@@ -175,25 +153,25 @@ class WikiDataAppTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/wd_entity/0/1?seriesId=1&matchId=Q4653">Q4653</a>';
+        $expected = 'wikipedia: http://en.wikipedia.org/wiki/Arthur_Conan_Doyle';
         $this->assertStringContainsString($expected, $output);
-        $expected = 'fictional character (consulting detective) created by Sir Arthur Conan Doyle';
+        $expected = 'name: Arthur Conan Doyle';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
-        unset($_GET['seriesId']);
+        unset($_GET['matchId']);
     }
 
     /**
-     * Summary of testAppCheckEntity
+     * Summary of testAppFindWork
      * @return void
      */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCheckEntity(): void
+    public function testAppFindWork(): void
     {
-        $_SERVER['PATH_INFO'] = '/wd_entity/0/1';
+        $_SERVER['PATH_INFO'] = '/ol_work/0/1';
         $_GET['bookId'] = '11';
-        $_GET['matchId'] = 'Q223131';
+        $_GET['matchId'] = 'OL262496W';
 
         ob_start();
         $headers = headers_list();
@@ -202,9 +180,9 @@ class WikiDataAppTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="https://en.wikipedia.org/wiki/A_Study_in_Scarlet">Wikipedia</a>';
+        $expected = 'key: /works/OL262496W';
         $this->assertStringContainsString($expected, $output);
-        $expected = 'description: first Sherlock Holmes novel by Sir Arthur Conan Doyle';
+        $expected = 'title: A Study in Scarlet';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
