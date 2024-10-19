@@ -45,7 +45,7 @@ class GoodReadsCacheTest extends BaseTestCase
                 if ($count++ > 9) {
                     break;
                 }
-                $bookId = GoodReadsCache::bookid($book->getId());
+                $bookId = GoodReadsMatch::bookid($book->getId());
                 if (!in_array($bookId, $bookIdList)) {
                     // @todo skip collections etc.
                     if (!preg_match('/#\d+-\d+/', $book->getTitle())) {

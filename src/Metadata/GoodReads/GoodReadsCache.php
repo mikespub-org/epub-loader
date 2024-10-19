@@ -44,7 +44,7 @@ class GoodReadsCache extends BaseCache
     public function getSearchQueries()
     {
         $baseDir = $this->cacheDir . '/goodreads/search/';
-        return static::getFiles($baseDir, '*.json', true);
+        return parent::getFiles($baseDir, '*.json', true);
     }
 
     /**
@@ -67,7 +67,7 @@ class GoodReadsCache extends BaseCache
     public function getAuthorIds()
     {
         $baseDir = $this->cacheDir . '/goodreads/author/list/';
-        return static::getFiles($baseDir, '*.json', true);
+        return parent::getFiles($baseDir, '*.json', true);
     }
 
     /**
@@ -106,7 +106,7 @@ class GoodReadsCache extends BaseCache
     public function getSeriesIds()
     {
         $baseDir = $this->cacheDir . '/goodreads/series/';
-        return static::getFiles($baseDir, '*.json', true);
+        return parent::getFiles($baseDir, '*.json', true);
     }
 
     /**
@@ -133,7 +133,6 @@ class GoodReadsCache extends BaseCache
      */
     public function getBook($bookId)
     {
-        $bookId = static::bookid($bookId);
         $cacheFile = $this->cacheDir . '/goodreads/book/show/' . $bookId . '.json';
         return $cacheFile;
     }
@@ -146,7 +145,7 @@ class GoodReadsCache extends BaseCache
     public function getBookIds()
     {
         $baseDir = $this->cacheDir . '/goodreads/book/show/';
-        return static::getFiles($baseDir, '*.json', true);
+        return parent::getFiles($baseDir, '*.json', true);
     }
 
     /**
@@ -227,22 +226,6 @@ class GoodReadsCache extends BaseCache
             return $this->loadCache($cacheFile);
         }
         return null;
-    }
-
-    /**
-     * Summary of bookid
-     * @param string $bookId
-     * @return string
-     */
-    public static function bookid($bookId)
-    {
-        if (str_contains($bookId, '.')) {
-            [$bookId, $title] = explode('.', $bookId);
-        }
-        if (str_contains($bookId, '-')) {
-            [$bookId, $title] = explode('-', $bookId);
-        }
-        return $bookId;
     }
 
     /**

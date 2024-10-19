@@ -49,11 +49,11 @@ class GoodReadsMatch extends BaseMatch
         if ($this->cache->hasCache($cacheFile)) {
             return $this->cache->loadCache($cacheFile);
         }
-        $url = str_replace('{query}', rawurlencode($query), static::QUERY_URL);
+        $url = str_replace('{query}', rawurlencode($query), self::QUERY_URL);
         $result = file_get_contents($url, false, $this->context);
         $matched = $this->parseSearchPage($query, $result);
         $this->cache->saveCache($cacheFile, $matched);
-        usleep(static::SLEEP_TIME);
+        usleep(self::SLEEP_TIME);
         return $matched;
     }
 
@@ -177,13 +177,13 @@ class GoodReadsMatch extends BaseMatch
             return $this->cache->loadCache($cacheFile);
         }
         // https://www.goodreads.com/author/list/123.Author_Name?per_page=100
-        $url = static::AUTHOR_URL . $authorId . '?per_page=100';
+        $url = self::AUTHOR_URL . $authorId . '?per_page=100';
         $result = file_get_contents($url, false, $this->context);
         $parsed = $this->parseAuthorPage($authorId, $result);
         // @todo remove other authors here?
         $entity = $parsed;
         $this->cache->saveCache($cacheFile, $entity);
-        usleep(static::SLEEP_TIME);
+        usleep(self::SLEEP_TIME);
         return $entity;
     }
 
@@ -252,11 +252,11 @@ class GoodReadsMatch extends BaseMatch
             return $this->cache->loadCache($cacheFile);
         }
         // https://www.goodreads.com/series/123.Series_Name
-        $url = static::SERIES_URL . $seriesId;
+        $url = self::SERIES_URL . $seriesId;
         $result = file_get_contents($url, false, $this->context);
         $parsed = $this->parseSeriesPage($seriesId, $result);
         $this->cache->saveCache($cacheFile, $parsed);
-        usleep(static::SLEEP_TIME);
+        usleep(self::SLEEP_TIME);
         return $parsed;
     }
 
@@ -349,7 +349,7 @@ class GoodReadsMatch extends BaseMatch
     public function getBook($bookId)
     {
         // we only use the book # here, not the title
-        $bookId = static::bookid($bookId);
+        $bookId = self::bookid($bookId);
         $cacheFile = $this->cache->getBook($bookId);
         if ($this->cache->hasCache($cacheFile)) {
             return $this->cache->loadCache($cacheFile);
@@ -360,7 +360,7 @@ class GoodReadsMatch extends BaseMatch
         $result = $this->parseBookPage($bookId, $result);
         $entity = json_decode($result, true, 512, JSON_THROW_ON_ERROR);
         $this->cache->saveCache($cacheFile, $entity);
-        usleep(static::SLEEP_TIME);
+        usleep(self::SLEEP_TIME);
         return $entity;
     }
 
@@ -389,13 +389,13 @@ class GoodReadsMatch extends BaseMatch
      */
     public static function entity($link)
     {
-        if (str_starts_with($link, static::AUTHOR_URL)) {
-            return str_replace(static::AUTHOR_URL, '', $link);
+        if (str_starts_with($link, self::AUTHOR_URL)) {
+            return str_replace(self::AUTHOR_URL, '', $link);
         }
-        if (str_starts_with($link, static::SERIES_URL)) {
-            return str_replace(static::SERIES_URL, '', $link);
+        if (str_starts_with($link, self::SERIES_URL)) {
+            return str_replace(self::SERIES_URL, '', $link);
         }
-        return str_replace(static::ENTITY_URL, '', $link);
+        return str_replace(self::ENTITY_URL, '', $link);
     }
 
     /**
@@ -405,7 +405,7 @@ class GoodReadsMatch extends BaseMatch
      */
     public static function isValidLink($link)
     {
-        if (!empty($link) && (str_starts_with($link, (string) static::ENTITY_URL) || str_starts_with($link, (string) static::AUTHOR_URL) || str_starts_with($link, (string) static::SERIES_URL))) {
+        if (!empty($link) && (str_starts_with($link, (string) self::ENTITY_URL) || str_starts_with($link, (string) self::AUTHOR_URL) || str_starts_with($link, (string) self::SERIES_URL))) {
             return true;
         }
         return false;
@@ -425,5 +425,25 @@ class GoodReadsMatch extends BaseMatch
             [$bookId, $title] = explode('-', $bookId);
         }
         return $bookId;
+    }
+
+    /**
+     * Summary of authorSlug - 9876.This_Author_Name
+     * @param string $authorName
+     * @return string
+     */
+    public static function authorSlug($authorName)
+    {
+        return preg_replace('/__+/', '_', str_replace([' ', '.', "'"], ['_', '_', '_'], $authorName));
+    }
+
+    /**
+     * Summary of seriesSlug - 1234-this-series-title
+     * @param string $seriesTitle
+     * @return string
+     */
+    public static function seriesSlug($seriesTitle)
+    {
+        return preg_replace('/--+/', '-', str_replace([' ', '&', '*', "'", ':', '.', ',', '(', ')'], ['-', '-', '-', '-', '', '', '', '', ''], strtolower($seriesTitle)));
     }
 }

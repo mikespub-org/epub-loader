@@ -712,6 +712,35 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of wrapTrigger
+     * @param string $sqlText
+     * @param string $table
+     * @param string $event
+     * @return string
+     */
+    public function wrapTrigger($sqlText, $table, $event = 'AFTER INSERT ON')
+    {
+        if (empty($sqlText)) {
+            return $sqlText;
+        }
+        $triggers = $this->getTriggers($table);
+        if (empty($triggers)) {
+            return $sqlText;
+        }
+        $found = null;
+        foreach ($triggers as $name => $trigger) {
+            if (str_contains($trigger['sql'], $event)) {
+                $found = $name;
+                break;
+            }
+        }
+        if (!empty($found)) {
+            $sqlText = "DROP TRIGGER $found;\n" . $sqlText . $triggers[$found]['sql'] . ";\n";
+        }
+        return $sqlText;
+    }
+
+    /**
      * Summary of hasNotes
      * @return bool
      */

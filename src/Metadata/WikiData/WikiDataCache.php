@@ -47,7 +47,7 @@ class WikiDataCache extends BaseCache
     public function getAuthorQueries($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/wikidata/authors/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -74,7 +74,7 @@ class WikiDataCache extends BaseCache
     public function getAuthorWorkIds($lang = 'en', $limit = 100)
     {
         $baseDir = $this->cacheDir . '/wikidata/works/author/';
-        return static::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -99,7 +99,7 @@ class WikiDataCache extends BaseCache
     public function getAuthorWorkQueries($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/wikidata/works/name/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -124,7 +124,7 @@ class WikiDataCache extends BaseCache
     public function getTitleQueries($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/wikidata/works/title/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -151,7 +151,7 @@ class WikiDataCache extends BaseCache
     public function getAuthorSeriesIds($lang = 'en', $limit = 100)
     {
         $baseDir = $this->cacheDir . '/wikidata/series/author/';
-        return static::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -176,7 +176,7 @@ class WikiDataCache extends BaseCache
     public function getSeriesQueries($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/wikidata/series/title/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -201,7 +201,7 @@ class WikiDataCache extends BaseCache
     public function getEntityIds($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/wikidata/entities/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**

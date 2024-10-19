@@ -44,7 +44,7 @@ class OpenLibraryCache extends BaseCache
     public function getAuthorQueries($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/openlibrary/authors/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -71,7 +71,7 @@ class OpenLibraryCache extends BaseCache
     public function getAuthorWorkIds($lang = 'en', $limit = 100)
     {
         $baseDir = $this->cacheDir . '/openlibrary/works/author/';
-        return static::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -95,7 +95,7 @@ class OpenLibraryCache extends BaseCache
     public function getTitleQueries($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/openlibrary/works/title/';
-        return static::getFiles($baseDir, '*.json', true);
+        return parent::getFiles($baseDir, '*.json', true);
     }
 
     /**
@@ -123,7 +123,7 @@ class OpenLibraryCache extends BaseCache
         // filter by *A and add it back
         return array_map(function ($id) {
             return $id . 'A';
-        }, static::getFiles($baseDir, '*A.' . $lang . '.json', true));
+        }, parent::getFiles($baseDir, '*A.' . $lang . '.json', true));
     }
 
     /**
@@ -154,7 +154,7 @@ class OpenLibraryCache extends BaseCache
         // filter by *W and add it back
         return array_map(function ($id) {
             return $id . 'W';
-        }, static::getFiles($baseDir, '*W.' . $lang . '.json', true));
+        }, parent::getFiles($baseDir, '*W.' . $lang . '.json', true));
     }
 
     /**

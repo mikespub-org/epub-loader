@@ -44,7 +44,7 @@ class GoogleBooksCache extends BaseCache
     public function getAuthorQueries($lang = 'en', $limit = 40)
     {
         $baseDir = $this->cacheDir . '/google/authors/';
-        return static::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
     }
 
     /**
@@ -69,7 +69,7 @@ class GoogleBooksCache extends BaseCache
     public function getTitleQueries($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/google/titles/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -94,7 +94,7 @@ class GoogleBooksCache extends BaseCache
     public function getSeriesQueries($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/google/series/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
@@ -119,7 +119,7 @@ class GoogleBooksCache extends BaseCache
     public function getVolumeIds($lang = 'en')
     {
         $baseDir = $this->cacheDir . '/google/volumes/';
-        return static::getFiles($baseDir, '*.' . $lang . '.json', true);
+        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
     }
 
     /**
