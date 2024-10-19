@@ -1,8 +1,8 @@
 <?php
 
-namespace Marsender\EPubLoader\Metadata\GoogleBooks;
+namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
-class OfferRetailPrice
+class OfferListPrice
 {
     public ?int $amountInMicros;
     public ?string $currencyCode;

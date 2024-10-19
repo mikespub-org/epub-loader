@@ -1,21 +1,21 @@
 <?php
 
-namespace Marsender\EPubLoader\Metadata\GoogleBooks;
+namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
-class OfferListPrice
+class ListPrice
 {
-    public ?int $amountInMicros;
+    public ?float $amount;
     public ?string $currencyCode;
 
-    public function __construct(?int $amountInMicros, ?string $currencyCode)
+    public function __construct(?float $amount, ?string $currencyCode)
     {
-        $this->amountInMicros = $amountInMicros;
+        $this->amount = $amount;
         $this->currencyCode = $currencyCode;
     }
 
-    public function getAmountInMicros(): ?int
+    public function getAmount(): ?float
     {
-        return $this->amountInMicros;
+        return $this->amount;
     }
 
     public function getCurrencyCode(): ?string
@@ -29,7 +29,7 @@ class OfferListPrice
     public static function fromJson(array $data): self
     {
         return new self(
-            $data['amountInMicros'] ?? null,
+            $data['amount'] ?? null,
             $data['currencyCode'] ?? null
         );
     }

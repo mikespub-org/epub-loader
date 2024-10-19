@@ -1,6 +1,6 @@
 <?php
 
-namespace Marsender\EPubLoader\Metadata\GoogleBooks;
+namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
 class ReadingModes
 {

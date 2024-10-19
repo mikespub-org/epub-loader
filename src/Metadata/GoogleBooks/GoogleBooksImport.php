@@ -10,6 +10,7 @@
 namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
 use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\GoogleBooks\Volumes\Volume;
 use Exception;
 
 class GoogleBooksImport

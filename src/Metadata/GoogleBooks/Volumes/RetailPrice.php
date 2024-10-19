@@ -1,8 +1,8 @@
 <?php
 
-namespace Marsender\EPubLoader\Metadata\GoogleBooks;
+namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
-class ListPrice
+class RetailPrice
 {
     public ?float $amount;
     public ?string $currencyCode;

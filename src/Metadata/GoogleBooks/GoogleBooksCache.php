@@ -9,6 +9,8 @@
 namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
+use Marsender\EPubLoader\Metadata\GoogleBooks\Search\SearchResult;
+use Marsender\EPubLoader\Metadata\GoogleBooks\Volumes\Volume;
 use Exception;
 
 class GoogleBooksCache extends BaseCache
