@@ -50,7 +50,7 @@ class GoodReadsMatch extends BaseMatch
             return $this->cache->loadCache($cacheFile);
         }
         $url = str_replace('{query}', rawurlencode($query), static::QUERY_URL);
-        $result = file_get_contents($url);
+        $result = file_get_contents($url, false, $this->context);
         $matched = $this->parseSearchPage($query, $result);
         $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
@@ -178,7 +178,7 @@ class GoodReadsMatch extends BaseMatch
         }
         // https://www.goodreads.com/author/list/123.Author_Name?per_page=100
         $url = static::AUTHOR_URL . $authorId . '?per_page=100';
-        $result = file_get_contents($url);
+        $result = file_get_contents($url, false, $this->context);
         $parsed = $this->parseAuthorPage($authorId, $result);
         // @todo remove other authors here?
         $entity = $parsed;
@@ -253,7 +253,7 @@ class GoodReadsMatch extends BaseMatch
         }
         // https://www.goodreads.com/series/123.Series_Name
         $url = static::SERIES_URL . $seriesId;
-        $result = file_get_contents($url);
+        $result = file_get_contents($url, false, $this->context);
         $parsed = $this->parseSeriesPage($seriesId, $result);
         $this->cache->saveCache($cacheFile, $parsed);
         usleep(static::SLEEP_TIME);
@@ -356,7 +356,7 @@ class GoodReadsMatch extends BaseMatch
         }
         // https://www.goodreads.com/book/show/123.Book_Title
         $url = static::link($bookId);
-        $result = file_get_contents($url);
+        $result = file_get_contents($url, false, $this->context);
         $result = $this->parseBookPage($bookId, $result);
         $entity = json_decode($result, true, 512, JSON_THROW_ON_ERROR);
         $this->cache->saveCache($cacheFile, $entity);

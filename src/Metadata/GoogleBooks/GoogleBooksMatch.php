@@ -46,7 +46,7 @@ class GoogleBooksMatch extends BaseMatch
             '{full}' => $full,
         ];
         $url = str_replace(array_keys($replace), array_values($replace), static::QUERY_URL);
-        $results = file_get_contents($url);
+        $results = file_get_contents($url, false, $this->context);
         return $results;
     }
 
@@ -171,7 +171,7 @@ class GoogleBooksMatch extends BaseMatch
             return $this->cache->loadCache($cacheFile);
         }
         $url = static::link($volumeId);
-        $result = file_get_contents($url);
+        $result = file_get_contents($url, false, $this->context);
         $entity = json_decode($result, true);
         $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);

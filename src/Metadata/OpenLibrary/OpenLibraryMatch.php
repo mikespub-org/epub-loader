@@ -50,7 +50,7 @@ class OpenLibraryMatch extends BaseMatch
         }
         // https://openlibrary.org/dev/docs/api/authors
         $url = 'https://openlibrary.org/search/authors.json?q=' . rawurlencode($query);
-        $results = file_get_contents($url);
+        $results = file_get_contents($url, false, $this->context);
         $matched = json_decode($results, true);
         $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
@@ -103,7 +103,7 @@ class OpenLibraryMatch extends BaseMatch
         //$url = 'https://openlibrary.org/authors/' . $matchId . '/works.json?limit=' . $limit;
         // generic search returns 'docs' but author search returns 'entries'
         $url = 'https://openlibrary.org/search.json?author=' . $matchId . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
-        $results = file_get_contents($url);
+        $results = file_get_contents($url, false, $this->context);
         $matched = json_decode($results, true);
         $this->cache->saveCache($cacheFile, $matched);
         usleep(static::SLEEP_TIME);
@@ -128,11 +128,11 @@ class OpenLibraryMatch extends BaseMatch
         }
         // https://openlibrary.org/dev/docs/api/search
         $url = 'https://openlibrary.org/search.json?title=' . rawurlencode($query) . '&author=' . rawurlencode((string) $authorName) . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
-        $results = file_get_contents($url);
+        $results = file_get_contents($url, false, $this->context);
         $matched = json_decode($results, true);
         if (empty($matched) || empty($matched['docs'])) {
             $url = 'https://openlibrary.org/search.json?title=' . rawurlencode($query) . '&fields=key,type,title,edition_count,first_publish_year,number_of_pages_median,author_name,author_key';
-            $results = file_get_contents($url);
+            $results = file_get_contents($url, false, $this->context);
             $matched = json_decode($results, true);
         }
         $this->cache->saveCache($cacheFile, $matched);
@@ -155,7 +155,7 @@ class OpenLibraryMatch extends BaseMatch
         }
         // https://openlibrary.org/dev/docs/api/authors
         $url = static::AUTHOR_URL . $authorId . '.json';
-        $result = file_get_contents($url);
+        $result = file_get_contents($url, false, $this->context);
         $entity = json_decode($result, true);
         $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);
@@ -180,7 +180,7 @@ class OpenLibraryMatch extends BaseMatch
         }
         // https://openlibrary.org/dev/docs/api/books
         $url = static::link($workId) . '.json';
-        $result = file_get_contents($url);
+        $result = file_get_contents($url, false, $this->context);
         $entity = json_decode($result, true);
         $this->cache->saveCache($cacheFile, $entity);
         usleep(static::SLEEP_TIME);

@@ -20,6 +20,8 @@ class BaseMatch
     protected $lang;
     /** @var string|int */
     protected $limit;
+    /** @var resource */
+    protected $context;
 
     /**
      * Summary of __construct
@@ -32,6 +34,11 @@ class BaseMatch
         $this->setCache($cacheDir);
         $this->lang = $lang;
         $this->limit = $limit;
+        $this->context = stream_context_create([
+            'http' => [
+                'timeout' => 60,
+            ],
+        ]);
     }
 
     /**

@@ -537,6 +537,23 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getSeriesLinks
+     * @return array<mixed>
+     */
+    public function getSeriesLinks()
+    {
+        // no limit for series links!?
+        $sql = 'select id, link from series';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        $links = [];
+        while ($post = $stmt->fetchObject()) {
+            $links[$post->id] = $post->link;
+        }
+        return $links;
+    }
+
+    /**
      * Summary of getSeriesCountByAuthor
      * @param int|null $authorId
      * @return array<mixed>

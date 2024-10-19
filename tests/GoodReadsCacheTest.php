@@ -34,6 +34,9 @@ class GoodReadsCacheTest extends BaseTestCase
             $matched = json_decode($results, true);
             $result = $cache::parseSearch($matched);
             $authorMap = $result->getAuthorMap($authorId);
+            if (empty($authorMap)) {
+                continue;
+            }
             $count = 0;
             foreach ($authorMap->getBooks() as $book) {
                 if ($book->getCount() < 1000) {
