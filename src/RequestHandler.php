@@ -352,7 +352,7 @@ class RequestHandler
         $dbConfig['db_num'] = $dbNum;
         $dbConfig['create_db'] = $this->gConfig['create_db'];
         /** @var ActionHandler $handler */
-        $handler = new $this->handlerClass($dbConfig, $this->cacheDir);
+        $handler = $this->handlerClass::getHandler($action, $dbConfig, $this->cacheDir);
         try {
             $result = $handler->handle($action, $this);
         } catch (Exception $e) {

@@ -16,7 +16,7 @@ class WikiDataCacheTest extends BaseTestCase
 {
     public function testCacheParseAuthorSearch(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new WikiDataCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/wikidata/authors/', '*.en.json');
@@ -37,7 +37,7 @@ class WikiDataCacheTest extends BaseTestCase
 
     public function testCacheParseWorksByAuthor(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new WikiDataCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/wikidata/works/author/', '*.en.100.json');
@@ -58,7 +58,7 @@ class WikiDataCacheTest extends BaseTestCase
 
     public function testCacheParseWorksByTitle(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new WikiDataCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/wikidata/works/title/', '*.en.json');
@@ -79,7 +79,7 @@ class WikiDataCacheTest extends BaseTestCase
 
     public function testCacheParseWorksByName(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new WikiDataCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/wikidata/works/name/', '*.en.json');
@@ -100,7 +100,7 @@ class WikiDataCacheTest extends BaseTestCase
 
     public function testCacheParseSeriesByAuthor(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new WikiDataCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/wikidata/series/author/', '*.en.100.json');
@@ -121,7 +121,7 @@ class WikiDataCacheTest extends BaseTestCase
 
     public function testCacheParseSeriesByTitle(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new WikiDataCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/wikidata/series/title/', '*.en.json');
@@ -142,7 +142,7 @@ class WikiDataCacheTest extends BaseTestCase
 
     public function testCacheParseEntity(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new WikiDataCache($cacheDir);
         //$patterns = ['.properties' => '^P\d+$'];
         //$capture = new DataCapture($patterns);

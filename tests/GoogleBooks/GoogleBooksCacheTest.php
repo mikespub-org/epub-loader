@@ -15,7 +15,7 @@ class GoogleBooksCacheTest extends BaseTestCase
 {
     public function testCacheParseAuthors(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoogleBooksCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/google/authors/', '*.en.40.json');
@@ -36,7 +36,7 @@ class GoogleBooksCacheTest extends BaseTestCase
 
     public function testCacheParseSeries(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoogleBooksCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/google/series/', '*.en.json');
@@ -57,7 +57,7 @@ class GoogleBooksCacheTest extends BaseTestCase
 
     public function testCacheParseTitles(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoogleBooksCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/google/titles/', '*.en.json');
@@ -78,7 +78,7 @@ class GoogleBooksCacheTest extends BaseTestCase
 
     public function testCacheParseVolume(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoogleBooksCache(cacheDir: $cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/google/volumes/', '*.en.json');

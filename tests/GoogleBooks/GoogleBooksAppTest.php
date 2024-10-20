@@ -23,7 +23,7 @@ class GoogleBooksAppTest extends BaseTestCase
 
         ob_start();
         $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
+        require dirname(__DIR__, 2) . '/app/index.php';
         $output = ob_get_clean();
 
         $expected = '<title>EPub Loader</title>';
@@ -49,7 +49,7 @@ class GoogleBooksAppTest extends BaseTestCase
 
         ob_start();
         $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
+        require dirname(__DIR__, 2) . '/app/index.php';
         $output = ob_get_clean();
 
         $expected = '<title>EPub Loader</title>';
@@ -77,7 +77,7 @@ class GoogleBooksAppTest extends BaseTestCase
 
         ob_start();
         $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
+        require dirname(__DIR__, 2) . '/app/index.php';
         $output = ob_get_clean();
 
         $expected = '<title>EPub Loader</title>';

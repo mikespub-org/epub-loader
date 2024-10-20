@@ -17,10 +17,10 @@ class GoodReadsCheckTest extends BaseTestCase
 {
     public function testCheckBookLinks(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
 
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
 
         $check = new GoodReadsCheck($cacheDir, $dbFile);
         try {
@@ -40,10 +40,10 @@ class GoodReadsCheckTest extends BaseTestCase
     #[Depends('testCheckBookLinks')]
     public function testCheckAuthorMatch(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
 
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
 
         $check = new GoodReadsCheck($cacheDir, $dbFile);
         try {
@@ -63,10 +63,10 @@ class GoodReadsCheckTest extends BaseTestCase
     #[Depends('testCheckBookLinks')]
     public function testCheckSeriesMatch(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
 
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
 
         $check = new GoodReadsCheck($cacheDir, $dbFile);
         try {
@@ -86,10 +86,10 @@ class GoodReadsCheckTest extends BaseTestCase
     #[Depends('testCheckBookLinks')]
     public function testCheckMissingMatch(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
 
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
 
         $check = new GoodReadsCheck($cacheDir, $dbFile);
         try {

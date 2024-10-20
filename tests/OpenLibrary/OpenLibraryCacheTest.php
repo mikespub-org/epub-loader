@@ -16,7 +16,7 @@ class OpenLibraryCacheTest extends BaseTestCase
 {
     public function testCacheParseAuthorSearch(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new OpenLibraryCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/openlibrary/authors/', '*.en.json');
@@ -37,7 +37,7 @@ class OpenLibraryCacheTest extends BaseTestCase
 
     public function testCacheParseWorksByAuthor(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new OpenLibraryCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/openlibrary/works/author/', '*.en.100.json');
@@ -58,7 +58,7 @@ class OpenLibraryCacheTest extends BaseTestCase
 
     public function testCacheParseWorksByTitle(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new OpenLibraryCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/openlibrary/works/title/', '*.json');
@@ -79,7 +79,7 @@ class OpenLibraryCacheTest extends BaseTestCase
 
     public function testCacheParseAuthorEntity(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new OpenLibraryCache($cacheDir);
         //$patterns = ['.remote_ids.properties' => '^\w+$'];
         //$patterns = ['.remoteIds.properties' => '^\w+$'];
@@ -107,7 +107,7 @@ class OpenLibraryCacheTest extends BaseTestCase
 
     public function testCacheParseWorkEntity(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new OpenLibraryCache($cacheDir);
         //$patterns = [];
         //$capture = new DataCapture($patterns);

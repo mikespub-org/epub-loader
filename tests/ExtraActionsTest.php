@@ -8,7 +8,10 @@
 
 namespace Marsender\EPubLoader\Tests;
 
-#[\PHPUnit\Framework\Attributes\CoversClass(\Marsender\EPubLoader\App\ExtraActions::class)]
+use Marsender\EPubLoader\App\ExtraActions;
+use PHPUnit\Framework\Attributes\CoversClass;
+
+#[CoversClass(ExtraActions::class)]
 class ExtraActionsTest extends BaseTestCase
 {
     /**
@@ -57,5 +60,13 @@ class ExtraActionsTest extends BaseTestCase
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
+    }
+
+    public function testGetActions(): void
+    {
+        $actions = ExtraActions::getActions();
+
+        $expected = ['hello_world', 'goodbye'];
+        $this->assertEquals($expected, $actions);
     }
 }

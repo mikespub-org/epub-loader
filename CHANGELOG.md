@@ -4,6 +4,8 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Split action handler per action group or metadata
+  * Split googlebooks and openlibrary namespaces
   * Import wikidata books + author/series links
   * Split tests by class + expand goodreads check
   * Get books by series + add series info and books

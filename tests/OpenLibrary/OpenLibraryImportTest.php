@@ -15,7 +15,7 @@ class OpenLibraryImportTest extends BaseTestCase
 {
     public function testJsonImportFile(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/openlibrary';
+        $dbPath = dirname(__DIR__, 2) . '/cache/openlibrary';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
@@ -29,7 +29,7 @@ class OpenLibraryImportTest extends BaseTestCase
 
     public function testJsonImportPath(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/openlibrary';
+        $dbPath = dirname(__DIR__, 2) . '/cache/openlibrary';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 

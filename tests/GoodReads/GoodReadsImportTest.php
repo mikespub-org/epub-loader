@@ -15,7 +15,7 @@ class GoodReadsImportTest extends BaseTestCase
 {
     public function testJsonImportFile(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
@@ -29,7 +29,7 @@ class GoodReadsImportTest extends BaseTestCase
 
     public function testJsonImportPath(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/goodreads';
+        $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 

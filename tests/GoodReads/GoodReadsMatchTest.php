@@ -16,7 +16,7 @@ class GoodReadsMatchTest extends BaseTestCase
 {
     public function testMatchGetBook(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $bookId = '2306655';
@@ -28,7 +28,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchGetBookParsed(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $bookId = '2306655';
@@ -43,7 +43,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchGetSeries(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $seriesId = '102510-titan';
@@ -55,7 +55,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchGetSeriesParsed(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $seriesId = '102510-titan';
@@ -69,7 +69,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchFindAuthors(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $query = 'David Mitchell';
@@ -81,7 +81,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchFindAuthorsParsed(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $query = 'David Mitchell';
@@ -95,7 +95,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchFindAuthorId(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $author = ['name' => 'David Mitchell'];
@@ -107,7 +107,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchGetAuthor(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $authorId = '6538289.David_Mitchell';
@@ -119,7 +119,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchGetAuthorParsed(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $authorId = '6538289.David_Mitchell';
@@ -133,7 +133,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchParseAuthorList(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $fileList = GoodReadsCache::getFiles($cacheDir . '/goodreads/author/list/', '*.htm');
@@ -155,7 +155,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testMatchParseSearch(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $fileList = GoodReadsCache::getFiles($cacheDir . '/goodreads/search/', '*.htm');
@@ -178,7 +178,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testFindAuthorByName(): void
     {
-        $cacheDir = dirname(path: __DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $name = 'Arthur Conan Doyle';
@@ -190,7 +190,7 @@ class GoodReadsMatchTest extends BaseTestCase
 
     public function testFindSeriesByTitle(): void
     {
-        $cacheDir = dirname(path: __DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
 
         $title = 'Sherlock Holmes';

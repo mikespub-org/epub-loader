@@ -15,7 +15,7 @@ class WikiDataImportTest extends BaseTestCase
 {
     public function testJsonImportFile(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/wikidata';
+        $dbPath = dirname(__DIR__, 2) . '/cache/wikidata';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
@@ -29,7 +29,7 @@ class WikiDataImportTest extends BaseTestCase
 
     public function testJsonImportPath(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/wikidata';
+        $dbPath = dirname(__DIR__, 2) . '/cache/wikidata';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 

@@ -80,6 +80,9 @@ class GoodReadsCache extends BaseCache
         foreach ($this->getAuthorIds() as $authorId) {
             $cacheFile = $this->getAuthor($authorId);
             $data = $this->loadCache($cacheFile);
+            if (empty($data[$authorId])) {
+                continue;
+            }
             // [authorId => author]
             $authors[$authorId] = $data[$authorId]['name'];
         }

@@ -18,7 +18,7 @@ class GoodReadsCacheTest extends BaseTestCase
 
     public function testCacheParseAuthorResult(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
 
         $bookIdList = $cache->getBookIds();
@@ -72,7 +72,7 @@ class GoodReadsCacheTest extends BaseTestCase
 
     public function testCacheParseSearchResult(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/goodreads/search/', '*.json');
@@ -93,7 +93,7 @@ class GoodReadsCacheTest extends BaseTestCase
 
     public function testCacheParseSeriesResult(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
 
         $bookIdList = $cache->getBookIds();
@@ -159,7 +159,7 @@ class GoodReadsCacheTest extends BaseTestCase
 
     protected function skipTestCacheParseBook(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
 
         $fileList = $cache::getFiles($cacheDir . '/goodreads/book/show/', '*.json');
@@ -180,7 +180,7 @@ class GoodReadsCacheTest extends BaseTestCase
 
     public function testCacheGetBookInfos(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $cache = new GoodReadsCache($cacheDir);
 
         $books = $cache->getBookInfos();

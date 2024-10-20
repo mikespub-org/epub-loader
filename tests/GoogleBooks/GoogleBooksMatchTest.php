@@ -15,7 +15,7 @@ class GoogleBooksMatchTest extends BaseTestCase
 {
     public function testFindSeriesByName(): void
     {
-        $cacheDir = dirname(__DIR__) . '/cache';
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoogleBooksMatch($cacheDir);
         $author = [
             'name' => 'Trudi Canavan',

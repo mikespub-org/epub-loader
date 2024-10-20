@@ -15,7 +15,7 @@ class GoogleBooksImportTest extends BaseTestCase
 {
     public function testJsonImportVolume(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/google';
+        $dbPath = dirname(__DIR__, 2) . '/cache/google';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
@@ -29,7 +29,7 @@ class GoogleBooksImportTest extends BaseTestCase
 
     public function testJsonImportFile(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/google';
+        $dbPath = dirname(__DIR__, 2) . '/cache/google';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
@@ -43,7 +43,7 @@ class GoogleBooksImportTest extends BaseTestCase
 
     public function testJsonImportPath(): void
     {
-        $dbPath = dirname(__DIR__) . '/cache/google';
+        $dbPath = dirname(__DIR__, 2) . '/cache/google';
         $dbFile = $dbPath . '/metadata.db';
         $import = new JsonImport($dbFile, true);
 
