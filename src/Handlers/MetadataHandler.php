@@ -68,7 +68,7 @@ class MetadataHandler extends ActionHandler
      * @param string $matchId
      * @return bool
      */
-    public function updateBookIdentifier($type, $bookId, $matchId)
+    protected function updateBookIdentifier($type, $bookId, $matchId)
     {
         $books = $this->db->getBooks($bookId);
         $book = $books[$bookId];

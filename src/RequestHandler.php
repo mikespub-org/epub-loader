@@ -16,7 +16,7 @@ class RequestHandler
 {
     public const ENDPOINT = './index.php';
     public const APP_NAME = 'EPub Loader';
-    public const VERSION = '3.3';
+    public const VERSION = '3.4';
     public const TEMPLATE = 'index.html';
 
     /** @var array<mixed> */

@@ -22,7 +22,7 @@ $gConfig['app_name'] = 'EPub Loader';
 /**
  * Application version
  */
-$gConfig['version'] = '3.3';
+$gConfig['version'] = '3.4';
 
 /**
  * Admin email

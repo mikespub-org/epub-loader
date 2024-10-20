@@ -105,4 +105,26 @@ class GoodReadsCheckTest extends BaseTestCase
         }
         $this->assertTrue($result);
     }
+
+    public function testCheckBookIdentifiers(): void
+    {
+        $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
+        $dbFile = $dbPath . '/metadata.db';
+
+        $cacheDir = dirname(__DIR__, 2) . '/cache';
+
+        $check = new GoodReadsCheck($cacheDir, $dbFile);
+        try {
+            $check->checkBookIdentifiers();
+            $result = true;
+        } catch (Exception $e) {
+            echo $e->getMessage() . "\n";
+            $result = false;
+        }
+        $errors = $check->getErrors();
+        if (!empty($errors)) {
+            echo json_encode($errors, JSON_PRETTY_PRINT) . "\n";
+        }
+        $this->assertTrue($result);
+    }
 }

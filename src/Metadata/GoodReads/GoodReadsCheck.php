@@ -792,4 +792,77 @@ class GoodReadsCheck extends BaseCheck
             throw new Exception('Missing book series found');
         }
     }
+
+    /**
+     * Summary of checkBookIdentifiers
+     * @throws \Exception
+     * @return void
+     */
+    public function checkBookIdentifiers()
+    {
+        $this->errors = [];
+        $authorList = $this->db->getAuthors(null, 'books');
+
+        $todo = [];
+        foreach ($authorList as $authorId => $author) {
+            if (empty($author['link']) || !str_starts_with($author['link'], $this->match::AUTHOR_URL)) {
+                continue;
+            }
+            $matchId = str_replace($this->match::AUTHOR_URL, '', $author['link']);
+            $bookList = $this->cache->getAuthorBooks($matchId) ?? [];
+            if (empty($bookList)) {
+                continue;
+            }
+            $books = $this->db->getBooksByAuthor($authorId);
+            foreach ($books as $bookId => $book) {
+                if (!empty($todo[$bookId])) {
+                    continue;
+                }
+                foreach ($book['identifiers'] as $identifier) {
+                    if ($identifier['type'] == 'goodreads' && !empty($identifier['value'])) {
+                        break 2;
+                    }
+                }
+                $title = $book['title'];
+                //if (str_contains($title, ':')) {
+                //    $title = trim(explode(':', $title)[0]);
+                //}
+                //if (str_contains($title, '(')) {
+                //    $title = trim(explode('(', $title)[0]);
+                //}
+                $foundId = null;
+                foreach ($bookList as $item) {
+                    if ($item['title'] == $title) {
+                        $foundId = $item['id'];
+                        break;
+                    }
+                }
+                if (empty($foundId)) {
+                    foreach ($bookList as $item) {
+                        if (str_contains($item['title'], $title)) {
+                            $foundId = $item['id'];
+                            break;
+                        }
+                    }
+                }
+                if (!empty($foundId)) {
+                    $todo[$bookId] = $foundId;
+                }
+            }
+        }
+
+        $insert = '';
+        foreach ($todo as $bookId => $matchId) {
+            $insert .= "INSERT INTO identifiers(book, type, val) VALUES('{$bookId}', 'goodreads', '{$matchId}');\n";
+        }
+
+        $cacheFile = $this->cacheDir . $this->prefix . '/identifiers_todo.json';
+        file_put_contents($cacheFile, json_encode($todo, JSON_PRETTY_PRINT));
+        $cacheFile = $this->cacheDir . $this->prefix . '/identifiers_insert.sql';
+        file_put_contents($cacheFile, $insert);
+
+        if (!empty($todo)) {
+            throw new Exception('Missing books found');
+        }
+    }
 }
