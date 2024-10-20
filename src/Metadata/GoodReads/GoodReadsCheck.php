@@ -580,7 +580,7 @@ class GoodReadsCheck extends BaseCheck
                     $firstId = array_key_first($series[$seriesId]);
                     if ($checkId != $firstId) {
                         $info[$key]['options'] = $series[$seriesId];
-                        $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
+                        $update .= "# UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
                     }
                     break;
                 }
@@ -615,7 +615,7 @@ class GoodReadsCheck extends BaseCheck
                     $firstId = array_key_first($series[$seriesId]);
                     if ($checkId != $firstId) {
                         $info[$key]['options'] = $series[$seriesId];
-                        $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
+                        $update .= "# UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
                     }
                     break;
                 }
@@ -853,6 +853,7 @@ class GoodReadsCheck extends BaseCheck
 
         $insert = '';
         foreach ($todo as $bookId => $matchId) {
+            $matchId = $this->match::bookid($matchId);
             $insert .= "INSERT INTO identifiers(book, type, val) VALUES('{$bookId}', 'goodreads', '{$matchId}');\n";
         }
 
@@ -863,6 +864,23 @@ class GoodReadsCheck extends BaseCheck
 
         if (!empty($todo)) {
             throw new Exception('Missing books found');
+        }
+    }
+
+    /**
+     * Summary of getInvalidBooks
+     * @return void
+     */
+    public function getInvalidBooks()
+    {
+        $cacheFile = $this->cacheDir . $this->prefix . '/invalid.json';
+        $invalid = json_decode(file_get_contents($cacheFile), true);
+        foreach ($invalid as $matchId => $info) {
+            try {
+                $this->match->getBook($matchId);
+            } catch (Exception $e) {
+                echo $e->getMessage() . "\n";
+            }
         }
     }
 }
