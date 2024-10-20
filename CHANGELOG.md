@@ -4,6 +4,11 @@
   * ...
 
 3.x.x - 2024xxxx
+  * ...
+
+3.4.1 - 20241020 Add cache actions + restructure
+  * Move actions on entities to internal group
+  * Parse goodreads cache entries to display links
   * Split action handler per action group or metadata
   * Split googlebooks and openlibrary namespaces
   * Import wikidata books + author/series links

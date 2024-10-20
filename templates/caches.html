@@ -86,19 +86,19 @@
 	<li>{% if not cacheType %}
 			<b>{{cache}}</b>
 		{% else %}
-			<b><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cache|lower}}">{{cache}}</a></b>
+			<b><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}">{{cache}}</a></b>
 		{% endif %}
 		<ul>
 			{% for key, val in info %}
 			<li>
 				{% if cacheType == key %}
 					{% if cacheEntry %}
-					<b><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cache|lower}}/{{key}}">{{key}}</a></b>: {{val}}
+					<b><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}">{{key}}</a></b>: {{val}}
 					{% else %}
 					<b>{{key}}</b>: {{val}}
 					{% endif %}
 				{% else %}
-					<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cache|lower}}/{{key}}">{{key}}</a>: {{val}}
+					<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{key}}">{{key}}</a>: {{val}}
 				{% endif %}
 			</li>
 			{% endfor %}
@@ -110,8 +110,10 @@
 <p><a href="{{endpoint}}/{{action}}/{{dbNum}}?refresh=1" title="Refresh">Stats Updated</a>: {{cacheUpdated}}</p>
 {% if cacheEntry %}
 <p><b>Cache Entry {{cacheEntry}}</b></p>
-{% if cacheName == 'goodreads' %}
-See GoodReads
+{% if not raw %}
+See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{cacheEntry}}&raw=1">raw</a>
+{% else %}
+See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{cacheEntry}}">parsed</a>
 {% endif %}
 <pre>
 {{entry|raw}}

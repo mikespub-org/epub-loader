@@ -243,9 +243,10 @@ class GoodReadsCache extends BaseCache
      * Summary of getEntry
      * @param string $cacheType
      * @param string $cacheEntry
+     * @param string|null $urlPrefix
      * @return array<mixed>|null
      */
-    public function getEntry($cacheType, $cacheEntry)
+    public function getEntry($cacheType, $cacheEntry, $urlPrefix = null)
     {
         $cacheFile = match ($cacheType) {
             'author/list' => $this->getAuthor($cacheEntry),
@@ -255,9 +256,153 @@ class GoodReadsCache extends BaseCache
             default => throw new Exception('Invalid cache type'),
         };
         if ($this->hasCache($cacheFile)) {
-            return $this->loadCache($cacheFile);
+            $entry = $this->loadCache($cacheFile);
+            return match ($cacheType) {
+                'author/list' => $this->formatSearch($entry, $urlPrefix),
+                'book/show' => $this->formatBook($entry, $urlPrefix),
+                'series' => $this->formatSeries($entry, $urlPrefix),
+                'search' => $this->formatSearch($entry, $urlPrefix),
+                default => $entry,
+            };
         }
         return null;
+    }
+
+    /**
+     * Summary of formatSearch
+     * @param array<mixed>|null $entry
+     * @param string|null $urlPrefix
+     * @return array<mixed>|null
+     */
+    public function formatSearch($entry, $urlPrefix)
+    {
+        if (is_null($entry) || is_null($urlPrefix)) {
+            return $entry;
+        }
+        $result = self::parseSearch($entry);
+        $entry = $result->getProperties();
+        // <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a>
+        foreach ($entry as $authorId => $author) {
+            $id = $author->getId();
+            $cacheFile = $this->getAuthor($id);
+            if ($this->hasCache($cacheFile)) {
+                $entry[$authorId]->id = "<a href='{$urlPrefix}author/list?entry={$id}'>{$id}</a>";
+            } else {
+                $entry[$authorId]->id = "<a href='{$urlPrefix}author/list?entry={$id}'>{$id}</a> ?";
+            }
+            $author->books ??= [];
+            foreach ($author->getBooks() as $key => $book) {
+                $bookId = $book->getId();
+                $entryId = GoodReadsMatch::bookid(bookId: $bookId);
+                $cacheFile = $this->getBook($entryId);
+                if ($this->hasCache($cacheFile)) {
+                    $entry[$authorId]->books[$key]->id = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$bookId}</a>";
+                } else {
+                    $entry[$authorId]->books[$key]->id = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$bookId}</a> ?";
+                }
+            }
+        }
+        return $entry;
+    }
+
+    /**
+     * Summary of formatSeries
+     * @param array<mixed>|null $entry
+     * @param string|null $urlPrefix
+     * @return array<mixed>|null
+     */
+    public function formatSeries($entry, $urlPrefix)
+    {
+        if (is_null($entry) || is_null($urlPrefix)) {
+            return $entry;
+        }
+        $result = self::parseSeries($entry);
+        foreach ($result->getBookList() as $key => $book) {
+            if (empty($book->getBookId())) {
+                continue;
+            }
+            $entryId = $book->getBookId();
+            $cacheFile = $this->getBook($entryId);
+            $url = $book->getBookUrl() ?? $entryId;
+            if ($this->hasCache($cacheFile)) {
+                $book->bookUrl = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a>";
+            } else {
+                $book->bookUrl = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a> ?";
+            }
+            if (!empty($book->getAuthor()) && !empty($book->getAuthor()->getId())) {
+                $entryId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $book->getAuthor()->getWorksListUrl() ?? '');
+                $cacheFile = $this->getAuthor($entryId);
+                $url = $book->getAuthor()->getWorksListUrl() ?? $entryId;
+                if ($this->hasCache($cacheFile)) {
+                    $book->author->worksListUrl = "<a href='{$urlPrefix}author/list?entry={$entryId}'>{$url}</a>";
+                } else {
+                    $book->author->worksListUrl = "<a href='{$urlPrefix}author/list?entry={$entryId}'>{$url}</a> ?";
+                }
+            }
+            $result->bookList[$key] = $book;
+        }
+        return (array) $result;
+    }
+
+    /**
+     * Summary of formatBook
+     * @param array<mixed>|null $entry
+     * @param string|null $urlPrefix
+     * @return array<mixed>|null
+     */
+    public function formatBook($entry, $urlPrefix)
+    {
+        if (is_null($entry) || is_null($urlPrefix)) {
+            return $entry;
+        }
+        $result = self::parseBook($entry);
+        foreach ($result->getProps()->getPageProps()->getApolloState()->getBookMap() as $bookId => $book) {
+            if (empty($book->getLegacyId())) {
+                continue;
+            }
+            $entryId = $book->getLegacyId();
+            $cacheFile = $this->getBook((string) $entryId);
+            $url = $book->getWebUrl() ?? $entryId;
+            if ($this->hasCache($cacheFile)) {
+                $book->webUrl = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a>";
+            } else {
+                $book->webUrl = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a> ?";
+            }
+            $result->props->pageProps->apolloState->bookMap[$bookId] = $book;
+        }
+        foreach ($result->getProps()->getPageProps()->getApolloState()->getContributorMap() as $authorId => $author) {
+            if (empty($author->getLegacyId())) {
+                continue;
+            }
+            $entryId = str_replace(GoodReadsMatch::AUTHOR_URL, '', str_replace('/show/', '/list/', $author->getWebUrl() ?? ''));
+            $cacheFile = $this->getAuthor($entryId);
+            $url = $author->getWebUrl() ?? $author->getLegacyId();
+            if ($this->hasCache($cacheFile)) {
+                $author->webUrl = "<a href='{$urlPrefix}author/list?entry={$entryId}'>{$url}</a>";
+            } else {
+                $author->webUrl = "<a href='{$urlPrefix}author/list?entry={$entryId}'>{$url}</a> ?";
+            }
+            $result->props->pageProps->apolloState->contributorMap[$authorId] = $author;
+        }
+        foreach ($result->getProps()->getPageProps()->getApolloState()->getSeriesMap() as $seriesId => $series) {
+            if (empty($series->getWebUrl()) || !str_starts_with($series->getWebUrl(), GoodReadsMatch::SERIES_URL)) {
+                continue;
+            }
+            $entryId = str_replace(GoodReadsMatch::SERIES_URL, '', $series->getWebUrl());
+            $cacheFile = $this->getSeries($entryId);
+            $url = $series->getWebUrl();
+            if ($this->hasCache($cacheFile)) {
+                $series->webUrl = "<a href='{$urlPrefix}series?entry={$entryId}'>{$url}</a>";
+            } else {
+                $series->webUrl = "<a href='{$urlPrefix}series?entry={$entryId}'>{$url}</a> ?";
+            }
+            $result->props->pageProps->apolloState->seriesMap[$seriesId] = $series;
+        }
+        foreach ($result->getProps()->getPageProps()->getApolloState()->getReviewMap() as $reviewId => $review) {
+            $review->text = htmlspecialchars($review->getText() ?? '');
+            $result->props->pageProps->apolloState->reviewMap[$reviewId] = $review;
+        }
+        return (array) $result;
     }
 
     /**

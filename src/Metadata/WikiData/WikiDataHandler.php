@@ -54,7 +54,8 @@ class WikiDataHandler extends MetadataHandler
                 if (!WikiDataMatch::isValidEntity($matchId)) {
                     $matchId = null;
                 }
-                $result = $this->wd_entity($matchId, $authorId);
+                $seriesId = $this->request->getId('seriesId');
+                $result = $this->wd_entity($matchId, $authorId, $seriesId);
                 break;
             default:
                 $result = $this->$action();
@@ -304,13 +305,29 @@ class WikiDataHandler extends MetadataHandler
      * Summary of wd_entity
      * @param string|null $entityId
      * @param int|null $authorId
+     * @param int|null $seriesId
      * @param string|null $query
      * @return array<mixed>
      */
-    public function wd_entity($entityId = null, $authorId = null, $query = null)
+    public function wd_entity($entityId = null, $authorId = null, $seriesId = null, $query = null)
     {
         $entity = [];
         // Get entity on Wikidata
+        if (!empty($seriesId) && empty($entityId)) {
+            $series = $this->db->getSeries($seriesId, $authorId);
+            // series can have multiple authors
+            $first = reset($series);
+            if (empty($authorId)) {
+                $authorId = $first['author'];
+            }
+            if (!empty($first['link']) && WikiDataMatch::isValidLink($first['link'])) {
+                $entityId = WikiDataMatch::entity($first['link']);
+            } else {
+                $query = $first['name'];
+                $wikimatch = new WikiDataMatch($this->cacheDir);
+                //$matched = $wikimatch->findSeriesByName($query);
+            }
+        }
         if (!empty($authorId) && empty($entityId)) {
             $authors = $this->db->getAuthors($authorId);
             $author = $authors[$authorId];
@@ -322,8 +339,9 @@ class WikiDataHandler extends MetadataHandler
             $entity = $wikimatch->getEntity($entityId);
         }
         $authorList = $this->getAuthorList();
+        $seriesList = $this->getSeriesList($authorId);
 
         // Return info
-        return ['entity' => $entity, 'entityId' => $entityId, 'authorId' => $authorId, 'authors' => $authorList];
+        return ['entity' => $entity, 'entityId' => $entityId, 'authorId' => $authorId, 'seriesId' => $seriesId, 'authors' => $authorList, 'series' => $seriesList];
     }
 }

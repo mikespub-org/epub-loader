@@ -87,11 +87,20 @@
 	<form method="GET" action="{{endpoint}}/{{action}}/{{dbNum}}">
 		<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/wd_author/{{dbNum}}">{{dbConfig.name}}</a>
 		Entity <input type="text" name="matchId" value="{{entityId}}" />
-		Search <input type="text" name="query" value="" />
 		Author <select name="authorId">
 			<option value=""></option>
 			{% for id, name in authors %}
 			{% if authorId and authorId == id %}
+			<option value="{{id}}" selected>{{name}}</option>
+			{% else %}
+			<option value="{{id}}">{{name}}</option>
+			{% endif %}
+			{% endfor %}
+		</select>
+		Series <select name="seriesId">
+			<option value=""></option>
+			{% for id, name in series %}
+			{% if seriesId and seriesId == id %}
 			<option value="{{id}}" selected>{{name}}</option>
 			{% else %}
 			<option value="{{id}}">{{name}}</option>

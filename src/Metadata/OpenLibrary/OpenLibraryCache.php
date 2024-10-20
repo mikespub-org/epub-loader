@@ -201,9 +201,10 @@ class OpenLibraryCache extends BaseCache
      * Summary of getEntry
      * @param string $cacheType
      * @param string $cacheEntry
+     * @param string|null $urlPrefix
      * @return array<mixed>|null
      */
-    public function getEntry($cacheType, $cacheEntry)
+    public function getEntry($cacheType, $cacheEntry, $urlPrefix = null)
     {
         $cacheFile = match ($cacheType) {
             'authors' => $this->getAuthorQuery($cacheEntry),

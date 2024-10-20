@@ -48,7 +48,8 @@ class CacheHandler extends ActionHandler
         // get entries for cacheType
         $result['cacheEntry'] = $this->request->get('entry');
         if (!empty($result['cacheEntry'])) {
-            $entry = BaseCache::getCacheEntry($this->cacheDir, $result['cacheName'], $result['cacheType'], $result['cacheEntry']);
+            $result['raw'] = $this->request->get('raw');
+            $entry = $this->getCacheEntry($result);
             $result['entry'] = json_encode($entry, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             return $result;
         }
@@ -66,5 +67,30 @@ class CacheHandler extends ActionHandler
             break;
         }
         return $result;
+    }
+
+    /**
+     * Summary of getCacheEntry
+     * @param array<mixed> $result
+     * @return array<mixed>|null
+     */
+    protected function getCacheEntry($result)
+    {
+        if (!empty($result['raw'])) {
+            $urlPrefix = null;
+        } else {
+            // <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a>
+            $endpoint = $this->request->getEndpoint();
+            $action = 'caches';
+            $dbNum = $this->dbConfig['db_num'];
+            $cacheName = $result['cacheName'];
+            $urlPrefix = "{$endpoint}/{$action}/{$dbNum}/{$cacheName}/";
+        }
+        // @todo format entry ids with urls in metadata cache classes
+        $entry = BaseCache::getCacheEntry($this->cacheDir, $result['cacheName'], $result['cacheType'], $result['cacheEntry'], $urlPrefix);
+        if (empty($entry)) {
+            return $entry;
+        }
+        return $entry;
     }
 }

@@ -233,9 +233,10 @@ class BaseCache
      * @param string $cacheName
      * @param string $cacheType
      * @param string $cacheEntry
+     * @param string|null $urlPrefix
      * @return array<mixed>|null
      */
-    public static function getCacheEntry($cacheDir, $cacheName, $cacheType, $cacheEntry)
+    public static function getCacheEntry($cacheDir, $cacheName, $cacheType, $cacheEntry, $urlPrefix = null)
     {
         $entry = null;
         if (empty($cacheDir) || !is_dir($cacheDir)) {
@@ -246,7 +247,8 @@ class BaseCache
             throw new Exception(message: 'Invalid cache entry');
         }
         $cache = static::getCacheInstance($cacheDir, $cacheName);
-        return $cache->getEntry($cacheType, $cacheEntry);
+        // @todo format entry ids with urls in metadata cache classes
+        return $cache->getEntry($cacheType, $cacheEntry, $urlPrefix);
     }
 
     /**

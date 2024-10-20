@@ -81,12 +81,9 @@ $gConfig['groups']['Lookup'] = [
     'wd_author' => 'WikiData authors',
     'wd_books' => 'WikiData books for author',
     'wd_series' => 'WikiData series for author',
-    'wd_entity' => 'WikiData entity',
     'gb_books' => 'Google Books for author',
-    'gb_volume' => 'Google Books volume',
     'ol_author' => 'OpenLibrary authors',
     'ol_books' => 'OpenLibrary books for author',
-    'ol_work' => 'OpenLibrary work',
     'gr_author' => 'GoodReads authors',
     'gr_books' => 'GoodReads books for author',
     'gr_series' => 'GoodReads series',
@@ -95,10 +92,13 @@ $gConfig['groups']['Lookup'] = [
 // internal actions are not shown on the main menu
 $gConfig['groups']['Internal'] = [
     'test' => 'Test action (not visible)',
+    'wd_entity' => 'WikiData entity',
+    'gb_volume' => 'Google Books volume',
+    'ol_work' => 'OpenLibrary work',
+    'resource' => 'Get Calibre Resource',
 ];
 $gConfig['groups']['Extra'] = [
     'notes' => 'Get Calibre Notes',
-    'resource' => 'Get Calibre Resource',
     'hello_world' => 'Example: Hello, World - see app/example.php',
     'goodbye' => 'Example: Goodbye - see app/example.php',
 ];
