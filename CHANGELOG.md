@@ -4,7 +4,8 @@
   * ...
 
 3.x.x - 2024xxxx
-  * ...
+  * Use EPub::getSeriesOrCollection() when importing local books
+  * Update mikespub/php-epub-meta package to release 3.1
 
 3.4.1 - 20241020 Add cache actions + restructure
   * Move actions on entities to internal group

@@ -23,8 +23,8 @@
         "ext-xml": "*",
         "ext-zip": "*",
         "ext-zlib": "*",
-        "mikespub/survos-wikidata": "^4.0||^5.1",
-        "mikespub/php-epub-meta": "^2.3||^3.0",
+        "mikespub/survos-wikidata": "^5.1",
+        "mikespub/php-epub-meta": "^3.1",
         "twig/twig": "^3.14"
     },
     "autoload": {

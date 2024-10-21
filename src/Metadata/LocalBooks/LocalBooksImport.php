@@ -73,13 +73,20 @@ class LocalBooksImport
         $bookInfos->mIsbn = $ePub->getIsbn();
         $bookInfos->mRights = $ePub->getCopyright();
         $bookInfos->mPublisher = $ePub->getPublisher();
-        // Tag sample in opf file:
-        //   <meta content="Histoire de la Monarchie de Juillet" name="calibre:series"/>
-        $bookInfos->mSerie = $ePub->getSeries();
-        //$bookInfos->mSerieIds = [];
-        // Tag sample in opf file:
-        //   <meta content="7" name="calibre:series_index"/>
-        $bookInfos->mSerieIndex = $ePub->getSeriesIndex();
+        if ($version == 3) {
+            // Note: this will ignore collections without id, e.g. in epub-tests files:
+            // <meta property="belongs-to-collection">should</meta>
+            [$bookInfos->mSerie, $bookInfos->mSerieIndex] = $ePub->getSeriesOrCollection();
+            //$bookInfos->mSerieIds = [];
+        } else {
+            // Tag sample in opf file:
+            //   <meta content="Histoire de la Monarchie de Juillet" name="calibre:series"/>
+            $bookInfos->mSerie = $ePub->getSeries();
+            //$bookInfos->mSerieIds = [];
+            // Tag sample in opf file:
+            //   <meta content="7" name="calibre:series_index"/>
+            $bookInfos->mSerieIndex = $ePub->getSeriesIndex();
+        }
         $bookInfos->mCreationDate = BookInfos::getSqlDate($ePub->getCreationDate()) ?? '';
         $bookInfos->mModificationDate = BookInfos::getSqlDate($ePub->getModificationDate()) ?? '';
         // Timestamp is used to get latest ebooks
