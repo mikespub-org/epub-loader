@@ -280,16 +280,16 @@
         },
         {
             "name": "mikespub/php-epub-meta",
-            "version": "3.1.0",
+            "version": "3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mikespub-org/php-epub-meta.git",
-                "reference": "fc1ab4b97033146f6b61d7ecd3be4c28d15c875f"
+                "reference": "5473cf30bc23511e04a43fc778f25a0af69701ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/fc1ab4b97033146f6b61d7ecd3be4c28d15c875f",
-                "reference": "fc1ab4b97033146f6b61d7ecd3be4c28d15c875f",
+                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/5473cf30bc23511e04a43fc778f25a0af69701ae",
+                "reference": "5473cf30bc23511e04a43fc778f25a0af69701ae",
                 "shasum": ""
             },
             "require": {
@@ -346,9 +346,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mikespub-org/php-epub-meta/issues",
-                "source": "https://github.com/mikespub-org/php-epub-meta/tree/3.1.0"
+                "source": "https://github.com/mikespub-org/php-epub-meta/tree/3.1.1"
             },
-            "time": "2024-10-21T20:39:50+00:00"
+            "time": "2024-10-22T11:11:48+00:00"
         },
         {
             "name": "mikespub/survos-wikidata",

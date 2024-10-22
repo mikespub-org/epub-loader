@@ -111,6 +111,7 @@
 	</form>
 </div>
 <div><b>Wikidata Entity {{entityId}}</b></div>
+<p>See <a href="{{endpoint}}/caches/{{dbNum}}/wikidata/entities?entry={{entityId}}">cache entry</a></p>
 {% if entity|length > 0 and 'P18' in entity.properties|keys and entity.properties.P18.values|length > 0 %}
 	{% set url = entity.properties.P18.values[0].id|split('/')|slice(-1) %}
 	<img src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{{url|join}}&width=300"/>

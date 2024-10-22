@@ -67,7 +67,7 @@ class OpenLibraryImport
             if (empty($author['name'])) {
                 continue;
             }
-            $authorSort = BookInfos::getSortString($author['name']);
+            $authorSort = BookInfos::getAuthorSort($author['name']);
             $authors[$authorSort] = $author['name'];
             $bookInfos->mAuthorIds[] = $authorId;
         }

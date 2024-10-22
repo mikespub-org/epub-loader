@@ -52,7 +52,7 @@ class WikiDataImport
             if (empty($authorName)) {
                 continue;
             }
-            $authorSort = BookInfos::getSortString($authorName);
+            $authorSort = BookInfos::getAuthorSort($authorName);
             $authors[$authorSort] = $authorName;
             $bookInfos->mAuthorIds[] = $authorId;
         }

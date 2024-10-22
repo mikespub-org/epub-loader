@@ -26,7 +26,7 @@ class ImportCalibre extends ImportTarget
      *
      * @param BookInfos $inBookInfo BookInfo object
      * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
-     * @param string $sortField Add 'calibre_database_field_sort' field
+     * @param string $sortField Add 'calibre_database_field_sort' field for tags
      *
      * @throws Exception if error
      *
@@ -104,6 +104,7 @@ class ImportCalibre extends ImportTarget
         if ($inBookId) {
             $sql .= 'id, ';
         }
+        // Add 'calibre_database_field_cover' field for books
         $sql .= 'title, sort, timestamp, pubdate, last_modified, series_index, uuid, path, has_cover, cover, isbn) values(';
         if ($inBookId) {
             $sql .= ':id, ';
@@ -125,7 +126,8 @@ class ImportCalibre extends ImportTarget
             $stmt->bindParam(':id', $inBookId);
         }
         $stmt->bindParam(':title', $inBookInfo->mTitle);
-        $sortString = BookInfos::getSortString($inBookInfo->mTitle);
+        $sortString = BookInfos::getTitleSort($inBookInfo->mTitle);
+        $sortString = BookInfos::getSortString($sortString);
         $stmt->bindParam(':sort', $sortString);
         $stmt->bindParam(':timestamp', $timeStamp);
         $stmt->bindParam(':pubdate', $pubDate);
@@ -291,7 +293,8 @@ class ImportCalibre extends ImportTarget
         $sql = 'insert into series(name, sort, link) values(:serie, :sort, :link)';
         $stmt = $this->mDb->prepare($sql);
         $stmt->bindParam(':serie', $inSerie);
-        $sortString = BookInfos::getSortString($inSerie);
+        $sortString = BookInfos::getTitleSort($inSerie);
+        $sortString = BookInfos::getSortString($sortString);
         $stmt->bindParam(':sort', $sortString);
         $link = $inLink ?? '';
         $stmt->bindParam(':link', $link);
@@ -471,7 +474,7 @@ class ImportCalibre extends ImportTarget
      * Summary of addBookTags (subjects)
      * @param BookInfos $inBookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
-     * @param string $sortField Add 'calibre_database_field_sort' field
+     * @param string $sortField Add 'calibre_database_field_sort' field for tags
      * @throws \Exception
      * @return void
      */
@@ -495,7 +498,7 @@ class ImportCalibre extends ImportTarget
     /**
      * Summary of addTag
      * @param string $subject
-     * @param string $sortField Add 'calibre_database_field_sort' field
+     * @param string $sortField Add 'calibre_database_field_sort' field for tags
      * @return int
      */
     public function addTag($subject, $sortField = 'sort')
@@ -520,7 +523,8 @@ class ImportCalibre extends ImportTarget
         $stmt->bindParam(':subject', $subject);
         // Add :sort field
         if (!empty($sortField)) {
-            $sortString = BookInfos::getSortString($subject);
+            $sortString = BookInfos::getTitleSort($subject);
+            $sortString = BookInfos::getSortString($sortString);
             $stmt->bindParam(':' . $sortField, $sortString);
         }
         $stmt->execute();

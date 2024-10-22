@@ -769,11 +769,8 @@ class GoodReadsCheck extends BaseCheck
             $result = $this->cache::parseSeries($data);
             // escape single quotes by using two single quotes here
             $name = str_replace("'", "''", $result->getTitle() ?? "Series $matchId");
-            if (preg_match('/^(The|A|An) /', $name)) {
-                $sort = preg_replace('/^(The|A|An) (.+)$/', '$2, $1', $name);
-            } else {
-                $sort = $name;
-            }
+            $sort = BookInfos::getTitleSort($name);
+            $sort = BookInfos::getSortString($sort);
             $matchUrl = $this->match::SERIES_URL . $matchId;
             $insert .= "INSERT INTO series(name, sort, link) VALUES('{$name}', '{$sort}', '{$matchUrl}');\n";
         }

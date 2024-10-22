@@ -109,6 +109,43 @@ class BookInfos
     }
 
     /**
+     * Sort author by Lastname, Firstname(s)
+     *
+     * @param string $inStr
+     * @return string
+     */
+    public static function getAuthorSort($inStr)
+    {
+        // drop (ed.) etc. from author name
+        if (str_contains($inStr, ' (')) {
+            $inStr = explode(' (', $inStr)[0];
+        }
+        // no space left to split on
+        if (!str_contains($inStr, ' ')) {
+            return $inStr;
+        }
+        // convert to Lastname, Firstname(s)
+        $pieces = explode(' ', $inStr);
+        $last = array_pop($pieces);
+        return $last . ', ' . implode(' ', $pieces);
+    }
+
+    /**
+     * Summary of getTitleSort
+     * @param string $inStr
+     * @return string
+     */
+    public static function getTitleSort($inStr)
+    {
+        $inStr = trim($inStr, ' -.');
+        // @todo add articles to ignore in other languages
+        if (!preg_match('/^(The|A|An) /u', $inStr)) {
+            return $inStr;
+        }
+        return preg_replace('/^(The|A|An) (.+)$/u', '$2, $1', $inStr);
+    }
+
+    /**
      * Format a string for sort
      *
      * @param string $inStr Any string
@@ -127,7 +164,7 @@ class BookInfos
             '@(*UTF8)[æÆ]@i',
             '@(*UTF8)[çÇ]@i',
             //'@[ ]@i',
-            '@[^a-zA-Z0-9_\-\.\ ]@',
+            '@[^a-zA-Z0-9_\-\.,\ ]@',
         ];
         $replace = [
             'e',
@@ -148,7 +185,7 @@ class BookInfos
             $res = str_replace('  ', ' ', $res);
         }
 
-        $res = trim((string) $res, ' -.');
+        $res = trim((string) $res, ' -.,');
 
         return $res;
     }

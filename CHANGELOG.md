@@ -4,6 +4,7 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Fix title sort and author sort on import and display
   * Use EPub::getSeriesOrCollection() when importing local books
   * Update mikespub/php-epub-meta package to release 3.1
 

@@ -112,7 +112,7 @@ class WikiDataCacheTest extends BaseTestCase
             if (is_null($matched)) {
                 continue;
             }
-            $works = $cache::parseSearchResult($matched);
+            $series = $cache::parseSearchResult($matched);
         }
 
         $expected = count($cache->getAuthorSeriesIds('en', 100));
@@ -133,7 +133,7 @@ class WikiDataCacheTest extends BaseTestCase
             if (is_null($matched)) {
                 continue;
             }
-            $works = $cache::parseSearchResult($matched);
+            $series = $cache::parseSearchResult($matched);
         }
 
         $expected = count($cache->getSeriesQueries('en'));
@@ -158,9 +158,9 @@ class WikiDataCacheTest extends BaseTestCase
                 continue;
             }
             //$capture->analyze($matched);
-            $work = $cache::parseEntity($matched);
-            if (!empty($work) && $work['type'] == 'book') {
-                //echo json_encode($work, JSON_PRETTY_PRINT) . "\n";
+            $entity = $cache::parseEntity($matched);
+            if (!empty($entity) && $entity['type'] == 'book') {
+                //echo json_encode($entity, JSON_PRETTY_PRINT) . "\n";
             }
             $instance = $matched['properties']['P31'] ?? [];
             $instance['values'] ??= [];

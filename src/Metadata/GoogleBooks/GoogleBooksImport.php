@@ -47,7 +47,7 @@ class GoogleBooksImport
         $bookInfos->mTitle = (string) $volumeInfo->getTitle();
         $authors = [];
         foreach ($volumeInfo->getAuthors() as $author) {
-            $authorSort = BookInfos::getSortString($author);
+            $authorSort = BookInfos::getAuthorSort($author);
             $authors[$authorSort] = $author;
         }
         $bookInfos->mAuthors = $authors;

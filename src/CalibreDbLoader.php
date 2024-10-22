@@ -278,7 +278,7 @@ class CalibreDbLoader
             $sql .= ' and series = ?';
             $params[] = $seriesId;
         }
-        if (!empty($sort) && in_array($sort, ['id', 'title'])) {
+        if (!empty($sort) && in_array($sort, ['id', 'title', 'sort'])) {
             $sql .= ' order by ' . $sort;
         } else {
             $sql .= ' order by id';
@@ -464,7 +464,10 @@ class CalibreDbLoader
             $sql .= ' and books.id = ?';
             $params[] = $bookId;
         }
-        if (!empty($sort) && in_array($sort, ['id', 'name', 'author'])) {
+        if (!empty($sort) && in_array($sort, ['id', 'name', 'author', 'sort'])) {
+            if ($sort == 'sort') {
+                $sort = 'series.sort';
+            }
             $sql .= ' order by ' . $sort;
         } else {
             $sql .= ' order by id';

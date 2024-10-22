@@ -175,7 +175,10 @@ class GoogleBooksCache extends BaseCache
             default => throw new Exception('Invalid cache type'),
         };
         if ($this->hasCache($cacheFile)) {
-            return $this->loadCache($cacheFile);
+            $entry = $this->loadCache($cacheFile);
+            return match ($cacheType) {
+                default => $entry,
+            };
         }
         return null;
     }

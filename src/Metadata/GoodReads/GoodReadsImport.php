@@ -71,7 +71,7 @@ class GoodReadsImport
             throw new Exception('Invalid authorRef for GoodReads book');
         }
         $author = (string) $contributors[$authorRef]->getName();
-        $authorSort = BookInfos::getSortString($author);
+        $authorSort = BookInfos::getAuthorSort($author);
         $authors[$authorSort] = $author;
         $authorId = str_replace('https://www.goodreads.com/author/show/', '', (string) $contributors[$authorRef]->getWebUrl());
         $bookInfos->mAuthorIds = [];
@@ -90,7 +90,7 @@ class GoodReadsImport
                 throw new Exception('Invalid secondary authorRef for GoodReads book: ' . $authorRef);
             }
             $author = (string) $contributors[$authorRef]->getName();
-            $authorSort = BookInfos::getSortString($author);
+            $authorSort = BookInfos::getAuthorSort($author);
             $authors[$authorSort] = $author;
             $authorId = str_replace('https://www.goodreads.com/author/show/', '', (string) $contributors[$authorRef]->getWebUrl());
             if (!empty($authorId)) {

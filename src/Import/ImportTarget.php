@@ -62,7 +62,7 @@ abstract class ImportTarget
      *
      * @param BookInfos $inBookInfo BookInfo object
      * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
-     * @param string $sortField Add 'calibre_database_field_sort' field
+     * @param string $sortField Add 'calibre_database_field_sort' field for tags
      *
      * @throws Exception if error
      *
@@ -117,11 +117,11 @@ abstract class ImportTarget
                 if (str_contains($str, 'fts5')) {
                     continue;
                 }
-                // Add 'calibre_database_field_cover' field
+                // Add 'calibre_database_field_cover' field for books
                 if (str_contains($sql, 'has_cover BOOL DEFAULT 0,')) {
                     $sql = str_replace('has_cover BOOL DEFAULT 0,', 'has_cover BOOL DEFAULT 0,' . ' cover TEXT NOT NULL DEFAULT "",', $sql);
                 }
-                // Add 'calibre_database_field_sort' field
+                // Add 'calibre_database_field_sort' field for tags
                 if (str_contains($sql, 'CREATE TABLE tags ')) {
                     $sql = str_replace('name TEXT NOT NULL COLLATE NOCASE,', 'name TEXT NOT NULL COLLATE NOCASE,' . ' sort TEXT COLLATE NOCASE,', $sql);
                 }
