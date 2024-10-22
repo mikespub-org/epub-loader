@@ -58,7 +58,12 @@ class MetadataHandler extends ActionHandler
         $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched, 'paging' => $paging];
+        return [
+            'authors' => $authors,
+            'authorId' => $authorId,
+            'matched' => $matched,
+            'paging' => $paging,
+        ];
     }
 
     /**
@@ -73,10 +78,9 @@ class MetadataHandler extends ActionHandler
         $books = $this->db->getBooks($bookId);
         $book = $books[$bookId];
         if (!empty($book) && !empty($book['identifiers'])) {
-            foreach ($book['identifiers'] as $id => $identifier) {
-                if ($identifier['type'] == $type) {
-                    return $this->db->updateIdentifier($id, $matchId);
-                }
+            if (!empty($book['identifiers'][$type])) {
+                $id = $book['identifiers'][$type]['id'];
+                return $this->db->updateIdentifier($id, $matchId);
             }
         }
         return $this->db->insertIdentifier($bookId, $type, $matchId);

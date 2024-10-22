@@ -90,15 +90,26 @@ class GoogleBooksHandler extends MetadataHandler
 
         $authorList = $this->getAuthorList();
         $titles = [];
+        $identifierList = [];
         foreach ($books as $id => $book) {
             $titles[$book['title']] = $id;
+            $diff = array_diff(array_keys($book['identifiers']), $identifierList);
+            if (!empty($diff)) {
+                $identifierList = array_merge($identifierList, $diff);
+            }
         }
+        $identifierList[] = 'ID:';
+        sort($identifierList);
         // exact match only here - see calibre metadata plugins for more advanced features
         foreach ($matched['items'] as $match) {
             if (array_key_exists($match['volumeInfo']['title'], $titles)) {
                 if (!empty($match['volumeInfo']['authors']) && in_array($author['name'], $match['volumeInfo']['authors'])) {
                     $id = $titles[$match['volumeInfo']['title']];
-                    $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* google', 'value' => $match['id'], 'url' => GoogleBooksMatch::link($match['id'])];
+                    if (empty($books[$id]['identifiers']['google']) || $books[$id]['identifiers']['google']['value'] != $match['id']) {
+                        $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* google', 'value' => $match['id'], 'url' => GoogleBooksMatch::link($match['id'])];
+                    } else {
+                        $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* google', 'value' => '='];
+                    }
                     unset($titles[$match['volumeInfo']['title']]);
                 }
             }
@@ -106,7 +117,17 @@ class GoogleBooksHandler extends MetadataHandler
         $langList = GoogleBooksMatch::getLanguages();
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'lang' => $lang, 'langList' => $langList];
+        return [
+            'books' => $books,
+            'authorId' => $authorId,
+            'bookId' => $bookId,
+            'matched' => $matched,
+            'authors' => $authorList,
+            'lang' => $lang,
+            'langList' => $langList,
+            'identifiers' => $identifierList,
+            'identifierType' => 'google',
+        ];
     }
 
     /**
@@ -127,6 +148,11 @@ class GoogleBooksHandler extends MetadataHandler
         $langList = GoogleBooksMatch::getLanguages();
 
         // Return info
-        return ['volume' => $volume, 'volumeId' => $volumeId, 'lang' => $lang, 'langList' => $langList];
+        return [
+            'volume' => $volume,
+            'volumeId' => $volumeId,
+            'lang' => $lang,
+            'langList' => $langList,
+        ];
     }
 }

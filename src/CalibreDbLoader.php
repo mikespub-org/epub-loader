@@ -300,11 +300,12 @@ class CalibreDbLoader
         where book IN (' . str_repeat('?,', count($bookIdList) - 1) . '?)';
         $stmt = $this->mDb->prepare($sql);
         $stmt->execute($bookIdList);
+        // TABLE identifiers has UNIQUE(book, type) constraint
         while ($post = $stmt->fetchObject()) {
-            $books[$post->book]['identifiers'][$post->id] = (array) $post;
+            $books[$post->book]['identifiers'][$post->type] = (array) $post;
             $url = $this->getIdentifierUrl($post->type, $post->value);
             if (!empty($url)) {
-                $books[$post->book]['identifiers'][$post->id]['url'] = $url;
+                $books[$post->book]['identifiers'][$post->type]['url'] = $url;
             }
         }
         return $books;

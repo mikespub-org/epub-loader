@@ -111,7 +111,12 @@ class OpenLibraryHandler extends MetadataHandler
         $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched['docs'], 'paging' => $paging];
+        return [
+            'authors' => $authors,
+            'authorId' => $authorId,
+            'matched' => $matched['docs'],
+            'paging' => $paging,
+        ];
     }
 
     /**
@@ -171,23 +176,42 @@ class OpenLibraryHandler extends MetadataHandler
 
         $authorList = $this->getAuthorList();
         $titles = [];
+        $identifierList = [];
         foreach ($books as $id => $book) {
             $titles[$book['title']] = $id;
+            $diff = array_diff(array_keys($book['identifiers']), $identifierList);
+            if (!empty($diff)) {
+                $identifierList = array_merge($identifierList, $diff);
+            }
         }
+        $identifierList[] = 'ID:';
+        sort($identifierList);
         // exact match only here - see calibre metadata plugins for more advanced features
         foreach ($matched['docs'] as $match) {
             if (array_key_exists($match['title'], $titles)) {
                 if (!empty($match['author_name']) && in_array($author['name'], $match['author_name'])) {
                     $id = $titles[$match['title']];
                     $value = str_replace('/works/', '', $match['key']);
-                    $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* olid', 'value' => $value, 'url' => OpenLibraryMatch::link($value)];
+                    if (empty($books[$id]['identifiers']['olid']) || $books[$id]['identifiers']['olid']['value'] != $value) {
+                        $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* olid', 'value' => $value, 'url' => OpenLibraryMatch::link($value)];
+                    } else {
+                        $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* olid', 'value' => '='];
+                    }
                     unset($titles[$match['title']]);
                 }
             }
         }
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'bookId' => $bookId, 'matched' => $matched['docs'], 'authors' => $authorList];
+        return [
+            'books' => $books,
+            'authorId' => $authorId,
+            'bookId' => $bookId,
+            'matched' => $matched['docs'],
+            'authors' => $authorList,
+            'identifiers' => $identifierList,
+            'identifierType' => 'olid',
+        ];
     }
 
     /**
@@ -206,6 +230,9 @@ class OpenLibraryHandler extends MetadataHandler
         }
 
         // Return info
-        return ['work' => $work, 'workId' => $workId];
+        return [
+            'work' => $work,
+            'workId' => $workId,
+        ];
     }
 }

@@ -49,23 +49,32 @@
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?lang={{lang}}">Id</a></th>
 		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?lang={{lang}}&sort=title">Title</a></th>
 		<th>Action</th>
-		<th>Identifiers</th>
+		{% for type in identifiers %}
+		<th>{{type}}</th>
+		{% endfor %}
 	</tr>
 	{% for item in books %}
 	<tr>
 		<td>{{item.id}}</td>
 		<td>{{item.title}}</td>
 		<td>{% if bookId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?lang={{lang}}&bookId={{item.id}}">Search</a>{% endif %}</td>
+		{% for type in identifiers %}
 		<td>
-			{% for identifier in item.identifiers %}
-				{% if identifier.url %}
-					{{identifier.type}}: <a rel="external" target="_blank" href="{{identifier.url}}">{{identifier.value}}</a>
+			{% if item.identifiers[type] is defined %}
+				{% set identifier = item.identifiers[type] %}
+				{% if type == 'ID:' or type == identifierType %}
+					{% set label = identifier.value %}
 				{% else %}
-					{{identifier.type}}: {{identifier.value}}
+					{% set label = ' Y ' %}
 				{% endif %}
-				<br/>
-			{% endfor %}
+				{% if identifier.url %}
+					<a rel="external" target="_blank" href="{{identifier.url}}" title="{{identifier.value}}">{{label}}</a>
+				{% else %}
+					<a href="#" title="{{identifier.value}}">{{label}}</a>
+				{% endif %}
+			{% endif %}
 		</td>
+		{% endfor %}
 	</tr>
 	{% endfor %}
 </table>

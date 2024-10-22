@@ -815,10 +815,8 @@ class GoodReadsCheck extends BaseCheck
                 if (!empty($todo[$bookId])) {
                     continue;
                 }
-                foreach ($book['identifiers'] as $identifier) {
-                    if ($identifier['type'] == 'goodreads' && !empty($identifier['value'])) {
-                        break 2;
-                    }
+                if (!empty($book['identifiers']['goodreads']) && !empty($book['identifiers']['goodreads']['value'])) {
+                    continue;
                 }
                 $title = $book['title'];
                 //if (str_contains($title, ':')) {

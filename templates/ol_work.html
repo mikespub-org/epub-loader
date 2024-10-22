@@ -48,9 +48,11 @@
 </div>
 <div><b>Open Library Work {{workId}}</b></div>
 {% if workId ends with 'A' %}
+<p>See <a href="{{endpoint}}/caches/{{dbNum}}/openlibrary/entities/A?entry={{workId}}">cache entry</a></p>
 <img src="https://covers.openlibrary.org/a/olid/{{workId}}-M.jpg"/>
 {% endif %}
 {% if workId ends with 'W' and work.covers %}
+<p>See <a href="{{endpoint}}/caches/{{dbNum}}/openlibrary/entities/W?entry={{workId}}">cache entry</a></p>
 <img src="https://covers.openlibrary.org/b/id/{{work.covers|sort|first}}-M.jpg"/>
 {% endif %}
 <ul>

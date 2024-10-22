@@ -129,7 +129,12 @@ class GoodReadsHandler extends MetadataHandler
         $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched, 'paging' => $paging];
+        return [
+            'authors' => $authors,
+            'authorId' => $authorId,
+            'matched' => $matched,
+            'paging' => $paging,
+        ];
     }
 
     /**
@@ -260,23 +265,46 @@ class GoodReadsHandler extends MetadataHandler
 
         $authorList = $this->getAuthorList();
         $titles = [];
+        $identifierList = [];
         foreach ($books as $id => $book) {
             $titles[$book['title']] = $id;
+            $diff = array_diff(array_keys($book['identifiers']), $identifierList);
+            if (!empty($diff)) {
+                $identifierList = array_merge($identifierList, $diff);
+            }
         }
+        $identifierList[] = 'ID:';
+        sort($identifierList);
         // exact match only here - see calibre metadata plugins for more advanced features
         foreach ($matched as $key => $match) {
             $matched[$key]['key'] = $match['id'];
             $matched[$key]['id'] = GoodReadsMatch::bookid($match['id']);
             if (array_key_exists($match['title'], $titles)) {
                 $id = $titles[$match['title']];
-                $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* goodreads', 'value' => $matched[$key]['id'], 'url' => GoodReadsMatch::link($match['id'])];
+                if (empty($books[$id]['identifiers']['goodreads']) || $books[$id]['identifiers']['goodreads']['value'] != $matched[$key]['id']) {
+                    $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* goodreads', 'value' => $matched[$key]['id'], 'url' => GoodReadsMatch::link($match['id'])];
+                } else {
+                    $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* goodreads', 'value' => '='];
+                }
                 unset($titles[$match['title']]);
             }
         }
         $seriesList = $this->getSeriesList($authorId);
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'seriesId' => $seriesId, 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'series' => $seriesList, 'matchId' => $matchId, 'serId' => $serId];
+        return [
+            'books' => $books,
+            'authorId' => $authorId,
+            'seriesId' => $seriesId,
+            'bookId' => $bookId,
+            'matched' => $matched,
+            'authors' => $authorList,
+            'series' => $seriesList,
+            'identifiers' => $identifierList,
+            'identifierType' => 'goodreads',
+            'matchId' => $matchId,
+            'serId' => $serId,
+        ];
     }
 
     /**
@@ -404,6 +432,13 @@ class GoodReadsHandler extends MetadataHandler
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['series' => $series, 'authorId' => $authorId, 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList, 'paging' => $paging];
+        return [
+            'series' => $series,
+            'authorId' => $authorId,
+            'seriesId' => $seriesId,
+            'matched' => $matched,
+            'authors' => $authorList,
+            'paging' => $paging,
+        ];
     }
 }

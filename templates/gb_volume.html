@@ -48,6 +48,7 @@
 	</form>
 </div>
 <div><b>Google Books Volume {{volumeId}}</b></div>
+<p>See <a href="{{endpoint}}/caches/{{dbNum}}/googlebooks/volumes?entry={{volumeId}}">cache entry</a></p>
 {% if volume|length > 0 and 'imageLinks' in volume.volumeInfo|keys and 'thumbnail' in volume.volumeInfo.imageLinks|keys %}
 	<img src="{{volume.volumeInfo.imageLinks.thumbnail}}"/>
 {% endif %}

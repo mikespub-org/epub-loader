@@ -118,13 +118,24 @@ class BaseMatch
             return '';
         }
         $url = match ($type) {
-            'google' => GoogleBooks\GoogleBooksMatch::link($value),
-            'wd' => WikiData\WikiDataMatch::link($value),
-            'olid' => OpenLibrary\OpenLibraryMatch::link($value),
             'goodreads' => GoodReads\GoodReadsMatch::link($value),
-            'amazon' => 'https://www.amazon.com/dp/' . $value,
-            'isbn' => 'https://search.worldcat.org/search?q=bn:' . $value,
+            'google' => GoogleBooks\GoogleBooksMatch::link($value),
+            'olid' => OpenLibrary\OpenLibraryMatch::link($value),
+            'wd' => WikiData\WikiDataMatch::link($value),
             'url' => str_contains($value, '://') ? $value : '',
+            'viaf' => 'https://viaf.org/viaf/' . $value,
+            'amazon' => 'https://www.amazon.com/dp/' . $value,
+            'freebase' => 'https://www.google.com/search?kgmid=' . $value,
+            'g_kgmid' => 'https://www.google.com/search?kgmid=' . $value,
+            'isbn' => 'https://search.worldcat.org/search?q=bn:' . $value,
+            'isfdb' => 'https://www.isfdb.org/cgi-bin/title.cgi?' . $value,
+            'ltid' => 'https://www.librarything.com/work/book/' . $value,
+            'goodreads_a' => GoodReads\GoodReadsMatch::AUTHOR_URL . $value,
+            'goodreads_s' => GoodReads\GoodReadsMatch::SERIES_URL . $value,
+            'isfdb_a' => 'https://www.isfdb.org/cgi-bin/ea.cgi?' . $value,
+            'isfdb_s' => 'https://www.isfdb.org/cgi-bin/pe.cgi' . $value,
+            'ltid_a' => 'https://www.librarything.com/author/' . $value,
+            'ltid_s' => 'https://www.librarything.com/nseries/' . $value,
             default => '',
         };
         return $url;

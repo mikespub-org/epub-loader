@@ -65,7 +65,13 @@ class DatabaseHandler extends ActionHandler
                 $items = $this->db->getNotes($colName);
             }
         }
-        return ['notescount' => $notescount, 'colName' => $colName, 'itemId' => $itemId, 'items' => $items, 'html' => $html];
+        return [
+            'notescount' => $notescount,
+            'colName' => $colName,
+            'itemId' => $itemId,
+            'items' => $items,
+            'html' => $html,
+        ];
     }
 
     /**

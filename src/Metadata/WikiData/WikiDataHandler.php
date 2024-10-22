@@ -119,7 +119,12 @@ class WikiDataHandler extends MetadataHandler
         $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
         // Return info
-        return ['authors' => $authors, 'authorId' => $authorId, 'matched' => $matched, 'paging' => $paging];
+        return [
+            'authors' => $authors,
+            'authorId' => $authorId,
+            'matched' => $matched,
+            'paging' => $paging,
+        ];
     }
 
     /**
@@ -212,21 +217,42 @@ class WikiDataHandler extends MetadataHandler
 
         $authorList = $this->getAuthorList();
         $titles = [];
+        $identifierList = [];
         foreach ($books as $id => $book) {
             $titles[$book['title']] = $id;
+            $diff = array_diff(array_keys($book['identifiers']), $identifierList);
+            if (!empty($diff)) {
+                $identifierList = array_merge($identifierList, $diff);
+            }
         }
+        $identifierList[] = 'ID:';
+        sort($identifierList);
         // exact match only here - see calibre metadata plugins for more advanced features
         foreach ($matched as $match) {
             if (array_key_exists($match['label'], $titles)) {
                 $id = $titles[$match['label']];
-                $books[$id]['identifiers'][] = ['id' => 0, 'book' => $id, 'type' => '* wd', 'value' => $match['id'], 'url' => WikiDataMatch::link($match['id'])];
+                if (empty($books[$id]['identifiers']['wd']) || $books[$id]['identifiers']['wd']['value'] != $match['id']) {
+                    $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* wd', 'value' => $match['id'], 'url' => WikiDataMatch::link($match['id'])];
+                } else {
+                    $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* wd', 'value' => '='];
+                }
                 unset($titles[$match['label']]);
             }
         }
         $seriesList = $this->getSeriesList($authorId);
 
         // Return info
-        return ['books' => $books, 'authorId' => $authorId, 'seriesId' => $seriesId, 'bookId' => $bookId, 'matched' => $matched, 'authors' => $authorList, 'series' => $seriesList];
+        return [
+            'books' => $books,
+            'authorId' => $authorId,
+            'seriesId' => $seriesId,
+            'bookId' => $bookId,
+            'matched' => $matched,
+            'authors' => $authorList,
+            'series' => $seriesList,
+            'identifiers' => $identifierList,
+            'identifierType' => 'wd',
+        ];
     }
 
     /**
@@ -298,7 +324,14 @@ class WikiDataHandler extends MetadataHandler
         $authorList = $this->getAuthorList();
 
         // Return info
-        return ['series' => $series, 'authorId' => $authorId, 'seriesId' => $seriesId, 'matched' => $matched, 'authors' => $authorList, 'paging' => $paging];
+        return [
+            'series' => $series,
+            'authorId' => $authorId,
+            'seriesId' => $seriesId,
+            'matched' => $matched,
+            'authors' => $authorList,
+            'paging' => $paging,
+        ];
     }
 
     /**
@@ -342,6 +375,13 @@ class WikiDataHandler extends MetadataHandler
         $seriesList = $this->getSeriesList($authorId);
 
         // Return info
-        return ['entity' => $entity, 'entityId' => $entityId, 'authorId' => $authorId, 'seriesId' => $seriesId, 'authors' => $authorList, 'series' => $seriesList];
+        return [
+            'entity' => $entity,
+            'entityId' => $entityId,
+            'authorId' => $authorId,
+            'seriesId' => $seriesId,
+            'authors' => $authorList,
+            'series' => $seriesList,
+        ];
     }
 }
