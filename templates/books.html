@@ -33,10 +33,17 @@
 <form method="POST" action="{{endpoint}}/{{action}}/{{dbNum}}">
 <table width="100%">
 	<tr>
-		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}">Id</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&sort=id">Id</a></th>
 		<th>
-			<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=title">Title</a>
-			| <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?sort=sort">Sort</a>
+			<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&sort=title">Title</a>
+			| <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&sort=sort">Sort</a>
+		</th>
+		<th>
+			{% if seriesId %}
+				<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&sort=series_index">Index</a>
+			{% else %}
+				<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&sort=series">Series</a>
+			{% endif %}
 		</th>
 		<th>Action</th>
 		{% for type in identifiers %}
@@ -47,6 +54,17 @@
 	<tr>
 		<td>{{item.id}}</td>
 		<td>{{item.title}}</td>
+		<td>
+			{% if item.series %}
+				{% if seriesId and item.series == seriesId %}
+					#{{ item.series_index }}
+				{% elseif series is defined and series[item.series] is defined %}
+					<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?seriesId={{ item.series }}">{{series[item.series]}}</a> #{{ item.series_index }}
+				{% else %}
+					<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?seriesId={{item.series}}">{{ item.series }}</a> #{{ item.series_index }}
+				{% endif %}
+			{% endif %}
+		</td>
 		<td>
 			{% if matchId %}
 				{% if bookId == item.id %}

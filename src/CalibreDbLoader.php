@@ -261,7 +261,7 @@ class CalibreDbLoader
      */
     public function getBooks($bookId = null, $authorId = null, $seriesId = null, $sort = null, $offset = null)
     {
-        $sql = 'select books.id as id, books.title as title, author, series from books
+        $sql = 'select books.id as id, books.title as title, series_index, author, series from books
         left join books_authors_link on books.id = books_authors_link.book
         left join books_series_link on books.id = books_series_link.book
         where true';
@@ -278,8 +278,13 @@ class CalibreDbLoader
             $sql .= ' and series = ?';
             $params[] = $seriesId;
         }
-        if (!empty($sort) && in_array($sort, ['id', 'title', 'sort'])) {
+        if (!empty($sort) && in_array($sort, ['id', 'title', 'sort', 'series', 'series_index'])) {
             $sql .= ' order by ' . $sort;
+            if ($sort == 'series') {
+                $sql .= ', series_index';
+            }
+        } elseif (!empty($seriesId)) {
+            $sql .= ' order by series_index';
         } else {
             $sql .= ' order by id';
         }

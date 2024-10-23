@@ -4,6 +4,7 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Show series and index in books list + support sort
   * Include php-epub-meta app as optional action (partial)
   * Parse wikidata + google cache entries to display links
   * Show identifiers by type in books list

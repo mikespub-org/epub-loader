@@ -96,10 +96,10 @@ $gConfig['groups']['Internal'] = [
     'gb_volume' => 'Google Books volume',
     'ol_work' => 'OpenLibrary work',
     'resource' => 'Get Calibre Resource',
-    //'meta' => 'EPub Meta App (not visible)',
 ];
 $gConfig['groups']['Extra'] = [
     'notes' => 'Get Calibre Notes',
+    //'meta' => 'EPub Metadata App',
     'hello_world' => 'Example: Hello, World - see app/example.php',
     'goodbye' => 'Example: Goodbye - see app/example.php',
 ];

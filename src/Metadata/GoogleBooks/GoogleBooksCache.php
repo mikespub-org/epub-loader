@@ -174,6 +174,10 @@ class GoogleBooksCache extends BaseCache
             'volumes' => $this->getVolume($cacheEntry),
             default => throw new Exception('Invalid cache type'),
         };
+        if ($cacheType == 'titles' && !$this->hasCache($cacheFile)) {
+            // try url-encoded for titles - see /meta/ with mikespub/php-epub-meta
+            $cacheFile = $this->getTitleQuery(rawurlencode($cacheEntry));
+        }
         if ($this->hasCache($cacheFile)) {
             $entry = $this->loadCache($cacheFile);
             return match ($cacheType) {
