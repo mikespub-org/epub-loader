@@ -24,7 +24,7 @@
         "ext-zip": "*",
         "ext-zlib": "*",
         "mikespub/survos-wikidata": "^5.1",
-        "mikespub/php-epub-meta": "^3.1",
+        "mikespub/php-epub-meta": "^3.2",
         "twig/twig": "^3.14"
     },
     "autoload": {

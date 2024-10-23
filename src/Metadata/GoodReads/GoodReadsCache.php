@@ -260,7 +260,8 @@ class GoodReadsCache extends BaseCache
             return match ($cacheType) {
                 'author/list' => $this->formatSearch($entry, $urlPrefix),
                 'book/show' => $this->formatBook($entry, $urlPrefix),
-                'series' => $this->formatSeries($entry, $urlPrefix),
+                // id is not available in JSON data - this must be set by caller
+                'series' => $this->formatSeries($entry, $urlPrefix, $cacheEntry),
                 'search' => $this->formatSearch($entry, $urlPrefix),
                 default => $entry,
             };
@@ -309,14 +310,24 @@ class GoodReadsCache extends BaseCache
      * Summary of formatSeries
      * @param array<mixed>|null $entry
      * @param string|null $urlPrefix
+     * @param string $seriesId
      * @return array<mixed>|null
      */
-    public function formatSeries($entry, $urlPrefix)
+    public function formatSeries($entry, $urlPrefix, $seriesId)
     {
         if (is_null($entry) || is_null($urlPrefix)) {
             return $entry;
         }
         $result = self::parseSeries($entry);
+        // id is not available in JSON data - this must be set by caller
+        $result->setId($seriesId);
+        $series = GoodReadsImport::loadSeries($this->cacheDir . '/goodreads', $result);
+        foreach ($series['bookList'] as $id => $bookInfo) {
+            $bookInfo = $this->formatBookInfo($bookInfo, $urlPrefix);
+            $series['bookList'][$id] = (array) $bookInfo;
+        }
+        return $series;
+        /**
         foreach ($result->getBookList() as $key => $book) {
             if (empty($book->getBookId())) {
                 continue;
@@ -342,6 +353,7 @@ class GoodReadsCache extends BaseCache
             $result->bookList[$key] = $book;
         }
         return (array) $result;
+         */
     }
 
     /**
@@ -356,6 +368,10 @@ class GoodReadsCache extends BaseCache
             return $entry;
         }
         $result = self::parseBook($entry);
+        $bookInfo = GoodReadsImport::load($this->cacheDir . '/goodreads', $result);
+        $bookInfo = $this->formatBookInfo($bookInfo, $urlPrefix);
+        return (array) $bookInfo;
+        /**
         foreach ($result->getProps()->getPageProps()->getApolloState()->getBookMap() as $bookId => $book) {
             if (empty($book->getLegacyId())) {
                 continue;
@@ -403,6 +419,46 @@ class GoodReadsCache extends BaseCache
             $result->props->pageProps->apolloState->reviewMap[$reviewId] = $review;
         }
         return (array) $result;
+         */
+    }
+
+    /**
+     * Summary of formatBookInfo
+     * @param BookInfos $bookInfo
+     * @param string|null $urlPrefix
+     * @return BookInfos
+     */
+    public function formatBookInfo($bookInfo, $urlPrefix)
+    {
+        $entryId = $bookInfo->mName;
+        $cacheFile = $this->getBook((string) $entryId);
+        $url = $bookInfo->mUri ?? $entryId;
+        if ($this->hasCache($cacheFile)) {
+            $bookInfo->mUri = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a>";
+        } else {
+            $bookInfo->mUri = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a> ?";
+        }
+        if (!empty($bookInfo->mAuthorIds)) {
+            foreach ($bookInfo->mAuthorIds as $id => $authorId) {
+                $cacheFile = $this->getAuthor($authorId);
+                if ($this->hasCache($cacheFile)) {
+                    $bookInfo->mAuthorIds[$id] = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a>";
+                } else {
+                    $bookInfo->mAuthorIds[$id] = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a> ?";
+                }
+            }
+        }
+        if (!empty($bookInfo->mSerieIds)) {
+            foreach ($bookInfo->mSerieIds as $id => $seriesId) {
+                $cacheFile = $this->getSeries($seriesId);
+                if ($this->hasCache($cacheFile)) {
+                    $bookInfo->mSerieIds[$id] = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a>";
+                } else {
+                    $bookInfo->mSerieIds[$id] = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a> ?";
+                }
+            }
+        }
+        return $bookInfo;
     }
 
     /**

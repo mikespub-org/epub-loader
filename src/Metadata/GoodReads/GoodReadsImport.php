@@ -13,6 +13,7 @@ use Marsender\EPubLoader\Metadata\BookInfos;
 use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Series\Book as SeriesBook;
 use Exception;
 
 class GoodReadsImport
@@ -150,6 +151,101 @@ class GoodReadsImport
         // Timestamp is used to get latest ebooks
         $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
         $bookInfos->mRating = $work->getStats()?->getAverageRating();
+        $bookInfos->mIdentifiers = ['goodreads' => $bookInfos->mName];
+        if (!empty($bookInfos->mIsbn)) {
+            $bookInfos->mIdentifiers['isbn'] = $bookInfos->mIsbn;
+        }
+
+        return $bookInfos;
+    }
+
+    /**
+     * Loads book infos from a GoodReads series
+     *
+     * @param string $inBasePath base directory
+     * @param SeriesResult $seriesResult GoodReads series
+     * @throws Exception if error
+     *
+     * @return array<mixed>
+     */
+    public static function loadSeries($inBasePath, $seriesResult)
+    {
+        $series = (array) $seriesResult;
+        foreach ($seriesResult->getBookList() as $key => $book) {
+            if (empty($book->getBookId())) {
+                continue;
+            }
+            // convert to BookInfos
+            $bookInfo = self::loadSeriesBook($inBasePath, $book);
+            $bookInfo->mSerie = $seriesResult->getTitle();
+            $bookInfo->mSerieIds = [ $seriesResult->getId() ];
+            $series['bookList'][$key] = $bookInfo;
+        }
+        return $series;
+    }
+
+    /**
+     * Loads book infos from a GoodReads series book
+     *
+     * @param string $inBasePath base directory
+     * @param SeriesBook $book GoodReads series book
+     * @throws Exception if error
+     *
+     * @return BookInfos
+     */
+    public static function loadSeriesBook($inBasePath, $book)
+    {
+        $bookInfos = new BookInfos();
+        $bookInfos->mSource = 'goodreads';
+        $bookInfos->mBasePath = $inBasePath;
+        // @todo check details format and/or links for epub, pdf etc.
+        $bookInfos->mFormat = 'epub';
+        // @todo use calibre_external_storage in COPS
+        $bookInfos->mPath = (string) $book->getBookUrl();
+        if (str_starts_with($bookInfos->mPath, '/book/show/')) {
+            $bookInfos->mPath = 'https://www.goodreads.com' . $bookInfos->mPath;
+        }
+        if (str_starts_with($bookInfos->mPath, $inBasePath)) {
+            $bookInfos->mPath = substr($bookInfos->mPath, strlen($inBasePath) + 1);
+        }
+        $bookInfos->mName = (string) $book->getBookId();
+        if (!empty($bookInfos->mName)) {
+            $bookInfos->mUuid = 'goodreads:' . $bookInfos->mName;
+        } else {
+            $bookInfos->createUuid();
+            $bookInfos->mName = $bookInfos->mUuid;
+        }
+        $bookInfos->mUri = $bookInfos->mPath;
+        $bookInfos->mTitle = (string) ($book->getBookTitleBare() ?? $book->getTitle());
+        $author = $book->getAuthor();
+        if (!empty($author) && !empty($author->getId())) {
+            $authorName = $author->getName();
+            $authorSort = BookInfos::getAuthorSort($authorName);
+            $bookInfos->mAuthors = [ $authorSort => $authorName ];
+            if (str_starts_with($author->getWorksListUrl(), GoodReadsMatch::AUTHOR_URL)) {
+                $authorId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $author->getWorksListUrl());
+                $bookInfos->mAuthorIds = [ $authorId ];
+            }
+        }
+        $bookInfos->mDescription = (string) $book->getDescription()->getHtml();
+        $bookInfos->mCover = (string) $book->getImageUrl();
+        if (!empty($book->getSeriesHeader())) {
+            $matches = '';
+            if (preg_match('/([\d\.-]+)/', $book->getSeriesHeader(), $matches)) {
+                // @todo convert to float before importing in Calibre
+                //$bookInfos->mSerieIndex = str_replace(['-', '·'], ['.', '.'], $matches[1]);
+                $bookInfos->mSerieIndex = $matches[1];
+            }
+        }
+        // set in loadSeries()
+        //$bookInfo->mSerie = $seriesResult->getTitle();
+        //$bookInfo->mSerieIds = [ $seriesResult->getId() ];
+        $bookInfos->mCreationDate = (string) empty($book->getPublicationDate()) ? '2000-01-01 00:00:00' : $book->getPublicationDate();
+        // @todo no modification date here
+        $bookInfos->mModificationDate = $bookInfos->mCreationDate;
+        // Timestamp is used to get latest ebooks
+        $bookInfos->mTimeStamp = BookInfos::getSqlDate($bookInfos->mCreationDate);
+        $bookInfos->mRating = $book->getAvgRating();
         $bookInfos->mIdentifiers = ['goodreads' => $bookInfos->mName];
 
         return $bookInfos;

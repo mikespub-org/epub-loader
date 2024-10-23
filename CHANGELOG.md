@@ -4,6 +4,9 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Include php-epub-meta app as optional action (partial)
+  * Parse wikidata + google cache entries to display links
+  * Show identifiers by type in books list
   * Fix title sort and author sort on import and display
   * Use EPub::getSeriesOrCollection() when importing local books
   * Update mikespub/php-epub-meta package to release 3.1

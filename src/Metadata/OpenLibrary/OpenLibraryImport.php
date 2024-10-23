@@ -95,6 +95,9 @@ class OpenLibraryImport
         // Timestamp is used to get latest ebooks
         $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
         $bookInfos->mIdentifiers = ['olid' => $bookInfos->mName];
+        if (!empty($bookInfos->mIsbn)) {
+            $bookInfos->mIdentifiers['isbn'] = $bookInfos->mIsbn;
+        }
 
         return $bookInfos;
     }

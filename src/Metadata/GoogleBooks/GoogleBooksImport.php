@@ -93,6 +93,9 @@ class GoogleBooksImport
         $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
         $bookInfos->mRating = $volumeInfo->getAverageRating();
         $bookInfos->mIdentifiers = ['google' => $bookInfos->mName];
+        if (!empty($bookInfos->mIsbn)) {
+            $bookInfos->mIdentifiers['isbn'] = $bookInfos->mIsbn;
+        }
 
         return $bookInfos;
     }

@@ -177,10 +177,48 @@ class GoogleBooksCache extends BaseCache
         if ($this->hasCache($cacheFile)) {
             $entry = $this->loadCache($cacheFile);
             return match ($cacheType) {
+                'authors' => $this->formatSearch($entry, $urlPrefix),
+                'titles' => $this->formatSearch($entry, $urlPrefix),
+                'series' => $this->formatSearch($entry, $urlPrefix),
+                'volumes' => $this->formatVolume($entry, $urlPrefix),
                 default => $entry,
             };
         }
         return null;
+    }
+
+    /**
+     * Summary of formatSearch
+     * @param array<mixed>|null $entry
+     * @param string|null $urlPrefix
+     * @return array<mixed>|null
+     */
+    public function formatSearch($entry, $urlPrefix)
+    {
+        if (empty($entry) || is_null($urlPrefix)) {
+            return $entry;
+        }
+        $result = self::parseSearch($entry);
+        foreach ($result->getItems() as $id => $volume) {
+            $result->items[$id] = GoogleBooksImport::load($this->cacheDir . '/google', $volume);
+        }
+        return (array) $result;
+    }
+
+    /**
+     * Summary of formatVolume
+     * @param array<mixed>|null $entry
+     * @param string|null $urlPrefix
+     * @return array<mixed>|null
+     */
+    public function formatVolume($entry, $urlPrefix)
+    {
+        if (is_null($entry) || is_null($urlPrefix)) {
+            return $entry;
+        }
+        $volume = self::parseVolume($entry);
+        $bookInfo = GoogleBooksImport::load($this->cacheDir . '/google', $volume);
+        return (array) $bookInfo;
     }
 
     /**

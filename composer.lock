@@ -4,11 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0abeea3ae578e27a22701ca456e8ecbc",
+    "content-hash": "e528cb06e4bf09bed6e33cc450a21e13",
     "packages": [
         {
             "name": "illuminate/collections",
-            "version": "v11.28.1",
+            "version": "v11.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/collections.git",
@@ -63,7 +63,7 @@
         },
         {
             "name": "illuminate/conditionable",
-            "version": "v11.28.1",
+            "version": "v11.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/conditionable.git",
@@ -109,7 +109,7 @@
         },
         {
             "name": "illuminate/contracts",
-            "version": "v11.28.1",
+            "version": "v11.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
@@ -157,7 +157,7 @@
         },
         {
             "name": "illuminate/macroable",
-            "version": "v11.28.1",
+            "version": "v11.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/macroable.git",
@@ -280,16 +280,16 @@
         },
         {
             "name": "mikespub/php-epub-meta",
-            "version": "3.1.1",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mikespub-org/php-epub-meta.git",
-                "reference": "5473cf30bc23511e04a43fc778f25a0af69701ae"
+                "reference": "e703fccf859f76bc3fae767286dd28f06ff1690b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/5473cf30bc23511e04a43fc778f25a0af69701ae",
-                "reference": "5473cf30bc23511e04a43fc778f25a0af69701ae",
+                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/e703fccf859f76bc3fae767286dd28f06ff1690b",
+                "reference": "e703fccf859f76bc3fae767286dd28f06ff1690b",
                 "shasum": ""
             },
             "require": {
@@ -346,9 +346,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mikespub-org/php-epub-meta/issues",
-                "source": "https://github.com/mikespub-org/php-epub-meta/tree/3.1.1"
+                "source": "https://github.com/mikespub-org/php-epub-meta/tree/3.2.0"
             },
-            "time": "2024-10-22T11:11:48+00:00"
+            "time": "2024-10-23T02:01:23+00:00"
         },
         {
             "name": "mikespub/survos-wikidata",

@@ -91,6 +91,10 @@ class LocalBooksImport
         $bookInfos->mModificationDate = BookInfos::getSqlDate($ePub->getModificationDate()) ?? '';
         // Timestamp is used to get latest ebooks
         $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
+        if (!empty($bookInfos->mIsbn)) {
+            $bookInfos->mIdentifiers ??= [];
+            $bookInfos->mIdentifiers['isbn'] = $bookInfos->mIsbn;
+        }
 
         return $bookInfos;
     }
