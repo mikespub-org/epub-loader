@@ -9,48 +9,48 @@
 
 namespace Marsender\EPubLoader\Export;
 
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Exception;
 
 class ExportCsvFile extends ExportTarget
 {
     /** @var array<string>|null */
-    protected $mLines = null;
-    protected int $mNbBook = 0;
+    protected $lines = null;
+    protected int $nbBook = 0;
 
     public const CSV_SEPARATOR = "\t";
 
     /**
      * Open an export file (or create if file does not exist)
      *
-     * @param string $inFileName Export file name
-     * @param boolean $inCreate Force file creation
+     * @param string $fileName Export file name
+     * @param boolean $create Force file creation
      */
-    public function __construct($inFileName, $inCreate = false)
+    public function __construct($fileName, $create = false)
     {
-        $this->mSearch = ["\r", "\n", self::CSV_SEPARATOR];
-        $this->mReplace = ['', '<br />', ''];
+        $this->search = ["\r", "\n", self::CSV_SEPARATOR];
+        $this->replace = ['', '<br />', ''];
 
         // Init container
-        $this->mLines = [];
+        $this->lines = [];
 
-        parent::__construct($inFileName, $inCreate);
+        parent::__construct($fileName, $create);
     }
 
     /**
      * Add a new book to the export
      * @see \Marsender\EPubLoader\Import\CsvImport::loadFromArray()
      *
-     * @param BookInfos $inBookInfo BookInfo object
-     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param BookInfo $bookInfo BookInfo object
+     * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
      * @throws Exception if error
      *
      * @return void
      */
-    public function addBook($inBookInfo, $inBookId = 0): void
+    public function addBook($bookInfo, $bookId = 0): void
     {
         // Add export header
-        if ($this->mNbBook++ == 0) {
+        if ($this->nbBook++ == 0) {
             $i = 1;
             $this->setProperty($i++, 'Format');
             $this->setProperty($i++, 'Path');
@@ -76,25 +76,25 @@ class ExportCsvFile extends ExportTarget
 
         // Add book infos to the export
         $i = 1;
-        $this->setProperty($i++, $inBookInfo->mFormat);
-        $this->setProperty($i++, $inBookInfo->mBasePath . DIRECTORY_SEPARATOR . $inBookInfo->mPath);
-        $this->setProperty($i++, $inBookInfo->mName);
-        $this->setProperty($i++, $inBookInfo->mUuid);
-        $this->setProperty($i++, $inBookInfo->mUri);
-        $this->setProperty($i++, $inBookInfo->mTitle);
-        $this->setProperty($i++, implode(' - ', $inBookInfo->mAuthors));
-        $this->setProperty($i++, implode(' - ', array_keys($inBookInfo->mAuthors)));
-        $this->setProperty($i++, $inBookInfo->mLanguage);
-        $this->setProperty($i++, $inBookInfo->mDescription);
-        $this->setProperty($i++, implode(' - ', $inBookInfo->mSubjects));
-        $this->setProperty($i++, $inBookInfo->mCover);
-        $this->setProperty($i++, $inBookInfo->mIsbn);
-        $this->setProperty($i++, $inBookInfo->mRights);
-        $this->setProperty($i++, $inBookInfo->mPublisher);
-        $this->setProperty($i++, $inBookInfo->mSerie);
-        $this->setProperty($i++, $inBookInfo->mSerieIndex);
-        $this->setProperty($i++, $inBookInfo->mCreationDate);
-        $this->setProperty($i++, $inBookInfo->mModificationDate);
+        $this->setProperty($i++, $bookInfo->format);
+        $this->setProperty($i++, $bookInfo->basePath . DIRECTORY_SEPARATOR . $bookInfo->path);
+        $this->setProperty($i++, $bookInfo->name);
+        $this->setProperty($i++, $bookInfo->uuid);
+        $this->setProperty($i++, $bookInfo->uri);
+        $this->setProperty($i++, $bookInfo->title);
+        $this->setProperty($i++, implode(' - ', $bookInfo->authors));
+        $this->setProperty($i++, implode(' - ', array_keys($bookInfo->authors)));
+        $this->setProperty($i++, $bookInfo->language);
+        $this->setProperty($i++, $bookInfo->description);
+        $this->setProperty($i++, implode(' - ', $bookInfo->subjects));
+        $this->setProperty($i++, $bookInfo->cover);
+        $this->setProperty($i++, $bookInfo->isbn);
+        $this->setProperty($i++, $bookInfo->rights);
+        $this->setProperty($i++, $bookInfo->publisher);
+        $this->setProperty($i++, $bookInfo->serie);
+        $this->setProperty($i++, $bookInfo->serieIndex);
+        $this->setProperty($i++, $bookInfo->creationDate);
+        $this->setProperty($i++, $bookInfo->modificationDate);
 
         $this->addContent();
     }
@@ -107,7 +107,7 @@ class ExportCsvFile extends ExportTarget
     public function addContent()
     {
         $text = '';
-        foreach ($this->mProperties as $key => $value) {
+        foreach ($this->properties as $key => $value) {
             $info = '';
             if (is_array($value)) {
                 foreach ($value as $value1) {
@@ -128,7 +128,7 @@ class ExportCsvFile extends ExportTarget
             $text .= $info . self::CSV_SEPARATOR;
         }
 
-        $this->mLines[] = $text;
+        $this->lines[] = $text;
 
         $this->clearProperties();
     }
@@ -139,7 +139,7 @@ class ExportCsvFile extends ExportTarget
      */
     protected function getContent()
     {
-        $text = implode("\n", $this->mLines) . "\n";
+        $text = implode("\n", $this->lines) . "\n";
 
         return $text;
     }

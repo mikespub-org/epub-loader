@@ -9,7 +9,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\AuthorInfo;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Marsender\EPubLoader\Metadata\OpenLibrary\Entities\WorkEntity;
 use Exception;
 
@@ -18,43 +19,43 @@ class OpenLibraryImport
     /**
      * Loads book infos from an OpenLibrary work
      *
-     * @param string $inBasePath base directory
+     * @param string $basePath base directory
      * @param WorkEntity $work OpenLibrary work
      * @throws Exception if error
      *
-     * @return BookInfos
+     * @return BookInfo
      */
-    public static function load($inBasePath, $work)
+    public static function load($basePath, $work)
     {
         // @todo get from somewhere
-        if (basename($inBasePath) == 'openlibrary') {
-            $cacheDir = dirname($inBasePath);
+        if (basename($basePath) == 'openlibrary') {
+            $cacheDir = dirname($basePath);
         } else {
             $cacheDir = dirname(__DIR__, 3) . '/cache';
         }
         $match = new OpenLibraryMatch($cacheDir);
 
-        $bookInfos = new BookInfos();
-        $bookInfos->mSource = 'openlibrary';
-        $bookInfos->mBasePath = $inBasePath;
+        $bookInfo = new BookInfo();
+        $bookInfo->source = 'openlibrary';
+        $bookInfo->basePath = $basePath;
         // @todo check details format and/or links for epub, pdf etc.
-        $bookInfos->mFormat = 'epub';
-        $bookInfos->mName = (string) str_replace('/works/', '', $work->getKey());
+        $bookInfo->format = 'epub';
+        $bookInfo->name = (string) str_replace('/works/', '', $work->getKey());
         // @todo use calibre_external_storage in COPS
-        $bookInfos->mPath = (string) OpenLibraryMatch::link($bookInfos->mName);
-        if (str_starts_with($bookInfos->mPath, $inBasePath)) {
-            $bookInfos->mPath = substr($bookInfos->mPath, strlen($inBasePath) + 1);
+        $bookInfo->path = (string) OpenLibraryMatch::link($bookInfo->name);
+        if (str_starts_with($bookInfo->path, $basePath)) {
+            $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
-        $bookInfos->mUuid = 'olid:' . $bookInfos->mName;
-        $bookInfos->mUri = (string) $bookInfos->mPath;
-        $bookInfos->mTitle = (string) $work->getTitle();
+        $bookInfo->uuid = 'olid:' . $bookInfo->name;
+        $bookInfo->uri = (string) $bookInfo->path;
+        $bookInfo->title = (string) $work->getTitle();
         if (is_array($work->getDescription())) {
-            $bookInfos->mDescription = (string) ($work->getDescription()['value'] ?? '');
+            $bookInfo->description = (string) ($work->getDescription()['value'] ?? '');
         } else {
-            $bookInfos->mDescription = (string) $work->getDescription();
+            $bookInfo->description = (string) $work->getDescription();
         }
         $authors = [];
-        $bookInfos->mAuthorIds = [];
+        $bookInfo->authorIds = [];
         $entities = $work->getAuthors() ?? [];
         foreach ($entities as $author) {
             $authorId = (string) $author->getAuthor()?->getKey();
@@ -67,48 +68,48 @@ class OpenLibraryImport
             if (empty($author['name'])) {
                 continue;
             }
-            $authorSort = BookInfos::getAuthorSort($author['name']);
+            $authorSort = AuthorInfo::getNameSort($author['name']);
             $authors[$authorSort] = $author['name'];
-            $bookInfos->mAuthorIds[] = $authorId;
+            $bookInfo->authorIds[] = $authorId;
         }
-        $bookInfos->mAuthors = $authors;
+        $bookInfo->authors = $authors;
         $subjects = [];
         $entities = $work->getSubjects() ?? [];
         foreach ($entities as $subject) {
             $subjects[] = (string) $subject;
         }
-        $bookInfos->mSubjects = $subjects;
+        $bookInfo->subjects = $subjects;
         if (!empty($work->getCovers())) {
             $covers = $work->getCovers();
             // pick the lowest cover number?
             sort($covers, SORT_NUMERIC);
             $cover = reset($covers);
             // @see https://openlibrary.org/dev/docs/api/covers
-            $bookInfos->mCover = "https://covers.openlibrary.org/b/id/{$cover}-M.jpg";
+            $bookInfo->cover = "https://covers.openlibrary.org/b/id/{$cover}-M.jpg";
         }
         // @todo ...
-        //$bookInfos->mSerie = '...';
+        //$bookInfo->serie = '...';
 
-        $bookInfos->mCreationDate = (string) $work->getCreated()?->getValue();
+        $bookInfo->creationDate = (string) $work->getCreated()?->getValue();
         // @todo no modification date here
-        $bookInfos->mModificationDate = (string) ($work->getLastModified()?->getValue() ?? $bookInfos->mCreationDate);
+        $bookInfo->modificationDate = (string) ($work->getLastModified()?->getValue() ?? $bookInfo->creationDate);
         // Timestamp is used to get latest ebooks
-        $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
-        $bookInfos->mIdentifiers = ['olid' => $bookInfos->mName];
-        if (!empty($bookInfos->mIsbn)) {
-            $bookInfos->mIdentifiers['isbn'] = $bookInfos->mIsbn;
+        $bookInfo->timeStamp = $bookInfo->creationDate;
+        $bookInfo->identifiers = ['olid' => $bookInfo->name];
+        if (!empty($bookInfo->isbn)) {
+            $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }
 
-        return $bookInfos;
+        return $bookInfo;
     }
 
     /**
-     * Summary of getBookInfos
+     * Summary of getBookInfo
      * @param string $dbPath
      * @param array<mixed> $data
-     * @return BookInfos
+     * @return BookInfo
      */
-    public static function getBookInfos($dbPath, $data)
+    public static function getBookInfo($dbPath, $data)
     {
         $work = OpenLibraryCache::parseWorkEntity($data);
         return self::load($dbPath, $work);

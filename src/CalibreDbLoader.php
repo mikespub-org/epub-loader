@@ -15,14 +15,14 @@ use PDO;
 
 /**
  * CalibreDbLoader class allows to open or create a new Calibre database,
- * and then add BookInfos objects into the database
+ * and then add BookInfo objects into the database
  */
 class CalibreDbLoader
 {
     /** @var PDO|null */
-    protected $mDb = null;
+    protected $db = null;
     /** @var string|null */
-    protected $mDbFileName = null;
+    protected $dbFileName = null;
     /** @var PDO|null */
     protected $notesDb;
     public int $limit = 500;
@@ -31,13 +31,13 @@ class CalibreDbLoader
     /**
      * Open a Calibre database
      *
-     * @param string $inDbFileName Calibre database file name
+     * @param string $dbFileName Calibre database file name
      */
-    public function __construct($inDbFileName)
+    public function __construct($dbFileName)
     {
-        $this->mDbFileName = $inDbFileName;
-        $this->openDatabase($inDbFileName);
-        if (!is_writable($this->mDbFileName)) {
+        $this->dbFileName = $dbFileName;
+        $this->openDatabase($dbFileName);
+        if (!is_writable($this->dbFileName)) {
             $this->readOnly = true;
         }
     }
@@ -45,20 +45,20 @@ class CalibreDbLoader
     /**
      * Open an sqlite database
      *
-     * @param string $inDbFileName Database file name
+     * @param string $dbFileName Database file name
      * @throws Exception if error
      *
      * @return void
      */
-    protected function openDatabase($inDbFileName)
+    protected function openDatabase($dbFileName)
     {
         try {
             // Init the Data Source Name
-            $dsn = 'sqlite:' . $inDbFileName;
+            $dsn = 'sqlite:' . $dbFileName;
             // Open the database
-            $this->mDb = new PDO($dsn); // Send an exception if error
-            $this->mDb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->mDb->exec('pragma synchronous = off');
+            $this->db = new PDO($dsn); // Send an exception if error
+            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->db->exec('pragma synchronous = off');
         } catch (Exception $e) {
             $error = sprintf('Cannot open database [%s]: %s', $dsn, $e->getMessage());
             throw new Exception($error);
@@ -74,7 +74,7 @@ class CalibreDbLoader
     {
         // Retrieve some infos for check only
         $sql = 'select id, title, sort from books';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         while ($post = $stmt->fetchObject()) {
             $id = $post->id;
@@ -93,7 +93,7 @@ class CalibreDbLoader
         /**
         // this throws an error for read-only databases
         $sql = "analyze; select tbl, idx, stat from sqlite_stat1 where tbl in ('authors', 'books', 'series')";
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $stats = [];
         while ($post = $stmt->fetchObject()) {
@@ -109,7 +109,7 @@ class CalibreDbLoader
         $tables = ['authors', 'books', 'series'];
         foreach ($tables as $table) {
             $sql = 'select count(*) as count from ' . $table;
-            $stmt = $this->mDb->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute();
             if ($post = $stmt->fetchObject()) {
                 $stats[$table] = $post->count;
@@ -181,7 +181,7 @@ class CalibreDbLoader
                 $sql .= ' offset ' . (string) $offset;
             }
         }
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $authors = [];
         while ($post = $stmt->fetchObject()) {
@@ -198,7 +198,7 @@ class CalibreDbLoader
     {
         // no limit for author names!?
         $sql = 'select id, name from authors';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $names = [];
         while ($post = $stmt->fetchObject()) {
@@ -214,7 +214,7 @@ class CalibreDbLoader
     public function getAuthorCount()
     {
         $sql = 'select count(*) as count from authors';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         if ($post = $stmt->fetchObject()) {
             return $post->count;
@@ -246,7 +246,7 @@ class CalibreDbLoader
             return false;
         }
         $sql = 'update authors set link = ? where id = ?';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$link, $authorId]);
     }
 
@@ -292,7 +292,7 @@ class CalibreDbLoader
         if (!empty($offset) && is_int($offset)) {
             $sql .= ' offset ' . (string) $offset;
         }
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $books = [];
         $bookIdList = [];
@@ -303,7 +303,7 @@ class CalibreDbLoader
         }
         $sql = 'select id, book, type, val as value from identifiers
         where book IN (' . str_repeat('?,', count($bookIdList) - 1) . '?)';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($bookIdList);
         // TABLE identifiers has UNIQUE(book, type) constraint
         while ($post = $stmt->fetchObject()) {
@@ -354,7 +354,7 @@ class CalibreDbLoader
             $params[] = $authorId;
         }
         $sql .= ' group by author';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $count = [];
         while ($post = $stmt->fetchObject()) {
@@ -377,7 +377,7 @@ class CalibreDbLoader
             $params[] = $seriesId;
         }
         $sql .= ' group by series';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $count = [];
         while ($post = $stmt->fetchObject()) {
@@ -423,7 +423,7 @@ class CalibreDbLoader
             return false;
         }
         $sql = 'update identifiers set val = ? where id = ?';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$value, $id]);
     }
 
@@ -440,7 +440,7 @@ class CalibreDbLoader
             return false;
         }
         $sql = 'insert into identifiers(book, type, val) values(?, ?, ?)';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$bookId, $type, $value]);
     }
 
@@ -485,7 +485,7 @@ class CalibreDbLoader
                 $sql .= ' offset ' . (string) $offset;
             }
         }
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $series = [];
         // series can have multiple authors
@@ -536,7 +536,7 @@ class CalibreDbLoader
         }
         // no limit for series titles!?
         $sql = 'select id, name from series';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $titles = [];
         while ($post = $stmt->fetchObject()) {
@@ -553,7 +553,7 @@ class CalibreDbLoader
     {
         // no limit for series links!?
         $sql = 'select id, link from series';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $links = [];
         while ($post = $stmt->fetchObject()) {
@@ -577,7 +577,7 @@ class CalibreDbLoader
             $params[] = $authorId;
         }
         $sql .= ' group by author';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $count = [];
         while ($post = $stmt->fetchObject()) {
@@ -612,7 +612,7 @@ class CalibreDbLoader
             return false;
         }
         $sql = 'update series set link = ? where id = ?';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$link, $seriesId]);
     }
 
@@ -652,7 +652,7 @@ class CalibreDbLoader
             $params = array_merge($params, $valueIdList);
         }
         $sql .= ' order by book';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $links = [];
         $authors = [];
@@ -670,7 +670,7 @@ class CalibreDbLoader
         $sql = 'select id, link from authors
         where id IN (' . str_repeat('?,', count(array_keys($authors)) - 1) . '?)
         and link != ""';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute(array_keys($authors));
         while ($post = $stmt->fetchObject()) {
             $authors[$post->id] = $post->link;
@@ -679,7 +679,7 @@ class CalibreDbLoader
         $sql = 'select id, link from series
         where id IN (' . str_repeat('?,', count(array_keys($series)) - 1) . '?)
         and link != ""';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute(array_keys($series));
         while ($post = $stmt->fetchObject()) {
             $series[$post->id] = $post->link;
@@ -711,7 +711,7 @@ class CalibreDbLoader
             $sql .= ' and tbl_name = ?';
             $params[] = $table;
         }
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $triggers = [];
         while ($post = $stmt->fetchObject()) {
@@ -755,7 +755,7 @@ class CalibreDbLoader
      */
     public function hasNotes()
     {
-        if (file_exists(dirname((string) $this->mDbFileName) . '/.calnotes/notes.db')) {
+        if (file_exists(dirname((string) $this->dbFileName) . '/.calnotes/notes.db')) {
             return true;
         }
         return false;
@@ -770,7 +770,7 @@ class CalibreDbLoader
         if (!$this->hasNotes()) {
             return null;
         }
-        $notesFileName = dirname((string) $this->mDbFileName) . '/.calnotes/notes.db';
+        $notesFileName = dirname((string) $this->dbFileName) . '/.calnotes/notes.db';
         try {
             // Init the Data Source Name
             $dsn = 'sqlite:' . $notesFileName;
@@ -842,7 +842,7 @@ class CalibreDbLoader
         if (!$this->hasNotes()) {
             return null;
         }
-        $resourceDir = dirname((string) $this->mDbFileName) . '/.calnotes/resources';
+        $resourceDir = dirname((string) $this->dbFileName) . '/.calnotes/resources';
         if (!is_dir($resourceDir)) {
             return null;
         }

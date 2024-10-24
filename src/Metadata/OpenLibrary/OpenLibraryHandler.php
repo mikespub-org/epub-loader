@@ -59,64 +59,86 @@ class OpenLibraryHandler extends MetadataHandler
      */
     public function ol_author($authorId, $matchId, $findLinks = false)
     {
-        // Update the author link
-        if (!is_null($authorId) && !is_null($matchId)) {
-            $link = OpenLibraryMatch::link($matchId);
-            if (!$this->db->setAuthorLink($authorId, $link)) {
-                $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
-                //return null;
-            }
-            //$authorId = null;
-        }
         $sort = $this->request->get('sort');
         $offset = $this->request->getId('offset');
+        $result = $this->authors($authorId, $sort, $offset);
+        $authorId = $result['authorId'];
+        $authorInfo = $result['authorInfo'];
 
-        // List the authors
-        $authors = $this->db->getAuthors($authorId, $sort, $offset);
-        $author = null;
-        $query = null;
-        if (!is_null($authorId) && is_null($matchId)) {
-            $author = $authors[$authorId];
-            $query = $author['name'];
+        // Find matchId from author link
+        if (empty($matchId) && !empty($authorInfo) && OpenLibraryMatch::isValidLink($authorInfo['link'])) {
+            $matchId = OpenLibraryMatch::entity($authorInfo['link']);
         }
 
         // Find match on OpenLibrary
         $openlibrary = new OpenLibraryMatch($this->cacheDir);
 
+        if (empty($matchId) && !empty($findLinks)) {
+            $result['authors'] = $this->findAuthorLinks($openlibrary, $result['authors']);
+        }
         $matched = ['docs' => []];
-        if (!empty($query)) {
-            $matched = $openlibrary->findAuthors($query);
-            usort($matched['docs'], function ($a, $b) {
-                return $b['work_count'] <=> $a['work_count'];
-            });
-            // @todo Find works from author with highest work_count!?
-            //if (count($matched) > 0) {
-            //    $firstId = array_key_first($matched);
-            //    $matched[$firstId]['entries'] = $openlibrary->findWorksByAuthor($author);
-            //}
+        if (!empty($authorId) && !empty($authorInfo)) {
+            $name = $authorInfo['name'];
+            $matched = $this->getAuthorsByName($openlibrary, $name);
         } elseif (!empty($matchId)) {
             $matched['docs'][] = $openlibrary->getAuthor($matchId);
-            //var_dump($matched);
-        } elseif ($findLinks) {
-            foreach ($authors as $id => $author) {
-                if (empty($author['link'])) {
-                    $matchId = $openlibrary->findAuthorId($author);
-                    if (!empty($matchId)) {
-                        $authors[$id]['link'] = OpenLibraryMatch::link($matchId);
-                    }
+            // Update the author link
+            if (!is_null($authorId) && empty($authorInfo['link'])) {
+                $link = OpenLibraryMatch::link($matchId);
+                if (!$this->db->setAuthorLink($authorId, $link)) {
+                    $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
+                }
+                // @todo $result['authors'][$authorId]['link'] = $link;
+            }
+        }
+
+        // different format for $matched here
+        $result['matched'] = $matched['docs'];
+        $result['matchId'] = $matchId;
+
+        // Return info
+        return $result;
+    }
+
+    /**
+     * Summary of findAuthorLinks
+     * @param OpenLibraryMatch $match
+     * @param array<mixed> $authors
+     * @return array<mixed>
+     */
+    protected function findAuthorLinks($match, $authors)
+    {
+        foreach ($authors as $id => $authorInfo) {
+            if (empty($authorInfo['link'])) {
+                $matchId = $match->findAuthorId($authorInfo);
+                if (!empty($matchId)) {
+                    $authors[$id]['link'] = OpenLibraryMatch::link($matchId);
                 }
             }
         }
-        $authors = $this->addAuthorInfo($authors, $authorId, $sort, $offset);
-        $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
+        // we need to run this again here...
+        $authors = $this->addAuthorLinks($authors);
+        return $authors;
+    }
 
-        // Return info
-        return [
-            'authors' => $authors,
-            'authorId' => $authorId,
-            'matched' => $matched['docs'],
-            'paging' => $paging,
-        ];
+    /**
+     * Summary of getAuthorsByName
+     * @param OpenLibraryMatch $match
+     * @param string $name
+     * @return array<mixed>
+     */
+    protected function getAuthorsByName($match, $name)
+    {
+        $matched = $match->findAuthors($name);
+        usort($matched['docs'], function ($a, $b) {
+            return $b['work_count'] <=> $a['work_count'];
+        });
+        // @todo Find works from author with highest work_count!?
+        //if (count($matched) > 0) {
+        //    $firstId = array_key_first($matched);
+        //    $matched[$firstId]['entries'] = $openlibrary->findWorksByAuthor($authorInfo);
+        //}
+        return $matched;
     }
 
     /**
@@ -128,68 +150,75 @@ class OpenLibraryHandler extends MetadataHandler
      */
     public function ol_books($authorId, $bookId, $matchId)
     {
-        $authors = $this->db->getAuthors($authorId);
-        if (empty($authorId) && empty($bookId)) {
-            //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
-            //return null;
-            $authorId = array_key_first($authors);
-        }
+        $sort = $this->request->get('sort');
+        $offset = $this->request->getId('offset');
+        $result = $this->books($authorId, null, $bookId, $sort, $offset);
+        $authorId = $result['authorId'];
+        $authorInfo = $result['authorInfo'];
+        $bookInfo = $result['bookInfo'];
 
-        if (count($authors) < 1) {
-            $this->addError($this->dbFileName, "Please specify a valid authorId");
-            return null;
-        }
-        $author = $authors[$authorId];
+        // Get OpenLibrary author Id (if any)
+        $authId = $this->request->get('authId');
 
-        // Update the book identifier
-        if (!is_null($bookId) && !is_null($matchId)) {
-            $this->updateBookIdentifier('olid', $bookId, $matchId);
+        // Find authId from author link
+        if (empty($authId) && !empty($authorInfo) && OpenLibraryMatch::isValidLink($authorInfo['link'])) {
+            $authId = OpenLibraryMatch::entity($authorInfo['link']);
         }
 
         // Find match on OpenLibrary
         $openlibrary = new OpenLibraryMatch($this->cacheDir);
 
-        // Get OpenLibrary author Id (if any)
-        $authId = $this->request->get('authId');
         $matched = null;
-        if (!empty($bookId)) {
-            $books = $this->db->getBooks($bookId);
-            $query = $books[$bookId]['title'];
-            $matched = $openlibrary->findWorksByTitle($query, $author);
+        if (!empty($bookId) && !empty($bookInfo)) {
+            $matched = $openlibrary->findWorksByTitle($bookInfo['title'], $authorInfo);
             // generic search returns 'docs' but author search returns 'entries'
             //$matched['entries'] ??= $matched['docs'];
+            // Update the book identifier
+            if (!is_null($matchId) && empty($authorInfo['link'])) {
+                $this->updateBookIdentifier('olid', $bookId, $matchId);
+            }
         } elseif (!empty($authId)) {
-            $sort = $this->request->get('sort');
-            $offset = $this->request->getId('offset');
-            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
             $matched = $openlibrary->findWorksByAuthorId($authId);
         } else {
-            $sort = $this->request->get('sort');
-            $offset = $this->request->getId('offset');
-            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
-            $authId = $openlibrary->findAuthorId($author);
+            $authId = $openlibrary->findAuthorId($authorInfo);
             $matched = $openlibrary->findWorksByAuthorId($authId);
         }
         usort($matched['docs'], function ($a, $b) {
             return $b['edition_count'] <=> $a['edition_count'];
         });
 
-        $authorList = $this->getAuthorList();
+        // exact match only here - see calibre metadata plugins for more advanced features
+        if (!empty($authorId) && !empty($authorInfo)) {
+            $result['books'] = $this->matchBookTitles($result['books'], $matched, $authorInfo['name']);
+        }
+
+        // different format for $matched here
+        $result['matched'] = $matched['docs'];
+        $result['matchId'] = $matchId;
+        $result['authId'] = $authId;
+        $result['identifierType'] = 'olid';
+
+        // Return info
+        return $result;
+    }
+
+    /**
+     * Summary of matchBookTitles
+     * @param array<mixed> $books
+     * @param array<mixed> $matched
+     * @param string $authorName
+     * @return array<mixed>
+     */
+    protected function matchBookTitles($books, $matched, $authorName)
+    {
+        // exact match only here - see calibre metadata plugins for more advanced features
         $titles = [];
-        $identifierList = [];
         foreach ($books as $id => $book) {
             $titles[$book['title']] = $id;
-            $diff = array_diff(array_keys($book['identifiers']), $identifierList);
-            if (!empty($diff)) {
-                $identifierList = array_merge($identifierList, $diff);
-            }
         }
-        $identifierList[] = 'ID:';
-        sort($identifierList);
-        // exact match only here - see calibre metadata plugins for more advanced features
         foreach ($matched['docs'] as $match) {
             if (array_key_exists($match['title'], $titles)) {
-                if (!empty($match['author_name']) && in_array($author['name'], $match['author_name'])) {
+                if (!empty($match['author_name']) && in_array($authorName, $match['author_name'])) {
                     $id = $titles[$match['title']];
                     $value = str_replace('/works/', '', $match['key']);
                     if (empty($books[$id]['identifiers']['olid']) || $books[$id]['identifiers']['olid']['value'] != $value) {
@@ -201,17 +230,7 @@ class OpenLibraryHandler extends MetadataHandler
                 }
             }
         }
-
-        // Return info
-        return [
-            'books' => $books,
-            'authorId' => $authorId,
-            'bookId' => $bookId,
-            'matched' => $matched['docs'],
-            'authors' => $authorList,
-            'identifiers' => $identifierList,
-            'identifierType' => 'olid',
-        ];
+        return $books;
     }
 
     /**

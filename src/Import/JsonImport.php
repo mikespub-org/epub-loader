@@ -24,11 +24,11 @@ class JsonImport extends SourceImport
 {
     /**
      * Load books from JSON file
-     * @param string $inBasePath base directory
+     * @param string $basePath base directory
      * @param string $fileName
      * @return array{string, array<mixed>}
      */
-    public function loadFromJsonFile($inBasePath, $fileName)
+    public function loadFromJsonFile($basePath, $fileName)
     {
         $content = file_get_contents($fileName);
         $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
@@ -44,9 +44,9 @@ class JsonImport extends SourceImport
             foreach ($result->getItems() as $volume) {
                 try {
                     // Load the book infos
-                    $bookInfos = GoogleBooksImport::load($inBasePath, $volume);
+                    $bookInfo = GoogleBooksImport::load($basePath, $volume);
                     // Add the book
-                    $this->addBook($bookInfos, 0);
+                    $this->addBook($bookInfo, 0);
                     $nbOk++;
                 } catch (Exception $e) {
                     $id = $volume->getId() ?? spl_object_hash($volume);
@@ -59,9 +59,9 @@ class JsonImport extends SourceImport
                 // Parse the JSON data
                 $volume = GoogleBooksCache::parseVolume($data);
                 // Load the book infos
-                $bookInfos = GoogleBooksImport::load($inBasePath, $volume);
+                $bookInfo = GoogleBooksImport::load($basePath, $volume);
                 // Add the book
-                $this->addBook($bookInfos, 0);
+                $this->addBook($bookInfo, 0);
                 $nbOk++;
             } catch (Exception $e) {
                 $id = basename($fileName);
@@ -73,9 +73,9 @@ class JsonImport extends SourceImport
                 // Parse the JSON data
                 $bookResult = GoodReadsCache::parseBook($data);
                 // Load the book infos
-                $bookInfos = GoodReadsImport::load($inBasePath, $bookResult);
+                $bookInfo = GoodReadsImport::load($basePath, $bookResult);
                 // Add the book
-                $this->addBook($bookInfos, 0);
+                $this->addBook($bookInfo, 0);
                 $nbOk++;
             } catch (Exception $e) {
                 $id = basename($fileName);
@@ -87,9 +87,9 @@ class JsonImport extends SourceImport
                 // Parse the JSON data
                 $work = OpenLibraryCache::parseWorkEntity($data);
                 // Load the book infos
-                $bookInfos = OpenLibraryImport::load($inBasePath, $work);
+                $bookInfo = OpenLibraryImport::load($basePath, $work);
                 // Add the book
-                $this->addBook($bookInfos, 0);
+                $this->addBook($bookInfo, 0);
                 $nbOk++;
             } catch (Exception $e) {
                 $id = basename($fileName);
@@ -113,9 +113,9 @@ class JsonImport extends SourceImport
                 $entity = WikiDataCache::parseEntity($data);
                 if (!empty($entity) && $entity['type'] == 'book') {
                     // Load the book infos
-                    $bookInfos = WikiDataImport::load($inBasePath, $entity);
+                    $bookInfo = WikiDataImport::load($basePath, $entity);
                     // Add the book
-                    $this->addBook($bookInfos, 0);
+                    $this->addBook($bookInfo, 0);
                     $nbOk++;
                 }
             } catch (Exception $e) {
@@ -133,18 +133,18 @@ class JsonImport extends SourceImport
     /**
      * Load books from JSON files in path
      *
-     * @param string $inBasePath base directory
-     * @param string $jsonPath relative to $inBasePath
+     * @param string $basePath base directory
+     * @param string $jsonPath relative to $basePath
      *
      * @return array{string, array<mixed>}
      */
-    public function loadFromPath($inBasePath, $jsonPath)
+    public function loadFromPath($basePath, $jsonPath)
     {
         $allErrors = [];
         $allMessages = '';
-        $fileList = BaseCache::getFiles($inBasePath . DIRECTORY_SEPARATOR . $jsonPath, '*.json');
+        $fileList = BaseCache::getFiles($basePath . DIRECTORY_SEPARATOR . $jsonPath, '*.json');
         foreach ($fileList as $file) {
-            [$message, $errors] = $this->loadFromJsonFile($inBasePath, $file);
+            [$message, $errors] = $this->loadFromJsonFile($basePath, $file);
             $allMessages .= $message . '<br />';
             $allErrors = array_merge($allErrors, $errors);
             //$allMessages = $message;

@@ -142,34 +142,34 @@ class BaseCache
     /**
      * Recursive get files
      *
-     * @param string $inPath Base directory to search in
-     * @param string $inPattern Search pattern
-     * @param bool $inStrip Strip path and pattern from result (e.g. for entity ids)
+     * @param string $path Base directory to search in
+     * @param string $pattern Search pattern
+     * @param bool $strip Strip path and pattern from result (e.g. for entity ids)
      * @return array<string>
      */
-    public static function getFiles($inPath = '', $inPattern = '*.epub', $inStrip = false)
+    public static function getFiles($path = '', $pattern = '*.epub', $strip = false)
     {
         $res = [];
 
         // Check path
-        if (!is_dir($inPath)) {
+        if (!is_dir($path)) {
             return $res;
         }
 
         // Get the list of directories
-        if (substr($inPath, -1) != DIRECTORY_SEPARATOR) {
-            $inPath .= DIRECTORY_SEPARATOR;
+        if (substr($path, -1) != DIRECTORY_SEPARATOR) {
+            $path .= DIRECTORY_SEPARATOR;
         }
         // Simple cases only, e.g. *.epub or *.en.json
-        $suffix = str_replace('*', '', $inPattern);
+        $suffix = str_replace('*', '', $pattern);
 
         // Add files from the current directory
-        $files = glob($inPath . $inPattern, GLOB_MARK | GLOB_NOSORT);
+        $files = glob($path . $pattern, GLOB_MARK | GLOB_NOSORT);
         foreach ($files as $item) {
             if (substr($item, -1) == DIRECTORY_SEPARATOR) {
                 continue;
             }
-            if ($inStrip) {
+            if ($strip) {
                 $res[] = basename($item, $suffix);
             } else {
                 $res[] = $item;
@@ -177,9 +177,9 @@ class BaseCache
         }
 
         // Scan sub directories
-        $paths = glob($inPath . '*', GLOB_MARK | GLOB_ONLYDIR | GLOB_NOSORT);
+        $paths = glob($path . '*', GLOB_MARK | GLOB_ONLYDIR | GLOB_NOSORT);
         foreach ($paths as $path) {
-            $res = array_merge($res, static::getFiles($path, $inPattern));
+            $res = array_merge($res, static::getFiles($path, $pattern));
         }
 
         // Sort in "natural" order for increasing id's

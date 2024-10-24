@@ -9,51 +9,51 @@
 
 namespace Marsender\EPubLoader\Export;
 
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Exception;
 
 abstract class ExportTarget
 {
     /** @var array<mixed>|null */
-    protected $mProperties = null;
-    protected string $mFileName = '';
+    protected $properties = null;
+    protected string $fileName = '';
     /** @var array<mixed>|null */
-    protected $mSearch = null;
+    protected $search = null;
     /** @var array<mixed>|null */
-    protected $mReplace = null;
+    protected $replace = null;
 
-    public bool $mFormatProperty = true;
+    public bool $formatProperty = true;
 
     /**
      * Open an export file (or create if file does not exist)
      *
-     * @param string $inFileName Export file name
-     * @param boolean $inCreate Force file creation
+     * @param string $fileName Export file name
+     * @param boolean $create Force file creation
      */
-    public function __construct($inFileName, $inCreate = false)
+    public function __construct($fileName, $create = false)
     {
-        if ($inCreate && file_exists($inFileName)) {
-            if (!unlink($inFileName)) {
-                $error = sprintf('Cannot remove file: %s', $inFileName);
+        if ($create && file_exists($fileName)) {
+            if (!unlink($fileName)) {
+                $error = sprintf('Cannot remove file: %s', $fileName);
                 throw new Exception($error);
             }
         }
 
-        $this->mFileName = $inFileName;
+        $this->fileName = $fileName;
 
-        $this->mProperties = [];
+        $this->properties = [];
     }
 
     /**
      * Add a new book to the export
      *
-     * @param BookInfos $inBookInfo BookInfo object
-     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param BookInfo $bookInfo BookInfo object
+     * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
      * @throws Exception if error
      *
      * @return void
      */
-    abstract public function addBook($inBookInfo, $inBookId = 0);
+    abstract public function addBook($bookInfo, $bookId = 0);
 
     /**
      * Summary of clearProperties
@@ -61,59 +61,59 @@ abstract class ExportTarget
      */
     public function clearProperties()
     {
-        $this->mProperties = [];
+        $this->properties = [];
     }
 
     /**
      * Summary of SetProperty
-     * @param mixed $inKey
-     * @param mixed $inValue
+     * @param mixed $key
+     * @param mixed $value
      * @return void
      */
-    public function setProperty($inKey, $inValue)
+    public function setProperty($key, $value)
     {
         // Don't store empty keys
-        if (empty($inKey)) {
+        if (empty($key)) {
             return;
         }
 
-        if ($this->mFormatProperty) {
-            $inValue = $this->formatProperty($inValue);
+        if ($this->formatProperty) {
+            $value = $this->formatProperty($value);
         }
 
-        $this->mProperties[$inKey] = $inValue;
+        $this->properties[$key] = $value;
     }
 
     /**
      * Format a property
      *
-     * @param string|array<mixed>|null $inValue of strings to format
+     * @param string|array<mixed>|null $value of strings to format
      * @return string|array<mixed> of strings formated
      */
-    protected function formatProperty($inValue)
+    protected function formatProperty($value)
     {
-        if (!isset($inValue)) {
+        if (!isset($value)) {
             return '';
         }
-        if (is_numeric($inValue)) {
-            return (string) $inValue;
+        if (is_numeric($value)) {
+            return (string) $value;
         }
-        if (is_array($inValue)) {
+        if (is_array($value)) {
             // Recursive call for arrays
-            foreach ($inValue as $key => $value) {
-                $inValue[$key] = $this->formatProperty($value);
+            foreach ($value as $key => $val) {
+                $value[$key] = $this->formatProperty($val);
             }
-            return $inValue;
+            return $value;
         }
-        if (!is_string($inValue) || empty($inValue)) {
+        if (!is_string($value) || empty($value)) {
             return '';
         }
 
         // Replace html entities with normal characters
-        $str = html_entity_decode($inValue, ENT_COMPAT, 'UTF-8');
+        $str = html_entity_decode($value, ENT_COMPAT, 'UTF-8');
         // Replace characters
-        if (isset($this->mSearch)) {
-            $str = str_replace($this->mSearch, $this->mReplace, $str);
+        if (isset($this->search)) {
+            $str = str_replace($this->search, $this->replace, $str);
         }
 
         // Strip double spaces
@@ -137,8 +137,8 @@ abstract class ExportTarget
     {
         // Write the file
         $content = $this->getContent();
-        if (!file_put_contents($this->mFileName, $content)) {
-            $error = sprintf('Cannot save export to file: %s', $this->mFileName);
+        if (!file_put_contents($this->fileName, $content)) {
+            $error = sprintf('Cannot save export to file: %s', $this->fileName);
             throw new Exception($error);
         }
     }
@@ -146,14 +146,14 @@ abstract class ExportTarget
     /**
      * Send download http headers
      *
-     * @param string $inFileName Download file name to display in the browser
-     * @param int $inFileSize Download file size
-     * @param string $inCodeSet Charset
+     * @param string $fileName Download file name to display in the browser
+     * @param int $fileSize Download file size
+     * @param string $codeSet Charset
      * @throws exception if http headers have been already sent
      *
      * @return void
      */
-    protected function sendDownloadHeaders($inFileName, $inFileSize = null, $inCodeSet = 'utf-8')
+    protected function sendDownloadHeaders($fileName, $fileSize = null, $codeSet = 'utf-8')
     {
         // Throws excemtion if http headers have been already sent
         $filename = '';
@@ -163,8 +163,8 @@ abstract class ExportTarget
             throw new Exception($error);
         }
 
-        $inFileName = str_replace(' ', '', basename($inFileName)); // Cleanup file name
-        $ext = strtolower(substr(strrchr($inFileName, '.'), 1));
+        $fileName = str_replace(' ', '', basename($fileName)); // Cleanup file name
+        $ext = strtolower(substr(strrchr($fileName, '.'), 1));
 
         switch ($ext) {
             case 'pdf':
@@ -175,26 +175,26 @@ abstract class ExportTarget
                 break;
             case 'xml':
                 $contentType = 'text/xml';
-                if (!empty($inCodeSet)) {
-                    $contentType .= '; charset=' . $inCodeSet;
+                if (!empty($codeSet)) {
+                    $contentType .= '; charset=' . $codeSet;
                 }
                 break;
             case 'txt':
                 $contentType = 'text/plain';
-                if (!empty($inCodeSet)) {
-                    $contentType .= '; charset=' . $inCodeSet;
+                if (!empty($codeSet)) {
+                    $contentType .= '; charset=' . $codeSet;
                 }
                 break;
             case 'csv':
                 $contentType = 'text/csv';
-                if (!empty($inCodeSet)) {
-                    $contentType .= '; charset=' . $inCodeSet;
+                if (!empty($codeSet)) {
+                    $contentType .= '; charset=' . $codeSet;
                 }
                 break;
             case 'html':
                 $contentType = 'text/html';
-                if (!empty($inCodeSet)) {
-                    $contentType .= '; charset=' . $inCodeSet;
+                if (!empty($codeSet)) {
+                    $contentType .= '; charset=' . $codeSet;
                 }
                 break;
             default:
@@ -203,11 +203,11 @@ abstract class ExportTarget
         }
 
         // Send http headers for download
-        header('Content-disposition: attachment; filename="' . $inFileName . '"');
+        header('Content-disposition: attachment; filename="' . $fileName . '"');
         Header('Content-Type: ' . $contentType);
         //header('Content-Transfer-Encoding: binary');
-        if (isset($inFileSize)) {
-            header('Content-Length: ' . $inFileSize);
+        if (isset($fileSize)) {
+            header('Content-Length: ' . $fileSize);
         }
 
         // Send http headers to remove the browser cache
@@ -228,7 +228,7 @@ abstract class ExportTarget
 
         // Send http download headers
         $size = strlen($content);
-        $this->sendDownloadHeaders($this->mFileName, $size);
+        $this->sendDownloadHeaders($this->fileName, $size);
 
         // Send file content to download
         echo $content;

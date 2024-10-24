@@ -52,18 +52,12 @@ class GoogleBooksHandler extends MetadataHandler
      */
     public function gb_books($authorId, $bookId, $matchId, $lang = 'en')
     {
-        $authors = $this->db->getAuthors($authorId);
-        if (empty($authorId) && empty($bookId)) {
-            //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
-            //return null;
-            $authorId = array_key_first($authors);
-        }
-
-        if (count($authors) < 1) {
-            $this->addError($this->dbFileName, "Please specify a valid authorId");
-            return null;
-        }
-        $author = $authors[$authorId];
+        $sort = $this->request->get('sort');
+        $offset = $this->request->getId('offset');
+        $result = $this->books($authorId, null, $bookId, $sort, $offset);
+        $authorId = $result['authorId'];
+        $authorInfo = $result['authorInfo'];
+        $bookInfo = $result['bookInfo'];
 
         // Update the book identifier
         if (!is_null($bookId) && !is_null($matchId)) {
@@ -75,35 +69,46 @@ class GoogleBooksHandler extends MetadataHandler
 
         $matched = null;
         $dbPath = $this->dbConfig['db_path'];
-        if (!empty($bookId)) {
-            $books = $this->db->getBooks($bookId);
-            $query = $books[$bookId]['title'];
-            $matched = $googlematch->findWorksByTitle($query, $author);
-            //$info = GoogleBooksMatch::getBookInfos($dbPath, $matched);
+        if (!empty($bookId) && !empty($bookInfo)) {
+            $matched = $googlematch->findWorksByTitle($bookInfo['title'], $authorInfo);
+            //$info = GoogleBooksMatch::getBookInfo($dbPath, $matched);
         } else {
-            $sort = $this->request->get('sort');
-            $offset = $this->request->getId('offset');
-            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
-            $matched = $googlematch->findWorksByAuthor($author);
-            //$info = GoogleBooksMatch::getBookInfos($dbPath, $matched);
+            $matched = $googlematch->findWorksByAuthor($authorInfo);
+            //$info = GoogleBooksMatch::getBookInfo($dbPath, $matched);
         }
 
-        $authorList = $this->getAuthorList();
+        // exact match only here - see calibre metadata plugins for more advanced features
+        if (!empty($authorId) && !empty($authorInfo)) {
+            $result['books'] = $this->matchBookTitles($result['books'], $matched, $authorInfo['name']);
+        }
+
+        $result['matched'] = $matched;
+        $result['matchId'] = $matchId;
+        $result['lang'] = $lang;
+        $result['langList'] = GoogleBooksMatch::getLanguages();
+        $result['identifierType'] = 'google';
+
+        // Return info
+        return $result;
+    }
+
+    /**
+     * Summary of matchBookTitles
+     * @param array<mixed> $books
+     * @param array<mixed> $matched
+     * @param string $authorName
+     * @return array<mixed>
+     */
+    protected function matchBookTitles($books, $matched, $authorName)
+    {
+        // exact match only here - see calibre metadata plugins for more advanced features
         $titles = [];
-        $identifierList = [];
         foreach ($books as $id => $book) {
             $titles[$book['title']] = $id;
-            $diff = array_diff(array_keys($book['identifiers']), $identifierList);
-            if (!empty($diff)) {
-                $identifierList = array_merge($identifierList, $diff);
-            }
         }
-        $identifierList[] = 'ID:';
-        sort($identifierList);
-        // exact match only here - see calibre metadata plugins for more advanced features
         foreach ($matched['items'] as $match) {
             if (array_key_exists($match['volumeInfo']['title'], $titles)) {
-                if (!empty($match['volumeInfo']['authors']) && in_array($author['name'], $match['volumeInfo']['authors'])) {
+                if (!empty($match['volumeInfo']['authors']) && in_array($authorName, $match['volumeInfo']['authors'])) {
                     $id = $titles[$match['volumeInfo']['title']];
                     if (empty($books[$id]['identifiers']['google']) || $books[$id]['identifiers']['google']['value'] != $match['id']) {
                         $books[$id]['identifiers']['ID:'] = ['id' => 0, 'book' => $id, 'type' => '* google', 'value' => $match['id'], 'url' => GoogleBooksMatch::link($match['id'])];
@@ -114,20 +119,7 @@ class GoogleBooksHandler extends MetadataHandler
                 }
             }
         }
-        $langList = GoogleBooksMatch::getLanguages();
-
-        // Return info
-        return [
-            'books' => $books,
-            'authorId' => $authorId,
-            'bookId' => $bookId,
-            'matched' => $matched,
-            'authors' => $authorList,
-            'lang' => $lang,
-            'langList' => $langList,
-            'identifiers' => $identifierList,
-            'identifierType' => 'google',
-        ];
+        return $books;
     }
 
     /**

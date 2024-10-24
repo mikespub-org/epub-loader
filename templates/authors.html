@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="title">
-	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
+	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
 	{% block findlinks %}
 	{% endblock findlinks %}
 </div>
@@ -19,13 +19,13 @@
 	</tr>
 	{% for item in authors %}
 	<tr>
-		<td>{{item.id}}</td>
+		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.id}}">{{item.id}}</a></td>
 		<td>
 			{{item.name}}
 		</td>
 		<td>{{item.sort}}</td>
-		<td>{{item.books}}</td>
-		<td>{{item.series}}</td>
+		<td><a href="{{endpoint}}/books/{{dbNum}}/{{item.id}}">{{item.books}}</a></td>
+		<td><a href="{{endpoint}}/series/{{dbNum}}/{{item.id}}">{{item.series}}</a></td>
 		<td>
 			{{ include('links.html', {itemId: item.id}) }}
 		</td>
@@ -40,8 +40,15 @@
 {% block lookup %}
 {% if authorId %}
 <div class="part">
-	<p><b>Lookup</b></p>
-	{{ include('links.html', {itemId: authorId}) }}
+	<p><b>Database Author</b></p>
+	<p>{{ include('links.html', {itemId: authorId}) }}</p>
+	<ul>
+		{% for key, value in authorInfo %}
+			<li>
+				{{ key }}: {{ value }}
+			</li>
+		{% endfor %}
+	</ul>
 </div>
 {% endif %}
 {% endblock lookup %}

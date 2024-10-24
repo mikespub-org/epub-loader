@@ -91,6 +91,8 @@ $gConfig['groups']['Lookup'] = [
 ];
 // internal actions are not shown on the main menu
 $gConfig['groups']['Internal'] = [
+    'books' => 'Books in database',
+    'series' => 'Series in database',
     'test' => 'Test action (not visible)',
     'wd_entity' => 'WikiData entity',
     'gb_volume' => 'Google Books volume',

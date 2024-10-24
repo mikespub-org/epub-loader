@@ -9,7 +9,9 @@
 
 namespace Marsender\EPubLoader\Metadata\WikiData;
 
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\AuthorInfo;
+use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Metadata\SeriesInfo;
 use Exception;
 
 class WikiDataImport
@@ -17,31 +19,31 @@ class WikiDataImport
     /**
      * Loads book infos from a WikiData entity
      *
-     * @param string $inBasePath base directory
+     * @param string $basePath base directory
      * @param array<mixed> $entity WikiData entity
      * @throws Exception if error
      *
-     * @return BookInfos
+     * @return BookInfo
      */
-    public static function load($inBasePath, $entity)
+    public static function load($basePath, $entity)
     {
-        $bookInfos = new BookInfos();
-        $bookInfos->mSource = 'wikidata';
-        $bookInfos->mBasePath = $inBasePath;
+        $bookInfo = new BookInfo();
+        $bookInfo->source = 'wikidata';
+        $bookInfo->basePath = $basePath;
         // @todo check details format and/or links for epub, pdf etc.
-        $bookInfos->mFormat = 'epub';
-        $bookInfos->mName = $entity['id'] ?? '';
+        $bookInfo->format = 'epub';
+        $bookInfo->name = $entity['id'] ?? '';
         // @todo use calibre_external_storage in COPS
-        $bookInfos->mPath = (string) WikiDataMatch::link($bookInfos->mName);
-        if (str_starts_with($bookInfos->mPath, $inBasePath)) {
-            $bookInfos->mPath = substr($bookInfos->mPath, strlen($inBasePath) + 1);
+        $bookInfo->path = (string) WikiDataMatch::link($bookInfo->name);
+        if (str_starts_with($bookInfo->path, $basePath)) {
+            $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
-        $bookInfos->mUuid = 'wd:' . $bookInfos->mName;
-        $bookInfos->mUri = (string) $bookInfos->mPath;
-        $bookInfos->mTitle = $entity['label'] ?? '';
-        $bookInfos->mDescription = $entity['description'] ?? '';
+        $bookInfo->uuid = 'wd:' . $bookInfo->name;
+        $bookInfo->uri = (string) $bookInfo->path;
+        $bookInfo->title = $entity['label'] ?? '';
+        $bookInfo->description = $entity['description'] ?? '';
         $authors = [];
-        $bookInfos->mAuthorIds = [];
+        $bookInfo->authorIds = [];
         $entities = $entity['author'] ?? [];
         foreach ($entities as $author) {
             $authorId = $author['id'] ?? '';
@@ -52,58 +54,58 @@ class WikiDataImport
             if (empty($authorName)) {
                 continue;
             }
-            $authorSort = BookInfos::getAuthorSort($authorName);
+            $authorSort = AuthorInfo::getNameSort($authorName);
             $authors[$authorSort] = $authorName;
-            $bookInfos->mAuthorIds[] = $authorId;
+            $bookInfo->authorIds[] = $authorId;
         }
-        $bookInfos->mAuthors = $authors;
+        $bookInfo->authors = $authors;
         $subjects = [];
         $entities = $entity['genre'] ?? [];
         foreach ($entities as $subject) {
             $subjects[] = $subject['label'] ?? '';
         }
-        $bookInfos->mSubjects = $subjects;
-        $bookInfos->mCover = $entity['cover'] ?? '';
-        $bookInfos->mPublisher = $entity['publisher'] ?? '';
-        $bookInfos->mLanguage = $entity['language'] ?? '';
+        $bookInfo->subjects = $subjects;
+        $bookInfo->cover = $entity['cover'] ?? '';
+        $bookInfo->publisher = $entity['publisher'] ?? '';
+        $bookInfo->language = $entity['language'] ?? '';
         $entities = $entity['series'] ?? [];
-        $bookInfos->mSerieIds = [];
+        $bookInfo->serieIds = [];
         foreach ($entities as $series) {
             // use only the 1st series for name & index here
-            if ($bookInfos->mSerieIndex == '') {
-                $bookInfos->mSerieIndex = $series['index'] ?? '0';
+            if ($bookInfo->serieIndex == '') {
+                $bookInfo->serieIndex = $series['index'] ?? '0';
             }
-            if ($bookInfos->mSerie == '') {
-                $bookInfos->mSerie = $series['label'] ?? '';
+            if ($bookInfo->serie == '') {
+                $bookInfo->serie = $series['label'] ?? '';
             }
             // save ids of the other series here for matching?
-            $bookInfos->mSerieIds[] = $series['id'] ?? '';
+            $bookInfo->serieIds[] = $series['id'] ?? '';
         }
-        $bookInfos->mIdentifiers = $entity['identifiers'] ?? ['wd' => $bookInfos->mName];
-        foreach ($bookInfos->mIdentifiers as $type => $value) {
+        $bookInfo->identifiers = $entity['identifiers'] ?? ['wd' => $bookInfo->name];
+        foreach ($bookInfo->identifiers as $type => $value) {
             if ($type == 'isbn') {
-                $bookInfos->mIsbn = $value;
+                $bookInfo->isbn = $value;
                 break;
             }
         }
         // @todo ...
 
-        $bookInfos->mCreationDate = $entity['published'] ?? '';
+        $bookInfo->creationDate = $entity['published'] ?? '';
         // @todo no modification date here
-        $bookInfos->mModificationDate = $bookInfos->mCreationDate;
+        $bookInfo->modificationDate = $bookInfo->creationDate;
         // Timestamp is used to get latest ebooks
-        $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
+        $bookInfo->timeStamp = $bookInfo->creationDate;
 
-        return $bookInfos;
+        return $bookInfo;
     }
 
     /**
-     * Summary of getBookInfos
+     * Summary of getBookInfo
      * @param string $dbPath
      * @param array<mixed> $data
-     * @return BookInfos|null
+     * @return BookInfo|null
      */
-    public static function getBookInfos($dbPath, $data)
+    public static function getBookInfo($dbPath, $data)
     {
         $entity = WikiDataCache::parseEntity($data);
         if (empty($entity) || $entity['type'] != 'book') {

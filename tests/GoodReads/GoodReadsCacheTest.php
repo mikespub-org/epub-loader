@@ -201,17 +201,17 @@ class GoodReadsCacheTest extends BaseTestCase
                 $missing['books'][$bookId] ??= $bookId;
                 continue;
             }
-            if (!empty($book->mAuthorIds) && count($book->mAuthorIds) < 4) {
-                foreach ($book->mAuthorIds as $authorId) {
+            if (!empty($book->authorIds) && count($book->authorIds) < 4) {
+                foreach ($book->authorIds as $authorId) {
                     if (!in_array($authorId, $authorIdList)) {
-                        $missing['authors'][$authorId] ??= $book->mTitle;
+                        $missing['authors'][$authorId] ??= $book->title;
                     }
                 }
             }
-            if (!empty($book->mSerieIds) && count($book->mSerieIds) < 4) {
-                foreach ($book->mSerieIds as $seriesId) {
+            if (!empty($book->serieIds) && count($book->serieIds) < 4) {
+                foreach ($book->serieIds as $seriesId) {
                     if (!in_array($seriesId, $seriesIdList)) {
-                        $missing['series'][$seriesId] ??= $book->mTitle;
+                        $missing['series'][$seriesId] ??= $book->title;
                     }
                 }
             }

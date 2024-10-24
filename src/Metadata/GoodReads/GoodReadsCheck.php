@@ -11,7 +11,7 @@ namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 use Marsender\EPubLoader\CalibreDbLoader;
 use Marsender\EPubLoader\Metadata\BaseCheck;
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Exception;
 
 class GoodReadsCheck extends BaseCheck
@@ -67,7 +67,7 @@ class GoodReadsCheck extends BaseCheck
                 $bookInfo = $this->getCachedBookInfo($link['value']);
                 if (empty($bookInfo)) {
                     $invalid[$link['value']] = $link;
-                    $books[$link['value']] = new BookInfos();
+                    $books[$link['value']] = new BookInfo();
                     continue;
                 }
                 $books[$link['value']] = $bookInfo;
@@ -78,9 +78,9 @@ class GoodReadsCheck extends BaseCheck
             if (!empty($link['author'])) {
                 $authors[$link['author']] ??= [];
             }
-            if (!empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
+            if (!empty($bookInfo->authorIds) && count($bookInfo->authorIds) < 4) {
                 if (!empty($link['author'])) {
-                    foreach (array_filter($bookInfo->mAuthorIds) as $authorId) {
+                    foreach (array_filter($bookInfo->authorIds) as $authorId) {
                         $authors[$link['author']][$authorId] ??= 0;
                         $authors[$link['author']][$authorId] += 1;
                     }
@@ -92,17 +92,17 @@ class GoodReadsCheck extends BaseCheck
             if (!empty($link['series'])) {
                 $series[$link['series']] ??= [];
             }
-            if (!empty($bookInfo->mSerieIds) && count($bookInfo->mSerieIds) < 10) {
+            if (!empty($bookInfo->serieIds) && count($bookInfo->serieIds) < 10) {
                 if (!empty($link['series'])) {
-                    foreach (array_filter($bookInfo->mSerieIds) as $serieId) {
+                    foreach (array_filter($bookInfo->serieIds) as $serieId) {
                         $series[$link['series']][$serieId] ??= 0;
                         $series[$link['series']][$serieId] += 1;
                     }
-                } elseif (!empty($bookInfo->mAuthorIds) && count($bookInfo->mAuthorIds) < 4) {
+                } elseif (!empty($bookInfo->authorIds) && count($bookInfo->authorIds) < 4) {
                     $missing[$link['book']] ??= [];
-                    foreach (array_filter($bookInfo->mSerieIds) as $serieId) {
+                    foreach (array_filter($bookInfo->serieIds) as $serieId) {
                         // @todo only valid for first series here!
-                        $missing[$link['book']][$serieId] ??= $bookInfo->mSerieIndex;
+                        $missing[$link['book']][$serieId] ??= $bookInfo->serieIndex;
                     }
                 }
             }
@@ -221,7 +221,7 @@ class GoodReadsCheck extends BaseCheck
     /**
      * Summary of getCachedBookInfo
      * @param string $bookId
-     * @return BookInfos|null
+     * @return BookInfo|null
      */
     protected function getCachedBookInfo($bookId)
     {
@@ -769,8 +769,8 @@ class GoodReadsCheck extends BaseCheck
             $result = $this->cache::parseSeries($data);
             // escape single quotes by using two single quotes here
             $name = str_replace("'", "''", $result->getTitle() ?? "Series $matchId");
-            $sort = BookInfos::getTitleSort($name);
-            $sort = BookInfos::getSortString($sort);
+            $sort = BookInfo::getTitleSort($name);
+            $sort = BookInfo::getSortString($sort);
             $matchUrl = $this->match::SERIES_URL . $matchId;
             $insert .= "INSERT INTO series(name, sort, link) VALUES('{$name}', '{$sort}', '{$matchUrl}');\n";
         }

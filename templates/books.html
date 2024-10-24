@@ -4,7 +4,12 @@
 <div class="title">
 	<form method="GET" action="{{endpoint}}/{{action}}/{{dbNum}}">
 		<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/authors/{{dbNum}}">{{dbConfig.name}}</a>
-		Author <select name="authorId">
+		{% if authorId %}
+			<a href="{{endpoint}}/authors/{{dbNum}}/{{authorId}}">Author</a>
+		{% else %}
+			Author
+		{% endif %}
+		<select name="authorId">
 			<option value=""></option>
 			{% for id, name in authors %}
 			{% if authorId and authorId == id %}
@@ -15,7 +20,12 @@
 			{% endfor %}
 		</select>
 		{% if series is defined %}
-		Series <select name="seriesId">
+		{% if seriesId %}
+			<a href="{{endpoint}}/series/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}">Series</a>
+		{% else %}
+			Series
+		{% endif %}
+		<select name="seriesId">
 			<option value=""></option>
 			{% for id, name in series %}
 			{% if seriesId and seriesId == id %}
@@ -52,7 +62,7 @@
 	</tr>
 	{% for item in books %}
 	<tr>
-		<td>{{item.id}}</td>
+		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?bookId={{item.id}}">{{item.id}}</a></td>
 		<td>{{item.title}}</td>
 		<td>
 			{% if item.series %}
@@ -100,10 +110,17 @@
 </table>
 </form>
 {% block lookup %}
-{% if authorId %}
+{% if bookId %}
 <div class="part">
-	<p>Lookup:</p>
-	{{authorId}}
+	<p><b>Database Book</b></p>
+	<p>{{ include('links.html', {itemId: authorId}) }}</p>
+	<ul>
+		{% for key, value in bookInfo %}
+			<li>
+				{{ key }}: {{ value }}
+			</li>
+		{% endfor %}
+	</ul>
 </div>
 {% endif %}
 {% endblock lookup %}

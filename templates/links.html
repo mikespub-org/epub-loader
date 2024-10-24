@@ -1,29 +1,38 @@
 {# include('links.html', {itemId: item.id}) #}
 
+{% if seriesId %}
+	{% set itemParams = '?seriesId=' ~ seriesId %}
+{% else %}
+	{% set itemParams = '' %}
+{% endif %}
+
 {% if actions.wd_author %}
-	<a href="{{endpoint}}/wd_author/{{dbNum}}/{{itemId}}" title="WikiData Author">WD Author</a>
+	<a href="{{endpoint}}/wd_author/{{dbNum}}/{{itemId}}{{itemParams}}" title="WikiData Author">WD Author</a>
 {% endif %}
 {% if actions.wd_books %}
-	<a href="{{endpoint}}/wd_books/{{dbNum}}/{{itemId}}" title="WikiData Books">WD Books</a>
+	<a href="{{endpoint}}/wd_books/{{dbNum}}/{{itemId}}{{itemParams}}" title="WikiData Books">WD Books</a>
 {% endif %}
 {% if actions.wd_series %}
-	<a href="{{endpoint}}/wd_series/{{dbNum}}/{{itemId}}" title="WikiData Series">WD Series</a>
+	<a href="{{endpoint}}/wd_series/{{dbNum}}/{{itemId}}{{itemParams}}" title="WikiData Series">WD Series</a>
 {% endif %}
+-
 {% if actions.gb_books %}
 	<a href="{{endpoint}}/gb_books/{{dbNum}}/{{itemId}}" title="Google Books">GB Books</a>
 {% endif %}
+-
 {% if actions.ol_author %}
 	<a href="{{endpoint}}/ol_author/{{dbNum}}/{{itemId}}" title="OpenLibrary Author">OL Author</a>
 {% endif %}
 {% if actions.ol_books %}
 	<a href="{{endpoint}}/ol_books/{{dbNum}}/{{itemId}}" title="OpenLibrary Works">OL Works</a>
 {% endif %}
+-
 {% if actions.gr_author %}
-	<a href="{{endpoint}}/gr_author/{{dbNum}}/{{itemId}}" title="GoodReads Author">GR Author</a>
+	<a href="{{endpoint}}/gr_author/{{dbNum}}/{{itemId}}{{itemParams}}" title="GoodReads Author">GR Author</a>
 {% endif %}
 {% if actions.gr_books %}
-	<a href="{{endpoint}}/gr_books/{{dbNum}}/{{itemId}}" title="GoodReads Books">GR Books</a>
+	<a href="{{endpoint}}/gr_books/{{dbNum}}/{{itemId}}{{itemParams}}" title="GoodReads Books">GR Books</a>
 {% endif %}
 {% if actions.gr_series %}
-	<a href="{{endpoint}}/gr_series/{{dbNum}}/{{itemId}}" title="GoodReads Series">GR Series</a>
+	<a href="{{endpoint}}/gr_series/{{dbNum}}/{{itemId}}{{itemParams}}" title="GoodReads Series">GR Series</a>
 {% endif %}

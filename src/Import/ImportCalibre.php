@@ -9,7 +9,7 @@
 
 namespace Marsender\EPubLoader\Import;
 
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryMatch;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataMatch;
@@ -19,52 +19,52 @@ use Exception;
 class ImportCalibre extends ImportTarget
 {
     /** @var array<int, int> */
-    protected $mRatingIndex = [];
+    protected $ratingIndex = [];
 
     /**
      * Add a new book into the db
      *
-     * @param BookInfos $inBookInfo BookInfo object
-     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param BookInfo $bookInfo BookInfo object
+     * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
      * @param string $sortField Add 'calibre_database_field_sort' field for tags
      *
      * @throws Exception if error
      *
      * @return void
      */
-    public function addBook($inBookInfo, $inBookId, $sortField = 'sort')
+    public function addBook($bookInfo, $bookId, $sortField = 'sort')
     {
         $errors = [];
 
         // Check if the book uuid does not already exist
-        $error = $this->checkBookUuid($inBookInfo);
+        $error = $this->checkBookUuid($bookInfo);
         if ($error) {
             $errors[] = $error;
             // Set a new uuid
-            $inBookInfo->createUuid();
+            $bookInfo->createUuid();
         }
         // Add the book
-        $idBook = $this->addBookEntry($inBookInfo, $inBookId);
-        if ($inBookId && $idBook != $inBookId) {
-            $error = sprintf('Incorrect book id=%d vs %d for uuid: %s', $idBook, $inBookId, $inBookInfo->mUuid);
+        $idBook = $this->addBookEntry($bookInfo, $bookId);
+        if ($bookId && $idBook != $bookId) {
+            $error = sprintf('Incorrect book id=%d vs %d for uuid: %s', $idBook, $bookId, $bookInfo->uuid);
             throw new Exception($error);
         }
         // Add the book data (formats)
-        $this->addBookData($inBookInfo, $idBook);
+        $this->addBookData($bookInfo, $idBook);
         // Add the book comments
-        $this->addBookComments($inBookInfo, $idBook);
+        $this->addBookComments($bookInfo, $idBook);
         // Add the book identifiers
-        $this->addBookIdentifiers($inBookInfo, $idBook);
+        $this->addBookIdentifiers($bookInfo, $idBook);
         // Add the book serie
-        $this->addBookSeries($inBookInfo, $idBook);
+        $this->addBookSeries($bookInfo, $idBook);
         // Add the book authors
-        $this->addBookAuthors($inBookInfo, $idBook);
+        $this->addBookAuthors($bookInfo, $idBook);
         // Add the book language
-        $this->addBookLanguage($inBookInfo, $idBook);
+        $this->addBookLanguage($bookInfo, $idBook);
         // Add the book tags (subjects)
-        $this->addBookTags($inBookInfo, $idBook, $sortField);
+        $this->addBookTags($bookInfo, $idBook, $sortField);
         // Add the book rating (if any)
-        $this->addBookRating($inBookInfo, $idBook);
+        $this->addBookRating($bookInfo, $idBook);
         // Send warnings
         if (count($errors)) {
             $error = implode(' - ', $errors);
@@ -74,18 +74,18 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of checkBookUuid
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @return string
      */
-    public function checkBookUuid($inBookInfo)
+    public function checkBookUuid($bookInfo)
     {
         $error = '';
         $sql = 'select b.id, b.title, b.path, d.name, d.format from books as b, data as d where d.book = b.id and uuid=:uuid';
-        $stmt = $this->mDb->prepare($sql);
-        $stmt->bindParam(':uuid', $inBookInfo->mUuid);
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':uuid', $bookInfo->uuid);
         $stmt->execute();
         while ($post = $stmt->fetchObject()) {
-            $error = sprintf('Warning: Multiple book id for uuid: %s (already in file "%s/%s.%s" title "%s")', $inBookInfo->mUuid, $post->path, $post->name, $inBookInfo->mFormat, $post->title);
+            $error = sprintf('Warning: Multiple book id for uuid: %s (already in file "%s/%s.%s" title "%s")', $bookInfo->uuid, $post->path, $post->name, $bookInfo->format, $post->title);
             break;
         }
         return $error;
@@ -93,56 +93,56 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addBookEntry
-     * @param BookInfos $inBookInfo BookInfo object
-     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param BookInfo $bookInfo BookInfo object
+     * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
      * @return int|null
      */
-    public function addBookEntry($inBookInfo, $inBookId)
+    public function addBookEntry($bookInfo, $bookId)
     {
         // Add the book
         $sql = 'insert into books(';
-        if ($inBookId) {
+        if ($bookId) {
             $sql .= 'id, ';
         }
         // Add 'calibre_database_field_cover' field for books
         $sql .= 'title, sort, timestamp, pubdate, last_modified, series_index, uuid, path, has_cover, cover, isbn) values(';
-        if ($inBookId) {
+        if ($bookId) {
             $sql .= ':id, ';
         }
         $sql .= ':title, :sort, :timestamp, :pubdate, :lastmodified, :serieindex, :uuid, :path, :hascover, :cover, :isbn)';
-        $timeStamp = BookInfos::getSqlDate($inBookInfo->mTimeStamp);
-        $pubDate = BookInfos::getSqlDate(empty($inBookInfo->mCreationDate) ? '2000-01-01 00:00:00' : $inBookInfo->mCreationDate);
-        $lastModified = BookInfos::getSqlDate(empty($inBookInfo->mModificationDate) ? '2000-01-01 00:00:00' : $inBookInfo->mModificationDate);
-        $hasCover = empty($inBookInfo->mCover) ? 0 : 1;
-        if (empty($inBookInfo->mCover)) {
+        $timeStamp = BookInfo::getSqlDate($bookInfo->timeStamp);
+        $pubDate = BookInfo::getSqlDate(empty($bookInfo->creationDate) ? '2000-01-01 00:00:00' : $bookInfo->creationDate);
+        $lastModified = BookInfo::getSqlDate(empty($bookInfo->modificationDate) ? '2000-01-01 00:00:00' : $bookInfo->modificationDate);
+        $hasCover = empty($bookInfo->cover) ? 0 : 1;
+        if (empty($bookInfo->cover)) {
             //$error = 'Warning: Cover not found';
             //$errors[] = $error;
             $cover = "";
         } else {
-            $cover = str_replace('OEBPS/', $inBookInfo->mName . '/', $inBookInfo->mCover);
+            $cover = str_replace('OEBPS/', $bookInfo->name . '/', $bookInfo->cover);
         }
-        $stmt = $this->mDb->prepare($sql);
-        if ($inBookId) {
-            $stmt->bindParam(':id', $inBookId);
+        $stmt = $this->db->prepare($sql);
+        if ($bookId) {
+            $stmt->bindParam(':id', $bookId);
         }
-        $stmt->bindParam(':title', $inBookInfo->mTitle);
-        $sortString = BookInfos::getTitleSort($inBookInfo->mTitle);
-        $sortString = BookInfos::getSortString($sortString);
+        $stmt->bindParam(':title', $bookInfo->title);
+        $sortString = BookInfo::getTitleSort($bookInfo->title);
+        $sortString = BookInfo::getSortString($sortString);
         $stmt->bindParam(':sort', $sortString);
         $stmt->bindParam(':timestamp', $timeStamp);
         $stmt->bindParam(':pubdate', $pubDate);
         $stmt->bindParam(':lastmodified', $lastModified);
-        $stmt->bindParam(':serieindex', $inBookInfo->mSerieIndex);
-        $stmt->bindParam(':uuid', $inBookInfo->mUuid);
-        $stmt->bindParam(':path', $inBookInfo->mPath);
+        $stmt->bindParam(':serieindex', $bookInfo->serieIndex);
+        $stmt->bindParam(':uuid', $bookInfo->uuid);
+        $stmt->bindParam(':path', $bookInfo->path);
         $stmt->bindParam(':hascover', $hasCover, PDO::PARAM_INT);
         $stmt->bindParam(':cover', $cover);
-        $stmt->bindParam(':isbn', $inBookInfo->mIsbn);
+        $stmt->bindParam(':isbn', $bookInfo->isbn);
         $stmt->execute();
         // Get the book id
         $sql = 'select id from books where uuid=:uuid';
-        $stmt = $this->mDb->prepare($sql);
-        $stmt->bindParam(':uuid', $inBookInfo->mUuid);
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':uuid', $bookInfo->uuid);
         $stmt->execute();
         $idBook = null;
         $post = $stmt->fetchObject();
@@ -150,7 +150,7 @@ class ImportCalibre extends ImportTarget
             $idBook = $post->id;
         }
         if (empty($idBook)) {
-            $error = sprintf('Cannot find book id for uuid: %s', $inBookInfo->mUuid);
+            $error = sprintf('Cannot find book id for uuid: %s', $bookInfo->uuid);
             throw new Exception($error);
         }
         return $idBook;
@@ -158,24 +158,24 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addBookData (formats)
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
      * @throws \Exception
      * @return void
      */
-    public function addBookData($inBookInfo, $idBook)
+    public function addBookData($bookInfo, $idBook)
     {
         $formats = [
-            $inBookInfo->mFormat,
+            $bookInfo->format,
             'pdf',
         ];
         foreach ($formats as $format) {
-            if (str_contains($inBookInfo->mPath, '://')) {
+            if (str_contains($bookInfo->path, '://')) {
                 continue;
             }
-            $fileName = sprintf('%s%s%s%s%s.%s', $inBookInfo->mBasePath, DIRECTORY_SEPARATOR, $inBookInfo->mPath, DIRECTORY_SEPARATOR, $inBookInfo->mName, $format);
+            $fileName = sprintf('%s%s%s%s%s.%s', $bookInfo->basePath, DIRECTORY_SEPARATOR, $bookInfo->path, DIRECTORY_SEPARATOR, $bookInfo->name, $format);
             if (!is_readable($fileName)) {
-                if ($format == $inBookInfo->mFormat) {
+                if ($format == $bookInfo->format) {
                     $error = sprintf('Cannot read file: %s', $fileName);
                     throw new Exception($error);
                 }
@@ -183,11 +183,11 @@ class ImportCalibre extends ImportTarget
             }
             $uncompressedSize = filesize($fileName);
             $sql = 'insert into data(book, format, name, uncompressed_size) values(:idBook, :format, :name, :uncompressedSize)';
-            $stmt = $this->mDb->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
             $format = strtoupper($format);
             $stmt->bindParam(':format', $format); // Calibre format is uppercase
-            $stmt->bindParam(':name', $inBookInfo->mName);
+            $stmt->bindParam(':name', $bookInfo->name);
             $stmt->bindParam(':uncompressedSize', $uncompressedSize);
             $stmt->execute();
         }
@@ -195,44 +195,44 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addBookComments
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
      * @throws \Exception
      * @return void
      */
-    public function addBookComments($inBookInfo, $idBook)
+    public function addBookComments($bookInfo, $idBook)
     {
         $sql = 'replace into comments(book, text) values(:idBook, :text)';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
-        $stmt->bindParam(':text', $inBookInfo->mDescription);
+        $stmt->bindParam(':text', $bookInfo->description);
         $stmt->execute();
     }
 
     /**
      * Summary of addBookIdentifiers
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
      * @throws \Exception
      * @return void
      */
-    public function addBookIdentifiers($inBookInfo, $idBook)
+    public function addBookIdentifiers($bookInfo, $idBook)
     {
-        if (empty($inBookInfo->mUri) && empty($inBookInfo->mIsbn) && empty($inBookInfo->mIdentifiers)) {
+        if (empty($bookInfo->uri) && empty($bookInfo->isbn) && empty($bookInfo->identifiers)) {
             return;
         }
         $sql = 'replace into identifiers(book, type, val) values(:idBook, :type, :value)';
         $identifiers = [];
-        $identifiers['url'] = $inBookInfo->mUri;
-        $identifiers['isbn'] = $inBookInfo->mIsbn;
-        if (!empty($inBookInfo->mIdentifiers)) {
-            $identifiers = array_merge($identifiers, $inBookInfo->mIdentifiers);
+        $identifiers['url'] = $bookInfo->uri;
+        $identifiers['isbn'] = $bookInfo->isbn;
+        if (!empty($bookInfo->identifiers)) {
+            $identifiers = array_merge($identifiers, $bookInfo->identifiers);
         }
         foreach ($identifiers as $key => $value) {
             if (empty($value)) {
                 continue;
             }
-            $stmt = $this->mDb->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
             $stmt->bindParam(':type', $key);
             $stmt->bindParam(':value', $value);
@@ -242,30 +242,30 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addBookSeries
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
      * @throws \Exception
      * @return void
      */
-    public function addBookSeries($inBookInfo, $idBook)
+    public function addBookSeries($bookInfo, $idBook)
     {
-        if (empty($inBookInfo->mSerie)) {
+        if (empty($bookInfo->serie)) {
             return;
         }
         $link = '';
-        if (!empty($inBookInfo->mSerieIds) && !empty($inBookInfo->mSerieIds[0]) && $inBookInfo->mSerieIds[0] != $inBookInfo->mSerie) {
-            $link = match ($inBookInfo->mSource) {
-                'goodreads' => GoodReadsMatch::SERIES_URL . $inBookInfo->mSerieIds[0],
-                'wikidata' => WikiDataMatch::link($inBookInfo->mSerieIds[0]),
+        if (!empty($bookInfo->serieIds) && !empty($bookInfo->serieIds[0]) && $bookInfo->serieIds[0] != $bookInfo->serie) {
+            $link = match ($bookInfo->source) {
+                'goodreads' => GoodReadsMatch::SERIES_URL . $bookInfo->serieIds[0],
+                'wikidata' => WikiDataMatch::link($bookInfo->serieIds[0]),
                 // @todo other sources?
-                default => $inBookInfo->mSerieIds[0],
+                default => $bookInfo->serieIds[0],
             };
         }
-        $idSerie = $this->addSeries($inBookInfo->mSerie, $link);
+        $idSerie = $this->addSeries($bookInfo->serie, $link);
 
         // Add the book serie link
         $sql = 'replace into books_series_link(book, series) values(:idBook, :idSerie)';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
         $stmt->bindParam(':idSerie', $idSerie, PDO::PARAM_INT);
         $stmt->execute();
@@ -273,16 +273,16 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addSeries
-     * @param string $inSerie series name
-     * @param string|null $inLink series link (if available)
+     * @param string $serie series name
+     * @param string|null $link series link (if available)
      * @return int
      */
-    public function addSeries($inSerie, $inLink = null)
+    public function addSeries($serie, $link = null)
     {
         // Get the serie id
         $sql = 'select id from series where name=:serie';
-        $stmt = $this->mDb->prepare($sql);
-        $stmt->bindParam(':serie', $inSerie);
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':serie', $serie);
         $stmt->execute();
         $post = $stmt->fetchObject();
         if ($post) {
@@ -291,30 +291,30 @@ class ImportCalibre extends ImportTarget
         }
         // Add a new serie
         $sql = 'insert into series(name, sort, link) values(:serie, :sort, :link)';
-        $stmt = $this->mDb->prepare($sql);
-        $stmt->bindParam(':serie', $inSerie);
-        $sortString = BookInfos::getTitleSort($inSerie);
-        $sortString = BookInfos::getSortString($sortString);
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':serie', $serie);
+        $sortString = BookInfo::getTitleSort($serie);
+        $sortString = BookInfo::getSortString($sortString);
         $stmt->bindParam(':sort', $sortString);
-        $link = $inLink ?? '';
+        $link ??= '';
         $stmt->bindParam(':link', $link);
         $stmt->execute();
         // Get the serie id
         $sql = 'select id from series where name=:serie';
-        $stmt = $this->mDb->prepare($sql);
-        $stmt->bindParam(':serie', $inSerie);
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':serie', $serie);
         $stmt->execute();
         $idSerie = null;
         while ($post = $stmt->fetchObject()) {
             if (!isset($idSerie)) {
                 $idSerie = $post->id;
             } else {
-                $error = sprintf('Multiple series for name: %s', $inSerie);
+                $error = sprintf('Multiple series for name: %s', $serie);
                 throw new Exception($error);
             }
         }
         if (!isset($idSerie)) {
-            $error = sprintf('Cannot find serie id for name: %s', $inSerie);
+            $error = sprintf('Cannot find serie id for name: %s', $serie);
             throw new Exception($error);
         }
         return $idSerie;
@@ -322,27 +322,27 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addBookAuthors
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
      * @throws \Exception
      * @return void
      */
-    public function addBookAuthors($inBookInfo, $idBook)
+    public function addBookAuthors($bookInfo, $idBook)
     {
-        if (empty($inBookInfo->mAuthors)) {
+        if (empty($bookInfo->authors)) {
             return;
         }
-        $inBookInfo->mAuthorIds ??= [];
+        $bookInfo->authorIds ??= [];
         $idx = 0;
-        foreach ($inBookInfo->mAuthors as $authorSort => $author) {
+        foreach ($bookInfo->authors as $authorSort => $author) {
             $link = '';
-            if (count($inBookInfo->mAuthorIds) > $idx && !empty($inBookInfo->mAuthorIds[$idx]) && $inBookInfo->mAuthorIds[$idx] != $author) {
-                $link = match ($inBookInfo->mSource) {
-                    'goodreads' => GoodReadsMatch::AUTHOR_URL . $inBookInfo->mAuthorIds[$idx],
-                    'openlibrary' => OpenLibraryMatch::AUTHOR_URL . $inBookInfo->mAuthorIds[$idx],
-                    'wikidata' => WikiDataMatch::link($inBookInfo->mAuthorIds[$idx]),
+            if (count($bookInfo->authorIds) > $idx && !empty($bookInfo->authorIds[$idx]) && $bookInfo->authorIds[$idx] != $author) {
+                $link = match ($bookInfo->source) {
+                    'goodreads' => GoodReadsMatch::AUTHOR_URL . $bookInfo->authorIds[$idx],
+                    'openlibrary' => OpenLibraryMatch::AUTHOR_URL . $bookInfo->authorIds[$idx],
+                    'wikidata' => WikiDataMatch::link($bookInfo->authorIds[$idx]),
                     // @todo other sources?
-                    default => $inBookInfo->mAuthorIds[$idx],
+                    default => $bookInfo->authorIds[$idx],
                 };
             }
             $idAuthor = $this->addAuthor($author, $authorSort, $link);
@@ -350,7 +350,7 @@ class ImportCalibre extends ImportTarget
 
             // Add the book author link
             $sql = 'replace into books_authors_link(book, author) values(:idBook, :idAuthor)';
-            $stmt = $this->mDb->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
             $stmt->bindParam(':idAuthor', $idAuthor, PDO::PARAM_INT);
             $stmt->execute();
@@ -368,7 +368,7 @@ class ImportCalibre extends ImportTarget
     {
         // Get the author id
         $sql = 'select id from authors where name=:author';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':author', $author);
         $stmt->execute();
         $post = $stmt->fetchObject();
@@ -378,16 +378,16 @@ class ImportCalibre extends ImportTarget
         }
         // Add a new author
         $sql = 'insert into authors(name, sort, link) values(:author, :sort, :link)';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':author', $author);
-        $sortString = BookInfos::getSortString($authorSort);
+        $sortString = BookInfo::getSortString($authorSort);
         $stmt->bindParam(':sort', $sortString);
         $link = $authorLink ?? '';
         $stmt->bindParam(':link', $link);
         $stmt->execute();
         // Get the author id
         $sql = 'select id from authors where name=:author';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':author', $author);
         $stmt->execute();
         $idAuthor = null;
@@ -408,19 +408,19 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addBookLanguage
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
      * @throws \Exception
      * @return void
      */
-    public function addBookLanguage($inBookInfo, $idBook)
+    public function addBookLanguage($bookInfo, $idBook)
     {
-        $idLanguage = $this->addLanguage($inBookInfo->mLanguage);
+        $idLanguage = $this->addLanguage($bookInfo->language);
 
         // Add the book language link
         $itemOder = 0;
         $sql = 'replace into books_languages_link(book, lang_code, item_order) values(:idBook, :idLanguage, :itemOrder)';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
         $stmt->bindParam(':idLanguage', $idLanguage, PDO::PARAM_INT);
         $stmt->bindParam(':itemOrder', $itemOder, PDO::PARAM_INT);
@@ -429,15 +429,15 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addLanguage
-     * @param string $inLanguage
+     * @param string $language
      * @return int
      */
-    public function addLanguage($inLanguage)
+    public function addLanguage($language)
     {
         // Get the language id
         $sql = 'select id from languages where lang_code=:language';
-        $stmt = $this->mDb->prepare($sql);
-        $stmt->bindParam(':language', $inLanguage);
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':language', $language);
         $stmt->execute();
         $post = $stmt->fetchObject();
         if ($post) {
@@ -446,25 +446,25 @@ class ImportCalibre extends ImportTarget
         }
         // Add a new language
         $sql = 'insert into languages(lang_code) values(:language)';
-        $stmt = $this->mDb->prepare($sql);
-        $stmt->bindParam(':language', $inLanguage);
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':language', $language);
         $stmt->execute();
         // Get the language id
         $sql = 'select id from languages where lang_code=:language';
-        $stmt = $this->mDb->prepare($sql);
-        $stmt->bindParam(':language', $inLanguage);
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':language', $language);
         $stmt->execute();
         $idLanguage = null;
         while ($post = $stmt->fetchObject()) {
             if (!isset($idLanguage)) {
                 $idLanguage = $post->id;
             } else {
-                $error = sprintf('Multiple languages for lang_code: %s', $inLanguage);
+                $error = sprintf('Multiple languages for lang_code: %s', $language);
                 throw new Exception($error);
             }
         }
         if (!isset($idLanguage)) {
-            $error = sprintf('Cannot find language id for lang_code: %s', $inLanguage);
+            $error = sprintf('Cannot find language id for lang_code: %s', $language);
             throw new Exception($error);
         }
         return $idLanguage;
@@ -472,23 +472,23 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addBookTags (subjects)
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
      * @param string $sortField Add 'calibre_database_field_sort' field for tags
      * @throws \Exception
      * @return void
      */
-    public function addBookTags($inBookInfo, $idBook, $sortField = 'sort')
+    public function addBookTags($bookInfo, $idBook, $sortField = 'sort')
     {
-        if (empty($inBookInfo->mSubjects)) {
+        if (empty($bookInfo->subjects)) {
             return;
         }
-        foreach ($inBookInfo->mSubjects as $subject) {
+        foreach ($bookInfo->subjects as $subject) {
             $idSubject = $this->addTag($subject, $sortField);
 
             // Add the book subject link
             $sql = 'replace into books_tags_link(book, tag) values(:idBook, :idSubject)';
-            $stmt = $this->mDb->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
             $stmt->bindParam(':idSubject', $idSubject, PDO::PARAM_INT);
             $stmt->execute();
@@ -505,7 +505,7 @@ class ImportCalibre extends ImportTarget
     {
         // Get the subject id
         $sql = 'select id from tags where name=:subject';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':subject', $subject);
         $stmt->execute();
         $post = $stmt->fetchObject();
@@ -519,18 +519,18 @@ class ImportCalibre extends ImportTarget
         } else {
             $sql = 'insert into tags(name) values(:subject)';
         }
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':subject', $subject);
         // Add :sort field
         if (!empty($sortField)) {
-            $sortString = BookInfos::getTitleSort($subject);
-            $sortString = BookInfos::getSortString($sortString);
+            $sortString = BookInfo::getTitleSort($subject);
+            $sortString = BookInfo::getSortString($sortString);
             $stmt->bindParam(':' . $sortField, $sortString);
         }
         $stmt->execute();
         // Get the subject id
         $sql = 'select id from tags where name=:subject';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':subject', $subject);
         $stmt->execute();
         $idSubject = null;
@@ -551,21 +551,21 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addBookRating
-     * @param BookInfos $inBookInfo BookInfo object
+     * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
      * @throws \Exception
      * @return void
      */
-    public function addBookRating($inBookInfo, $idBook)
+    public function addBookRating($bookInfo, $idBook)
     {
-        $idRating = $this->getRatingIndex($inBookInfo->mRating);
+        $idRating = $this->getRatingIndex($bookInfo->rating);
         if (empty($idRating)) {
             return;
         }
 
         // Add the book rating link
         $sql = 'replace into books_ratings_link(book, rating) values(:idBook, :idRating)';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
         $stmt->bindParam(':idRating', $idRating, PDO::PARAM_INT);
         $stmt->execute();
@@ -582,15 +582,15 @@ class ImportCalibre extends ImportTarget
             return 0;
         }
         // load mapping of rating to index
-        if (count($this->mRatingIndex) < 10) {
+        if (count($this->ratingIndex) < 10) {
             $this->loadRatingIndex();
         }
         // switch to 0-10 rating
         $rating = (int) round($rating * 2.0);
-        if (!isset($this->mRatingIndex[$rating])) {
+        if (!isset($this->ratingIndex[$rating])) {
             return 0;
         }
-        return $this->mRatingIndex[$rating];
+        return $this->ratingIndex[$rating];
     }
 
     /**
@@ -602,33 +602,33 @@ class ImportCalibre extends ImportTarget
     {
         // load mapping of rating to index
         $sql = 'select id, rating from ratings';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         while ($post = $stmt->fetchObject()) {
-            $this->mRatingIndex[$post->rating] = $post->id;
+            $this->ratingIndex[$post->rating] = $post->id;
         }
-        if (count($this->mRatingIndex) == 10) {
+        if (count($this->ratingIndex) == 10) {
             return;
         }
         // add missing ratings (if any)
         $sql = 'insert into ratings(rating) values(:idRating)';
         $range = range(1, 10);
         foreach ($range as $rating) {
-            if (isset($this->mRatingIndex[$rating])) {
+            if (isset($this->ratingIndex[$rating])) {
                 continue;
             }
-            $stmt = $this->mDb->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->bindParam(':idRating', $rating, PDO::PARAM_INT);
             $stmt->execute();
         }
         // load mapping of rating to index
         $sql = 'select id, rating from ratings';
-        $stmt = $this->mDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         while ($post = $stmt->fetchObject()) {
-            $this->mRatingIndex[$post->rating] = $post->id;
+            $this->ratingIndex[$post->rating] = $post->id;
         }
-        if (count($this->mRatingIndex) != 10) {
+        if (count($this->ratingIndex) != 10) {
             throw new Exception('Cannot create mapping of rating to index');
         }
     }

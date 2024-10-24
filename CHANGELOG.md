@@ -4,6 +4,9 @@
   * ...
 
 3.x.x - 2024xxxx
+  * BC: rename BookInfos class to BookInfo
+  * Modernize properties and parameters in class methods
+  * Use common authors, books and series code in handlers
   * Show series and index in books list + support sort
   * Include php-epub-meta app as optional action (partial)
   * Parse wikidata + google cache entries to display links

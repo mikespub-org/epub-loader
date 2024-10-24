@@ -9,7 +9,7 @@
 
 namespace Marsender\EPubLoader\Import;
 
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Exception;
 
 class CsvImport extends SourceImport
@@ -19,11 +19,11 @@ class CsvImport extends SourceImport
 
     /**
      * Load books from CSV export/import file
-     * @param string $inBasePath base directory
+     * @param string $basePath base directory
      * @param string $fileName
      * @return array{string, array<mixed>}
      */
-    public function loadFromPath($inBasePath, $fileName)
+    public function loadFromPath($basePath, $fileName)
     {
         $handle = fopen($fileName, 'r');
         $headers = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE);
@@ -33,9 +33,9 @@ class CsvImport extends SourceImport
         while (($data = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE)) !== false) {
             try {
                 // Load the book infos
-                $bookInfos = self::loadFromArray($inBasePath, $data);
+                $bookInfo = self::loadFromArray($basePath, $data);
                 // Add the book
-                $this->addBook($bookInfos, 0);
+                $this->addBook($bookInfo, 0);
                 $nbOk++;
             } catch (Exception $e) {
                 $errors[$data[1]] = $e->getMessage();
@@ -50,47 +50,47 @@ class CsvImport extends SourceImport
      * Loads book infos from an export/import array
      * @see \Marsender\EPubLoader\Export\ExportCsvFile::addBook()
      *
-     * @param string $inBasePath base directory
-     * @param array<mixed> $inArray CSV import info (one book per line)
+     * @param string $basePath base directory
+     * @param array<mixed> $array CSV import info (one book per line)
      * @throws Exception if error
      *
-     * @return BookInfos
+     * @return BookInfo
      */
-    public static function loadFromArray($inBasePath, $inArray)
+    public static function loadFromArray($basePath, $array)
     {
-        if (empty($inArray) || count($inArray) < 20) {
-            throw new Exception('Invalid format for CSV book array: ' . count($inArray) . ' fields');
+        if (empty($array) || count($array) < 20) {
+            throw new Exception('Invalid format for CSV book array: ' . count($array) . ' fields');
         }
-        $bookInfos = new BookInfos();
+        $bookInfo = new BookInfo();
         // Get the epub infos from array - see BookExport::addBook()
-        $bookInfos->mBasePath = $inBasePath;
+        $bookInfo->basePath = $basePath;
         $i = 0;
-        $bookInfos->mFormat = $inArray[$i++];
-        $bookInfos->mPath = $inArray[$i++];
-        if (str_starts_with($bookInfos->mPath, $inBasePath)) {
-            $bookInfos->mPath = substr($bookInfos->mPath, strlen($inBasePath) + 1);
+        $bookInfo->format = $array[$i++];
+        $bookInfo->path = $array[$i++];
+        if (str_starts_with($bookInfo->path, $basePath)) {
+            $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
-        $bookInfos->mName = $inArray[$i++];
-        $bookInfos->mUuid = $inArray[$i++];
-        $bookInfos->mUri = $inArray[$i++];
-        $bookInfos->mTitle = $inArray[$i++];
-        $values = explode(' - ', $inArray[$i++]);
-        $keys = explode(' - ', $inArray[$i++]);
-        $bookInfos->mAuthors = array_combine($keys, $values);
-        $bookInfos->mLanguage = $inArray[$i++];
-        $bookInfos->mDescription = $inArray[$i++];
-        $bookInfos->mSubjects = explode(' - ', $inArray[$i++]);
-        $bookInfos->mCover = $inArray[$i++];
-        $bookInfos->mIsbn = $inArray[$i++];
-        $bookInfos->mRights = $inArray[$i++];
-        $bookInfos->mPublisher = $inArray[$i++];
-        $bookInfos->mSerie = $inArray[$i++];
-        $bookInfos->mSerieIndex = $inArray[$i++];
-        $bookInfos->mCreationDate = $inArray[$i++] ?? '';
-        $bookInfos->mModificationDate = $inArray[$i++] ?? '';
+        $bookInfo->name = $array[$i++];
+        $bookInfo->uuid = $array[$i++];
+        $bookInfo->uri = $array[$i++];
+        $bookInfo->title = $array[$i++];
+        $values = explode(' - ', $array[$i++]);
+        $keys = explode(' - ', $array[$i++]);
+        $bookInfo->authors = array_combine($keys, $values);
+        $bookInfo->language = $array[$i++];
+        $bookInfo->description = $array[$i++];
+        $bookInfo->subjects = explode(' - ', $array[$i++]);
+        $bookInfo->cover = $array[$i++];
+        $bookInfo->isbn = $array[$i++];
+        $bookInfo->rights = $array[$i++];
+        $bookInfo->publisher = $array[$i++];
+        $bookInfo->serie = $array[$i++];
+        $bookInfo->serieIndex = $array[$i++];
+        $bookInfo->creationDate = $array[$i++] ?? '';
+        $bookInfo->modificationDate = $array[$i++] ?? '';
         // Timestamp is used to get latest ebooks
-        $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
+        $bookInfo->timeStamp = $bookInfo->creationDate;
 
-        return $bookInfos;
+        return $bookInfo;
     }
 }

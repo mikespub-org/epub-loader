@@ -9,7 +9,7 @@
 namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
@@ -181,8 +181,8 @@ class GoodReadsCache extends BaseCache
     }
 
     /**
-     * Summary of getBookInfos
-     * @return array<string, ?BookInfos>
+     * Summary of getBookInfo
+     * @return array<string, ?BookInfo>
      */
     public function getBookInfos()
     {
@@ -424,37 +424,37 @@ class GoodReadsCache extends BaseCache
 
     /**
      * Summary of formatBookInfo
-     * @param BookInfos $bookInfo
+     * @param BookInfo $bookInfo
      * @param string|null $urlPrefix
-     * @return BookInfos
+     * @return BookInfo
      */
     public function formatBookInfo($bookInfo, $urlPrefix)
     {
-        $entryId = $bookInfo->mName;
+        $entryId = $bookInfo->name;
         $cacheFile = $this->getBook((string) $entryId);
-        $url = $bookInfo->mUri ?? $entryId;
+        $url = $bookInfo->uri ?? $entryId;
         if ($this->hasCache($cacheFile)) {
-            $bookInfo->mUri = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a>";
+            $bookInfo->uri = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a>";
         } else {
-            $bookInfo->mUri = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a> ?";
+            $bookInfo->uri = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a> ?";
         }
-        if (!empty($bookInfo->mAuthorIds)) {
-            foreach ($bookInfo->mAuthorIds as $id => $authorId) {
+        if (!empty($bookInfo->authorIds)) {
+            foreach ($bookInfo->authorIds as $id => $authorId) {
                 $cacheFile = $this->getAuthor($authorId);
                 if ($this->hasCache($cacheFile)) {
-                    $bookInfo->mAuthorIds[$id] = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a>";
+                    $bookInfo->authorIds[$id] = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a>";
                 } else {
-                    $bookInfo->mAuthorIds[$id] = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a> ?";
+                    $bookInfo->authorIds[$id] = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a> ?";
                 }
             }
         }
-        if (!empty($bookInfo->mSerieIds)) {
-            foreach ($bookInfo->mSerieIds as $id => $seriesId) {
+        if (!empty($bookInfo->serieIds)) {
+            foreach ($bookInfo->serieIds as $id => $seriesId) {
                 $cacheFile = $this->getSeries($seriesId);
                 if ($this->hasCache($cacheFile)) {
-                    $bookInfo->mSerieIds[$id] = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a>";
+                    $bookInfo->serieIds[$id] = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a>";
                 } else {
-                    $bookInfo->mSerieIds[$id] = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a> ?";
+                    $bookInfo->serieIds[$id] = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a> ?";
                 }
             }
         }

@@ -13,36 +13,36 @@
 
 namespace Marsender\EPubLoader\Export;
 
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Exception;
 
 abstract class SourceExport
 {
     public const EXPORT_TYPE_CSV = 1;
 
-    protected string $mLabel = 'Export ebooks to';
+    protected string $label = 'Export ebooks to';
     /** @var mixed */
-    protected $mTarget = null;
-    protected int $mNbBook = 0;
-    protected string $mFileName = '';
+    protected $target = null;
+    protected int $nbBook = 0;
+    protected string $fileName = '';
 
     /**
      * Open an export file (or create if file does not exist)
      *
-     * @param string $inFileName Export file name
-     * @param integer $inExportType Export type
-     * @param boolean $inCreate Force file creation
+     * @param string $fileName Export file name
+     * @param integer $exportType Export type
+     * @param boolean $create Force file creation
      * @throws Exception if error
      */
-    public function __construct($inFileName, $inExportType, $inCreate = false)
+    public function __construct($fileName, $exportType, $create = false)
     {
-        $this->mFileName = $inFileName;
-        switch ($inExportType) {
+        $this->fileName = $fileName;
+        switch ($exportType) {
             case self::EXPORT_TYPE_CSV:
-                $this->mTarget = new ExportCsvFile($inFileName, $inCreate);
+                $this->target = new ExportCsvFile($fileName, $create);
                 break;
             default:
-                $error = sprintf('Incorrect export type: %d', $inExportType);
+                $error = sprintf('Incorrect export type: %d', $exportType);
                 throw new Exception($error);
         }
     }
@@ -50,19 +50,19 @@ abstract class SourceExport
     /**
      * Load books from <something> in path
      *
-     * @param string $inBasePath base directory
-     * @param string $localPath relative to $inBasePath
+     * @param string $basePath base directory
+     * @param string $localPath relative to $basePath
      *
      * @return array{string, array<mixed>}
      */
-    abstract public function loadFromPath($inBasePath, $localPath);
+    abstract public function loadFromPath($basePath, $localPath);
 
     /**
      * Summary of getBookId
-     * @param string $inBookFileName
+     * @param string $bookFileName
      * @return int
      */
-    public function getBookId($inBookFileName)
+    public function getBookId($bookFileName)
     {
         return 0;
     }
@@ -70,15 +70,15 @@ abstract class SourceExport
     /**
      * Add a new book to the export
      *
-     * @param BookInfos $inBookInfo BookInfo object
-     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param BookInfo $bookInfo BookInfo object
+     * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
      * @throws Exception if error
      *
      * @return void
      */
-    protected function addBook($inBookInfo, $inBookId = 0)
+    protected function addBook($bookInfo, $bookId = 0)
     {
-        $this->mTarget->addBook($inBookInfo, $inBookId);
+        $this->target->addBook($bookInfo, $bookId);
     }
 
     /**
@@ -87,7 +87,7 @@ abstract class SourceExport
      */
     public function download()
     {
-        $this->mTarget->download();
+        $this->target->download();
     }
 
     /**
@@ -96,6 +96,6 @@ abstract class SourceExport
      */
     public function saveToFile()
     {
-        $this->mTarget->saveToFile();
+        $this->target->saveToFile();
     }
 }

@@ -9,7 +9,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\AuthorInfo;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Marsender\EPubLoader\Metadata\GoogleBooks\Volumes\Volume;
 use Exception;
 
@@ -18,95 +19,95 @@ class GoogleBooksImport
     /**
      * Loads book infos from a Google Books volume
      *
-     * @param string $inBasePath base directory
+     * @param string $basePath base directory
      * @param Volume $volume Google Books volume
      * @throws Exception if error
      *
-     * @return BookInfos
+     * @return BookInfo
      */
-    public static function load($inBasePath, $volume)
+    public static function load($basePath, $volume)
     {
         $volumeInfo = $volume->getVolumeInfo();
         if (empty($volumeInfo)) {
             throw new Exception('Invalid format for Google Books Volume');
         }
 
-        $bookInfos = new BookInfos();
-        $bookInfos->mSource = 'google';
-        $bookInfos->mBasePath = $inBasePath;
+        $bookInfo = new BookInfo();
+        $bookInfo->source = 'google';
+        $bookInfo->basePath = $basePath;
         // @todo check accessInfo for epub, pdf etc.
-        $bookInfos->mFormat = 'epub';
+        $bookInfo->format = 'epub';
         // @todo use calibre_external_storage in COPS
-        $bookInfos->mPath = (string) $volume->getSelfLink();
-        if (str_starts_with($bookInfos->mPath, $inBasePath)) {
-            $bookInfos->mPath = substr($bookInfos->mPath, strlen($inBasePath) + 1);
+        $bookInfo->path = (string) $volume->getSelfLink();
+        if (str_starts_with($bookInfo->path, $basePath)) {
+            $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
-        $bookInfos->mName = (string) $volume->getId();
-        $bookInfos->mUuid = 'google:' . $bookInfos->mName;
-        $bookInfos->mUri = (string) ($volumeInfo->getCanonicalVolumeLink() ?? $volume->getSelfLink());
-        $bookInfos->mTitle = (string) $volumeInfo->getTitle();
+        $bookInfo->name = (string) $volume->getId();
+        $bookInfo->uuid = 'google:' . $bookInfo->name;
+        $bookInfo->uri = (string) ($volumeInfo->getCanonicalVolumeLink() ?? $volume->getSelfLink());
+        $bookInfo->title = (string) $volumeInfo->getTitle();
         $authors = [];
         foreach ($volumeInfo->getAuthors() as $author) {
-            $authorSort = BookInfos::getAuthorSort($author);
+            $authorSort = AuthorInfo::getNameSort($author);
             $authors[$authorSort] = $author;
         }
-        $bookInfos->mAuthors = $authors;
-        $bookInfos->mAuthorIds = $volumeInfo->getAuthors();
-        $bookInfos->mLanguage = (string) $volumeInfo->getLanguage();
-        $bookInfos->mDescription = (string) $volumeInfo->getDescription();
-        $bookInfos->mSubjects = $volumeInfo->getCategories();
-        $bookInfos->mCover = (string) $volumeInfo->getImageLinks()?->getThumbnail();
+        $bookInfo->authors = $authors;
+        $bookInfo->authorIds = $volumeInfo->getAuthors();
+        $bookInfo->language = (string) $volumeInfo->getLanguage();
+        $bookInfo->description = (string) $volumeInfo->getDescription();
+        $bookInfo->subjects = $volumeInfo->getCategories();
+        $bookInfo->cover = (string) $volumeInfo->getImageLinks()?->getThumbnail();
         $identifiers = $volumeInfo->getIndustryIdentifiers();
         if (!empty($identifiers)) {
             foreach ($identifiers as $identifier) {
                 if ($identifier->getType() == 'ISBN_13') {
-                    $bookInfos->mIsbn = $identifier->getIdentifier();
+                    $bookInfo->isbn = $identifier->getIdentifier();
                     break;
                 }
                 if ($identifier->getType() == 'ISBN_10') {
-                    $bookInfos->mIsbn = $identifier->getIdentifier();
+                    $bookInfo->isbn = $identifier->getIdentifier();
                     break;
                 }
             }
         }
-        //$bookInfos->mRights = $inArray[$i++];
-        $bookInfos->mPublisher = (string) $volumeInfo->getPublisher();
+        //$bookInfo->rights = $array[$i++];
+        $bookInfo->publisher = (string) $volumeInfo->getPublisher();
         $series = $volumeInfo->getSeriesInfo();
         if (!empty($series)) {
-            $bookInfos->mSerieIndex = (string) $series->getBookDisplayNumber();
+            $bookInfo->serieIndex = (string) $series->getBookDisplayNumber();
             // @todo use title to get series name
-            if (str_contains($bookInfos->mTitle, ':')) {
-                [$seriesName, $title] = explode(':', $bookInfos->mTitle, 2);
+            if (str_contains($bookInfo->title, ':')) {
+                [$seriesName, $title] = explode(':', $bookInfo->title, 2);
                 $seriesName = preg_replace('/\s*Vol.\s*/', '', preg_replace('/\s*\d+\s*/', '', $seriesName));
-                $bookInfos->mSerie = trim($seriesName);
+                $bookInfo->serie = trim($seriesName);
             } elseif (!empty($series->getVolumeSeries())) {
                 $info = $series->getVolumeSeries()[0];
                 // @todo get series name from id
-                $bookInfos->mSerie = (string) $info->getSeriesId();
-                $bookInfos->mSerieIds = [ (string) $info->getSeriesId() ];
+                $bookInfo->serie = (string) $info->getSeriesId();
+                $bookInfo->serieIds = [ (string) $info->getSeriesId() ];
             }
         }
-        $bookInfos->mCreationDate = (string) $volumeInfo->getPublishedDate();
+        $bookInfo->creationDate = (string) $volumeInfo->getPublishedDate();
         // @todo no modification date here
-        $bookInfos->mModificationDate = $bookInfos->mCreationDate;
+        $bookInfo->modificationDate = $bookInfo->creationDate;
         // Timestamp is used to get latest ebooks
-        $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
-        $bookInfos->mRating = $volumeInfo->getAverageRating();
-        $bookInfos->mIdentifiers = ['google' => $bookInfos->mName];
-        if (!empty($bookInfos->mIsbn)) {
-            $bookInfos->mIdentifiers['isbn'] = $bookInfos->mIsbn;
+        $bookInfo->timeStamp = $bookInfo->creationDate;
+        $bookInfo->rating = $volumeInfo->getAverageRating();
+        $bookInfo->identifiers = ['google' => $bookInfo->name];
+        if (!empty($bookInfo->isbn)) {
+            $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }
 
-        return $bookInfos;
+        return $bookInfo;
     }
 
     /**
-     * Summary of getBookInfos
+     * Summary of getBookInfo
      * @param string $dbPath
      * @param array<mixed> $data
-     * @return BookInfos|array<BookInfos>
+     * @return BookInfo|array<BookInfo>
      */
-    public static function getBookInfos($dbPath, $data)
+    public static function getBookInfo($dbPath, $data)
     {
         if (!empty($data["kind"]) && $data["kind"] == "books#volume") {
             $volume = GoogleBooksCache::parseVolume($data);

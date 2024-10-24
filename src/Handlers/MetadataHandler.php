@@ -30,11 +30,21 @@ class MetadataHandler extends ActionHandler
     public function handle($action, $request)
     {
         $this->request = $request;
+        $authorId = $this->request->getId('authorId');
+        $sort = $this->request->get('sort');
+        $offset = $this->request->getId('offset');
         switch ($action) {
             case 'authors':
-                $authorId = $this->request->getId('authorId');
-                $sort = $this->request->get('sort');
                 $result = $this->authors($authorId, $sort);
+                break;
+            case 'series':
+                $seriesId = $this->request->getId('seriesId');
+                $result = $this->series($authorId, $seriesId, $sort, $offset);
+                break;
+            case 'books':
+                $seriesId = $this->request->getId('seriesId');
+                $bookId = $this->request->getId('bookId');
+                $result = $this->books($authorId, $seriesId, $bookId, $sort, $offset);
                 break;
             default:
                 $result = $this->$action();
@@ -46,14 +56,26 @@ class MetadataHandler extends ActionHandler
      * Summary of authors
      * @param int|null $authorId
      * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>|null
      */
-    public function authors($authorId = null, $sort = null)
+    public function authors($authorId = null, $sort = null, $offset = null)
     {
-        $offset = $this->request->getId('offset');
+        // Get matchId from template
+
         // List the authors
         $authors = $this->db->getAuthors($authorId, $sort, $offset);
+
+        // Find match on ...
         $matched = null;
+
+        // Update the author link
+        $authorInfo = null;
+        if (!empty($authorId)) {
+            $authorInfo = $authors[$authorId];
+        }
+
+        // Find author links if requested
         $authors = $this->addAuthorInfo($authors, $authorId, $sort, $offset);
         $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
@@ -61,7 +83,155 @@ class MetadataHandler extends ActionHandler
         return [
             'authors' => $authors,
             'authorId' => $authorId,
+            'authorInfo' => $authorInfo,
             'matched' => $matched,
+            'paging' => $paging,
+        ];
+    }
+
+    /**
+     * Summary of books
+     * @param int|null $authorId
+     * @param int|null $seriesId
+     * @param int|null $bookId
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>|null
+     */
+    public function books($authorId, $seriesId, $bookId, $sort = null, $offset = null)
+    {
+        // Get matchId from template
+        // Get authId from template
+        // Get serId from template
+        $bookInfo = null;
+        if (!empty($bookId)) {
+            $books = $this->db->getBooks($bookId);
+            if (empty($authorId)) {
+                $authorId = $books[$bookId]['author'];
+            }
+            if (empty($seriesId) && !empty($books[$bookId]['series'])) {
+                $seriesId = $books[$bookId]['series'];
+            }
+            $bookInfo = $books[$bookId];
+        }
+        // Find serId from series link
+        $seriesInfo = null;
+        if (!empty($seriesId)) {
+            $series = $this->db->getSeries($seriesId);
+            // series can have multiple authors - pick the first
+            $seriesInfo = reset($series);
+            if (empty($authorId)) {
+                $authorId = $seriesInfo['author'];
+            }
+        }
+        $authors = $this->db->getAuthors($authorId);
+        if (empty($authorId) && empty($bookId)) {
+            //$this->addError($this->dbFileName, "Please specify authorId and/or bookId");
+            //return null;
+            $authorId = array_key_first($authors);
+        }
+
+        if (count($authors) < 1) {
+            $this->addError($this->dbFileName, "Please specify a valid authorId");
+            return null;
+        }
+        // Find authId from author link
+        $authorInfo = $authors[$authorId];
+
+        // Update the book identifier
+
+        // Find match on ...
+        $matched = null;
+
+        if (!empty($bookId)) {
+            $books = $this->db->getBooks($bookId);
+        } elseif (!empty($seriesId)) {
+            $books = $this->db->getBooksBySeries($seriesId, $sort, $offset);
+        } else {
+            $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
+        }
+        // use $matchId, $authId or $serId to get $matched
+
+        $authorList = $this->getAuthorList();
+        $identifierList = [];
+        foreach ($books as $id => $book) {
+            $diff = array_diff(array_keys($book['identifiers']), $identifierList);
+            if (!empty($diff)) {
+                $identifierList = array_merge($identifierList, $diff);
+            }
+        }
+        $identifierList[] = 'ID:';
+        sort($identifierList);
+        // exact match only here - see calibre metadata plugins for more advanced features
+        $seriesList = $this->getSeriesList($authorId);
+
+        // Return info
+        return [
+            'books' => $books,
+            'authorId' => $authorId,
+            'authorInfo' => $authorInfo,
+            'seriesId' => $seriesId,
+            'seriesInfo' => $seriesInfo,
+            'bookId' => $bookId,
+            'bookInfo' => $bookInfo,
+            'matched' => $matched,
+            'authors' => $authorList,
+            'series' => $seriesList,
+            'identifiers' => $identifierList,
+            //'identifierType' => '',
+            //'matchId' => $matchId,
+            //'serId' => $serId,
+        ];
+    }
+
+    /**
+     * Summary of series
+     * @param int|null $authorId
+     * @param int|null $seriesId
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>|null
+     */
+    public function series($authorId, $seriesId, $sort = null, $offset = null)
+    {
+        // Get matchId from template
+
+        // Find match on ...
+        $matched = null;
+
+        $seriesInfo = null;
+        if (!empty($seriesId)) {
+            $series = $this->db->getSeries($seriesId, $authorId, null, $sort, $offset);
+            // series can have multiple authors - pick the first
+            $seriesInfo = reset($series);
+            if (empty($authorId)) {
+                $authorId = $seriesInfo['author'];
+            }
+            // Update the series link
+        } else {
+            $series = $this->db->getSeriesByAuthor($authorId, $sort, $offset);
+            // Find series links if requested
+        }
+        // Find authId from author link
+        $authorInfo = null;
+        if (!empty($authorId)) {
+            $authors = $this->db->getAuthors($authorId);
+            $authorInfo = $authors[$authorId];
+        }
+        $series = $this->addSeriesInfo($series, $seriesId, $sort, $offset);
+        $paging = ($seriesId || $authorId) ? null : $this->db->getSeriesPaging($sort, $offset);
+
+        $authorList = $this->getAuthorList();
+
+        // Return info
+        return [
+            'series' => $series,
+            'authorId' => $authorId,
+            'authorInfo' => $authorInfo,
+            'seriesId' => $seriesId,
+            'seriesInfo' => $seriesInfo,
+            'matched' => $matched,
+            'authors' => $authorList,
             'paging' => $paging,
         ];
     }
@@ -218,6 +388,29 @@ class MetadataHandler extends ActionHandler
                 $bookcount[$serie['id']] ??= '';
             }
             $series[$id]['books'] = $bookcount[$serie['id']];
+        }
+        // we order & slice here for books
+        if (!empty($sort) && in_array($sort, ['books'])) {
+            uasort($series, function ($a, $b) use ($sort) {
+                return $b[$sort] <=> $a[$sort];
+            });
+            $offset ??= 0;
+            if (count($series) > $this->db->limit) {
+                $series = array_slice($series, $offset, $this->db->limit, true);
+            }
+        }
+        $series = $this->addSeriesLinks($series);
+        return $series;
+    }
+
+    /**
+     * Summary of addSeriesLinks
+     * @param array<mixed> $series
+     * @return array<mixed>
+     */
+    protected function addSeriesLinks($series)
+    {
+        foreach ($series as $id => $serie) {
             if (empty($serie['link'])) {
                 continue;
             }
@@ -231,16 +424,6 @@ class MetadataHandler extends ActionHandler
                 $series[$id]['entityType'] = 'gr_series';
                 $series[$id]['entityId'] = str_replace(GoodReadsMatch::SERIES_URL, '', $serie['link']);
                 continue;
-            }
-        }
-        // we order & slice here for books
-        if (!empty($sort) && in_array($sort, ['books'])) {
-            uasort($series, function ($a, $b) use ($sort) {
-                return $b[$sort] <=> $a[$sort];
-            });
-            $offset ??= 0;
-            if (count($series) > $this->db->limit) {
-                $series = array_slice($series, $offset, $this->db->limit, true);
             }
         }
         return $series;

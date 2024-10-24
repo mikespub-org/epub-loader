@@ -17,26 +17,26 @@ trait LocalBooksTrait
     /**
      * Load books from epub files in path
      *
-     * @param string $inBasePath base directory
-     * @param string $epubPath relative to $inBasePath
+     * @param string $basePath base directory
+     * @param string $epubPath relative to $basePath
      *
      * @return array{string, array<mixed>}
      */
-    public function loadFromPath($inBasePath, $epubPath)
+    public function loadFromPath($basePath, $epubPath)
     {
         $errors = [];
         $nbOk = 0;
         $nbError = 0;
         if (!empty($epubPath)) {
-            $fileList = BaseCache::getFiles($inBasePath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+            $fileList = BaseCache::getFiles($basePath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
             foreach ($fileList as $file) {
-                $filePath = substr($file, strlen((string) $inBasePath) + 1);
+                $filePath = substr($file, strlen((string) $basePath) + 1);
                 try {
                     // Load the book infos
-                    $bookInfos = LocalBooksImport::load($inBasePath, $filePath);
+                    $bookInfo = LocalBooksImport::load($basePath, $filePath);
                     // Add the book
                     $bookId = $this->getBookId($filePath);
-                    $this->addBook($bookInfos, $bookId);
+                    $this->addBook($bookInfo, $bookId);
                     $nbOk++;
                 } catch (Exception $e) {
                     $errors[$file] = $e->getMessage();
@@ -44,7 +44,7 @@ trait LocalBooksTrait
                 }
             }
         }
-        $message = sprintf('%s %s - %d files OK - %d files Error', $this->mLabel, $this->mFileName, $nbOk, $nbError);
+        $message = sprintf('%s %s - %d files OK - %d files Error', $this->label, $this->fileName, $nbOk, $nbError);
         return [$message, $errors];
     }
 }

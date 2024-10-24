@@ -10,7 +10,9 @@
 namespace Marsender\EPubLoader\Metadata\LocalBooks;
 
 use Marsender\EPubLoader\Metadata\BookEPub;
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\AuthorInfo;
+use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Metadata\SeriesInfo;
 use Exception;
 
 class LocalBooksImport
@@ -18,15 +20,15 @@ class LocalBooksImport
     /**
      * Loads book infos from an epub file
      *
-     * @param string $inBasePath Epub base directory
-     * @param string $inFileName Epub file name (from base directory)
+     * @param string $basePath Epub base directory
+     * @param string $fileName Epub file name (from base directory)
      * @throws Exception if error
      *
-     * @return BookInfos
+     * @return BookInfo
      */
-    public static function load($inBasePath, $inFileName)
+    public static function load($basePath, $fileName)
     {
-        $fullFileName = sprintf('%s%s%s', $inBasePath, DIRECTORY_SEPARATOR, $inFileName);
+        $fullFileName = sprintf('%s%s%s', $basePath, DIRECTORY_SEPARATOR, $fileName);
         // Check file access
         if (!is_readable($fullFileName)) {
             throw new Exception('Cannot read file');
@@ -47,55 +49,55 @@ class LocalBooksImport
         }
 
         // Load the book infos
-        $bookInfos = new BookInfos();
+        $bookInfo = new BookInfo();
 
-        $bookInfos->mSource = 'local';
-        $bookInfos->mBasePath = $inBasePath;
-        $bookInfos->mFormat = 'epub';
-        $bookInfos->mPath = pathinfo($inFileName, PATHINFO_DIRNAME);
-        $bookInfos->mName = pathinfo($inFileName, PATHINFO_FILENAME);
-        $bookInfos->mUuid = $ePub->getUniqueIdentifier() ?: $ePub->getUuid();
-        $bookInfos->mUri = $ePub->getUri();
-        $bookInfos->mTitle = $ePub->getTitle();
-        $bookInfos->mAuthors = $ePub->getAuthors();
-        //$bookInfos->mAuthorIds = null;
-        $bookInfos->mLanguage = $ePub->getLanguage();
-        $bookInfos->mDescription = $ePub->getDescription();
-        $bookInfos->mSubjects = $ePub->getSubjects();
+        $bookInfo->source = 'local';
+        $bookInfo->basePath = $basePath;
+        $bookInfo->format = 'epub';
+        $bookInfo->path = pathinfo($fileName, PATHINFO_DIRNAME);
+        $bookInfo->name = pathinfo($fileName, PATHINFO_FILENAME);
+        $bookInfo->uuid = $ePub->getUniqueIdentifier() ?: $ePub->getUuid();
+        $bookInfo->uri = $ePub->getUri();
+        $bookInfo->title = $ePub->getTitle();
+        $bookInfo->authors = $ePub->getAuthors();
+        //$bookInfo->authorIds = null;
+        $bookInfo->language = $ePub->getLanguage();
+        $bookInfo->description = $ePub->getDescription();
+        $bookInfo->subjects = $ePub->getSubjects();
         $cover = $ePub->getCoverInfo();
         $cover = $cover['found'];
         if (($cover !== false)) {
             // Remove meta base path
             $meta = $ePub->meta();
             $len = strlen($meta) - strlen(pathinfo($meta, PATHINFO_BASENAME));
-            $bookInfos->mCover = substr((string) $cover, $len);
+            $bookInfo->cover = substr((string) $cover, $len);
         }
-        $bookInfos->mIsbn = $ePub->getIsbn();
-        $bookInfos->mRights = $ePub->getCopyright();
-        $bookInfos->mPublisher = $ePub->getPublisher();
+        $bookInfo->isbn = $ePub->getIsbn();
+        $bookInfo->rights = $ePub->getCopyright();
+        $bookInfo->publisher = $ePub->getPublisher();
         if ($version == 3) {
             // Note: this will ignore collections without id, e.g. in epub-tests files:
             // <meta property="belongs-to-collection">should</meta>
-            [$bookInfos->mSerie, $bookInfos->mSerieIndex] = $ePub->getSeriesOrCollection();
-            //$bookInfos->mSerieIds = [];
+            [$bookInfo->serie, $bookInfo->serieIndex] = $ePub->getSeriesOrCollection();
+            //$bookInfo->serieIds = [];
         } else {
             // Tag sample in opf file:
             //   <meta content="Histoire de la Monarchie de Juillet" name="calibre:series"/>
-            $bookInfos->mSerie = $ePub->getSeries();
-            //$bookInfos->mSerieIds = [];
+            $bookInfo->serie = $ePub->getSeries();
+            //$bookInfo->serieIds = [];
             // Tag sample in opf file:
             //   <meta content="7" name="calibre:series_index"/>
-            $bookInfos->mSerieIndex = $ePub->getSeriesIndex();
+            $bookInfo->serieIndex = $ePub->getSeriesIndex();
         }
-        $bookInfos->mCreationDate = BookInfos::getSqlDate($ePub->getCreationDate()) ?? '';
-        $bookInfos->mModificationDate = BookInfos::getSqlDate($ePub->getModificationDate()) ?? '';
+        $bookInfo->creationDate = BookInfo::getSqlDate($ePub->getCreationDate()) ?? '';
+        $bookInfo->modificationDate = BookInfo::getSqlDate($ePub->getModificationDate()) ?? '';
         // Timestamp is used to get latest ebooks
-        $bookInfos->mTimeStamp = $bookInfos->mCreationDate;
-        if (!empty($bookInfos->mIsbn)) {
-            $bookInfos->mIdentifiers ??= [];
-            $bookInfos->mIdentifiers['isbn'] = $bookInfos->mIsbn;
+        $bookInfo->timeStamp = $bookInfo->creationDate;
+        if (!empty($bookInfo->isbn)) {
+            $bookInfo->identifiers ??= [];
+            $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }
 
-        return $bookInfos;
+        return $bookInfo;
     }
 }

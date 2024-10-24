@@ -15,65 +15,65 @@
 namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Import\ImportCalibre;
-use Marsender\EPubLoader\Metadata\BookInfos;
+use Marsender\EPubLoader\Metadata\BookInfo;
 use Exception;
 
 abstract class SourceImport
 {
     public const IMPORT_TYPE_CALIBRE = 1;
 
-    protected string $mLabel = 'Load database';
+    protected string $label = 'Load database';
     /** @var mixed */
-    protected $mTarget = null;
-    protected int $mNbBook = 0;
-    protected string $mFileName = '';
+    protected $target = null;
+    protected int $nbBook = 0;
+    protected string $fileName = '';
 
     /**
      * Open an import database (or create if file does not exist)
      *
-     * @param string $inDbFileName Calibre database file name
-     * @param boolean $inCreate Force database creation
-     * @param string $inBookIdsFileName File name containing a map of file names to calibre book ids
+     * @param string $dbFileName Calibre database file name
+     * @param boolean $create Force database creation
+     * @param string $bookIdsFileName File name containing a map of file names to calibre book ids
      * @throws Exception if error
      */
-    public function __construct($inDbFileName, $inCreate = false, $inBookIdsFileName = '')
+    public function __construct($dbFileName, $create = false, $bookIdsFileName = '')
     {
-        $this->mFileName = $inDbFileName;
+        $this->fileName = $dbFileName;
         // @todo support other import targets beside Calibre?
-        $this->mTarget = new ImportCalibre($inDbFileName, $inCreate, $inBookIdsFileName);
+        $this->target = new ImportCalibre($dbFileName, $create, $bookIdsFileName);
     }
 
     /**
      * Load books from <something> in path
      *
-     * @param string $inBasePath base directory
-     * @param string $localPath relative to $inBasePath
+     * @param string $basePath base directory
+     * @param string $localPath relative to $basePath
      *
      * @return array{string, array<mixed>}
      */
-    abstract public function loadFromPath($inBasePath, $localPath);
+    abstract public function loadFromPath($basePath, $localPath);
 
     /**
      * Summary of getBookId
-     * @param string $inBookFileName
+     * @param string $bookFileName
      * @return int
      */
-    public function getBookId($inBookFileName)
+    public function getBookId($bookFileName)
     {
-        return $this->mTarget->getBookId($inBookFileName);
+        return $this->target->getBookId($bookFileName);
     }
 
     /**
      * Add a new book to the import
      *
-     * @param BookInfos $inBookInfo BookInfo object
-     * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param BookInfo $bookInfo BookInfo object
+     * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
      * @throws Exception if error
      *
      * @return void
      */
-    protected function addBook($inBookInfo, $inBookId = 0): void
+    protected function addBook($bookInfo, $bookId = 0): void
     {
-        $this->mTarget->addBook($inBookInfo, $inBookId);
+        $this->target->addBook($bookInfo, $bookId);
     }
 }
