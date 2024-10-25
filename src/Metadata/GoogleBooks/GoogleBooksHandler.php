@@ -10,6 +10,8 @@
 namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
 use Marsender\EPubLoader\Handlers\MetadataHandler;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Marsender\EPubLoader\RequestHandler;
 use Exception;
 
@@ -56,7 +58,9 @@ class GoogleBooksHandler extends MetadataHandler
         $offset = $this->request->getId('offset');
         $result = $this->books($authorId, null, $bookId, $sort, $offset);
         $authorId = $result['authorId'];
+        /** @var AuthorInfo|null $authorInfo */
         $authorInfo = $result['authorInfo'];
+        /** @var BookInfo|null $bookInfo */
         $bookInfo = $result['bookInfo'];
 
         // Update the book identifier
@@ -70,16 +74,16 @@ class GoogleBooksHandler extends MetadataHandler
         $matched = null;
         $dbPath = $this->dbConfig['db_path'];
         if (!empty($bookId) && !empty($bookInfo)) {
-            $matched = $googlematch->findWorksByTitle($bookInfo['title'], $authorInfo);
+            $matched = $googlematch->findWorksByTitle($bookInfo->title, $authorInfo->name);
             //$info = GoogleBooksMatch::getBookInfo($dbPath, $matched);
         } else {
-            $matched = $googlematch->findWorksByAuthor($authorInfo);
+            $matched = $googlematch->findWorksByAuthor($authorInfo->name);
             //$info = GoogleBooksMatch::getBookInfo($dbPath, $matched);
         }
 
         // exact match only here - see calibre metadata plugins for more advanced features
         if (!empty($authorId) && !empty($authorInfo)) {
-            $result['books'] = $this->matchBookTitles($result['books'], $matched, $authorInfo['name']);
+            $result['books'] = $this->matchBookTitles($result['books'], $matched, $authorInfo->name);
         }
 
         $result['matched'] = $matched;

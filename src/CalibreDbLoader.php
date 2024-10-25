@@ -84,6 +84,15 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getDbConnection
+     * @return PDO|null
+     */
+    public function getDbConnection()
+    {
+        return $this->db;
+    }
+
+    /**
      * Summary of getStats
      * @see https://www.sqlite.org/lang_analyze.html
      * @return array<string, int>
@@ -261,7 +270,7 @@ class CalibreDbLoader
      */
     public function getBooks($bookId = null, $authorId = null, $seriesId = null, $sort = null, $offset = null)
     {
-        $sql = 'select books.id as id, books.title as title, series_index, author, series from books
+        $sql = 'select books.id as id, books.title as title, books.sort as sort, series_index, author, series from books
         left join books_authors_link on books.id = books_authors_link.book
         left join books_series_link on books.id = books_series_link.book
         where true';
@@ -296,10 +305,15 @@ class CalibreDbLoader
         $stmt->execute($params);
         $books = [];
         $bookIdList = [];
+        // TABLE books_authors_link has UNIQUE(book, author) constraint
+        // TABLE books_series_link has UNIQUE(book) constraint so there may be more than 1 series - but only 1 series_index
         while ($post = $stmt->fetchObject()) {
             $books[$post->id] = (array) $post;
             $books[$post->id]['identifiers'] = [];
             $bookIdList[] = $post->id;
+        }
+        if (empty($bookIdList)) {
+            return $books;
         }
         $sql = 'select id, book, type, val as value from identifiers
         where book IN (' . str_repeat('?,', count($bookIdList) - 1) . '?)';
@@ -455,7 +469,7 @@ class CalibreDbLoader
      */
     public function getSeries($seriesId = null, $authorId = null, $bookId = null, $sort = null, $offset = null)
     {
-        $sql = 'select distinct series.id as id, series.name as name, series.link as link, author from series, books_series_link, books, books_authors_link
+        $sql = 'select distinct series.id as id, series.name as name, series.sort as sort, series.link as link, author from series, books_series_link, books, books_authors_link
         where books_series_link.series = series.id and books_series_link.book = books.id and books_authors_link.book = books.id';
         $params = [];
         if (!empty($seriesId)) {
@@ -666,23 +680,27 @@ class CalibreDbLoader
                 $series[$post->series] = 0;
             }
         }
-        // get author links
-        $sql = 'select id, link from authors
-        where id IN (' . str_repeat('?,', count(array_keys($authors)) - 1) . '?)
-        and link != ""';
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(array_keys($authors));
-        while ($post = $stmt->fetchObject()) {
-            $authors[$post->id] = $post->link;
+        if (!empty($authors)) {
+            // get author links
+            $sql = 'select id, link from authors
+            where id IN (' . str_repeat('?,', count(array_keys($authors)) - 1) . '?)
+            and link != ""';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array_keys($authors));
+            while ($post = $stmt->fetchObject()) {
+                $authors[$post->id] = $post->link;
+            }
         }
-        // get series links
-        $sql = 'select id, link from series
-        where id IN (' . str_repeat('?,', count(array_keys($series)) - 1) . '?)
-        and link != ""';
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(array_keys($series));
-        while ($post = $stmt->fetchObject()) {
-            $series[$post->id] = $post->link;
+        if (!empty($series)) {
+            // get series links
+            $sql = 'select id, link from series
+            where id IN (' . str_repeat('?,', count(array_keys($series)) - 1) . '?)
+            and link != ""';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array_keys($series));
+            while ($post = $stmt->fetchObject()) {
+                $series[$post->id] = $post->link;
+            }
         }
         // add links if available
         foreach ($links as $id => $link) {
@@ -833,6 +851,31 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getResources
+     * @param string|null $hash
+     * @return array<mixed>
+     */
+    public function getResources($hash = null)
+    {
+        if (is_null($this->getNotesDb())) {
+            return [];
+        }
+        $sql = 'select hash, name from resources';
+        $params = [];
+        if (!empty($hash)) {
+            $sql .= ' where hash = ?';
+            $params[] = $hash;
+        }
+        $stmt = $this->notesDb->prepare($sql);
+        $stmt->execute($params);
+        $names = [];
+        while ($post = $stmt->fetchObject()) {
+            $names[$post->hash] = (array) $post;
+        }
+        return $names;
+    }
+
+    /**
      * Summary of getResourcePath
      * @param string $hash
      * @return string|null
@@ -852,5 +895,30 @@ class CalibreDbLoader
             return null;
         }
         return $path;
+    }
+
+    /**
+     * Summary of getResourceMeta
+     * @param string $hash
+     * @return array<mixed>|null
+     */
+    public function getResourceMeta($hash)
+    {
+        $path = $this->getResourcePath($hash);
+        if (empty($path)) {
+            return null;
+        }
+        $metadata = $path . '.metadata';
+        if (!is_file($metadata)) {
+            return null;
+        }
+        $content = file_get_contents($metadata);
+        $result = json_decode($content, true);
+        if (empty($result) || !is_array($result)) {
+            return null;
+        }
+        $result['path'] ??= $path;
+        $result['metadata'] ??= $metadata;
+        return $result;
     }
 }

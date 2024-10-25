@@ -52,16 +52,16 @@ class GoogleBooksMatch extends BaseMatch
 
     /**
      * Summary of findWorksByAuthor
-     * @param array<mixed> $author
+     * @param string $authorName
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 40)
      * @return array<string, mixed>
      */
-    public function findWorksByAuthor($author, $lang = null, $limit = 40)
+    public function findWorksByAuthor($authorName, $lang = null, $limit = 40)
     {
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        $query = $author['name'];
+        $query = $authorName;
         $cacheFile = $this->cache->getAuthorQuery($query, $lang, $limit);
         if ($this->cache->hasCache($cacheFile)) {
             return $this->cache->loadCache($cacheFile);
@@ -78,20 +78,20 @@ class GoogleBooksMatch extends BaseMatch
     /**
      * Summary of findWorksByTitle
      * @param string $query
-     * @param array<mixed>|null $author
+     * @param string|null $authorName
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>
      */
-    public function findWorksByTitle($query, $author = null, $lang = null, $limit = 10)
+    public function findWorksByTitle($query, $authorName = null, $lang = null, $limit = 10)
     {
         if (empty($query)) {
             return ['totalItems' => 0, 'items' => []];
         }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if (!empty($author)) {
-            $cacheFile = $this->cache->getTitleQuery($author['name'] . '.' . $query, $lang);
+        if (!empty($authorName)) {
+            $cacheFile = $this->cache->getTitleQuery($authorName . '.' . $query, $lang);
         } else {
             $cacheFile = $this->cache->getTitleQuery($query, $lang);
         }
@@ -100,13 +100,13 @@ class GoogleBooksMatch extends BaseMatch
         }
         // search by title and author first
         $query = 'intitle:"' . $query . '"';
-        if (!empty($author)) {
-            $query .= ' inauthor:"' . $author['name'] . '"';
+        if (!empty($authorName)) {
+            $query .= ' inauthor:"' . $authorName . '"';
         }
         $results = $this->getResults($query, $lang, $limit);
         $matched = json_decode($results, true);
         // fall back to search by title alone
-        if (!empty($author) && (empty($matched) || $matched['totalItems'] == 0)) {
+        if (!empty($authorName) && (empty($matched) || $matched['totalItems'] == 0)) {
             $query = 'intitle:"' . $query . '"';
             $results = $this->getResults($query, $lang, $limit);
             $matched = json_decode($results, true);
@@ -119,20 +119,20 @@ class GoogleBooksMatch extends BaseMatch
     /**
      * Summary of findSeriesByName
      * @param string $query
-     * @param array<mixed> $author
+     * @param string|null $authorName
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 40)
      * @return array<string, mixed>
      */
-    public function findSeriesByName($query, $author, $lang = null, $limit = 40)
+    public function findSeriesByName($query, $authorName, $lang = null, $limit = 40)
     {
         if (empty($query)) {
             return ['totalItems' => 0, 'items' => []];
         }
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        if (!empty($author)) {
-            $cacheFile = $this->cache->getSeriesQuery($author['name'] . '.' . $query, $lang);
+        if (!empty($authorName)) {
+            $cacheFile = $this->cache->getSeriesQuery($authorName . '.' . $query, $lang);
         } else {
             $cacheFile = $this->cache->getSeriesQuery($query, $lang);
         }
@@ -141,13 +141,13 @@ class GoogleBooksMatch extends BaseMatch
         }
         // search by bibliogroup and author first
         $query = 'bibliogroup:"' . $query . '"';
-        if (!empty($author)) {
-            $query .= ' inauthor:"' . $author['name'] . '"';
+        if (!empty($authorName)) {
+            $query .= ' inauthor:"' . $authorName . '"';
         }
         $results = $this->getResults($query, $lang, $limit, 'lite');
         $matched = json_decode($results, true);
         // fall back to search by bibliogroup alone
-        if (!empty($author) && (empty($matched) || $matched['totalItems'] == 0)) {
+        if (!empty($authorName) && (empty($matched) || $matched['totalItems'] == 0)) {
             $query = 'bibliogroup:"' . $query . '"';
             $results = $this->getResults($query, $lang, $limit, 'lite');
             $matched = json_decode($results, true);

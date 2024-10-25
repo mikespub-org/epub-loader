@@ -10,6 +10,7 @@
 namespace Marsender\EPubLoader\Handlers;
 
 use Marsender\EPubLoader\ActionHandler;
+use Marsender\EPubLoader\Models\NoteInfo;
 use Marsender\EPubLoader\RequestHandler;
 use Exception;
 
@@ -64,6 +65,10 @@ class DatabaseHandler extends ActionHandler
             } else {
                 $items = $this->db->getNotes($colName);
             }
+            $dbPath = $this->dbConfig['db_path'];
+            //foreach ($items as $id => $item) {
+            //    $items[$id] = NoteInfo::load($dbPath, $item);
+            //}
         }
         return [
             'notescount' => $notescount,
@@ -87,12 +92,11 @@ class DatabaseHandler extends ActionHandler
         }
         [$alg, $digest] = explode('/', $hash);
         $hash = "{$alg}-{$digest}";
-        $path = $this->db->getResourcePath($hash);
-        if (empty($path)) {
+        $meta = $this->db->getResourceMeta($hash);
+        if (empty($meta) || empty($meta['path'])) {
             $this->addError($this->dbFileName, "Please specify a valid resource hash");
             return null;
         }
-        $meta = json_decode(file_get_contents($path . '.metadata'), true);
         $ext = strtolower(pathinfo((string) $meta['name'], PATHINFO_EXTENSION));
         $mime = 'application/octet-stream';
         switch ($ext) {
@@ -110,7 +114,7 @@ class DatabaseHandler extends ActionHandler
         header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
         header('Content-Type: ' . $mime);
 
-        readfile($path);
+        readfile($meta['path']);
         if (!empty(getenv('PHPUNIT_TESTING'))) {
             return null;
         }

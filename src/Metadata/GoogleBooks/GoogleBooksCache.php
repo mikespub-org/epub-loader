@@ -205,6 +205,13 @@ class GoogleBooksCache extends BaseCache
         $result = self::parseSearch($entry);
         foreach ($result->getItems() as $id => $volume) {
             $result->items[$id] = GoogleBooksImport::load($this->cacheDir . '/google', $volume);
+            $volumeId = $result->items[$id]->id;
+            $cacheFile = $this->getVolume($id);
+            if ($this->hasCache($cacheFile)) {
+                $result->items[$id]->id = "<a href='{$urlPrefix}volumes?entry={$volumeId}'>{$volumeId}</a>";
+            } else {
+                $result->items[$id]->id = "<a href='{$urlPrefix}volumes?entry={$volumeId}'>{$volumeId}</a> ?";
+            }
         }
         return (array) $result;
     }

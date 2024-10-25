@@ -9,15 +9,15 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
-use Marsender\EPubLoader\Metadata\AuthorInfo;
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Marsender\EPubLoader\Metadata\OpenLibrary\Entities\WorkEntity;
 use Exception;
 
 class OpenLibraryImport
 {
     /**
-     * Loads book infos from an OpenLibrary work
+     * Load book info from an OpenLibrary work
      *
      * @param string $basePath base directory
      * @param WorkEntity $work OpenLibrary work
@@ -40,22 +40,20 @@ class OpenLibraryImport
         $bookInfo->basePath = $basePath;
         // @todo check details format and/or links for epub, pdf etc.
         $bookInfo->format = 'epub';
-        $bookInfo->name = (string) str_replace('/works/', '', $work->getKey());
+        $bookInfo->id = (string) str_replace('/works/', '', $work->getKey());
+        $bookInfo->uri = (string) OpenLibraryMatch::link($bookInfo->id);
         // @todo use calibre_external_storage in COPS
-        $bookInfo->path = (string) OpenLibraryMatch::link($bookInfo->name);
+        $bookInfo->path = $bookInfo->uri;
         if (str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
-        $bookInfo->uuid = 'olid:' . $bookInfo->name;
-        $bookInfo->uri = (string) $bookInfo->path;
+        $bookInfo->uuid = 'olid:' . $bookInfo->id;
         $bookInfo->title = (string) $work->getTitle();
         if (is_array($work->getDescription())) {
             $bookInfo->description = (string) ($work->getDescription()['value'] ?? '');
         } else {
             $bookInfo->description = (string) $work->getDescription();
         }
-        $authors = [];
-        $bookInfo->authorIds = [];
         $entities = $work->getAuthors() ?? [];
         foreach ($entities as $author) {
             $authorId = (string) $author->getAuthor()?->getKey();
@@ -69,10 +67,14 @@ class OpenLibraryImport
                 continue;
             }
             $authorSort = AuthorInfo::getNameSort($author['name']);
-            $authors[$authorSort] = $author['name'];
-            $bookInfo->authorIds[] = $authorId;
+            $info = [
+                'id' => $authorId,
+                'name' => $author['name'],
+                'sort' => $authorSort,
+                'link' => OpenLibraryMatch::link($authorId),
+            ];
+            $bookInfo->addAuthor($authorId, $info);
         }
-        $bookInfo->authors = $authors;
         $subjects = [];
         $entities = $work->getSubjects() ?? [];
         foreach ($entities as $subject) {
@@ -88,14 +90,14 @@ class OpenLibraryImport
             $bookInfo->cover = "https://covers.openlibrary.org/b/id/{$cover}-M.jpg";
         }
         // @todo ...
-        //$bookInfo->serie = '...';
+        //$bookInfo->addSeries(0, '...');
 
         $bookInfo->creationDate = (string) $work->getCreated()?->getValue();
         // @todo no modification date here
         $bookInfo->modificationDate = (string) ($work->getLastModified()?->getValue() ?? $bookInfo->creationDate);
         // Timestamp is used to get latest ebooks
-        $bookInfo->timeStamp = $bookInfo->creationDate;
-        $bookInfo->identifiers = ['olid' => $bookInfo->name];
+        $bookInfo->timestamp = $bookInfo->creationDate;
+        $bookInfo->identifiers = ['olid' => $bookInfo->id];
         if (!empty($bookInfo->isbn)) {
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }

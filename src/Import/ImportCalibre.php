@@ -9,7 +9,7 @@
 
 namespace Marsender\EPubLoader\Import;
 
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryMatch;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataMatch;
@@ -110,16 +110,17 @@ class ImportCalibre extends ImportTarget
             $sql .= ':id, ';
         }
         $sql .= ':title, :sort, :timestamp, :pubdate, :lastmodified, :serieindex, :uuid, :path, :hascover, :cover, :isbn)';
-        $timeStamp = BookInfo::getSqlDate($bookInfo->timeStamp);
+        $timestamp = BookInfo::getSqlDate($bookInfo->timestamp);
         $pubDate = BookInfo::getSqlDate(empty($bookInfo->creationDate) ? '2000-01-01 00:00:00' : $bookInfo->creationDate);
         $lastModified = BookInfo::getSqlDate(empty($bookInfo->modificationDate) ? '2000-01-01 00:00:00' : $bookInfo->modificationDate);
         $hasCover = empty($bookInfo->cover) ? 0 : 1;
+        $cover = '';
         if (empty($bookInfo->cover)) {
             //$error = 'Warning: Cover not found';
             //$errors[] = $error;
-            $cover = "";
-        } else {
-            $cover = str_replace('OEBPS/', $bookInfo->name . '/', $bookInfo->cover);
+        } elseif (str_contains($bookInfo->cover, 'OEBPS/')) {
+            // @todo when is this needed?
+            $cover = str_replace('OEBPS/', $bookInfo->id . '/', $bookInfo->cover);
         }
         $stmt = $this->db->prepare($sql);
         if ($bookId) {
@@ -129,10 +130,12 @@ class ImportCalibre extends ImportTarget
         $sortString = BookInfo::getTitleSort($bookInfo->title);
         $sortString = BookInfo::getSortString($sortString);
         $stmt->bindParam(':sort', $sortString);
-        $stmt->bindParam(':timestamp', $timeStamp);
+        $stmt->bindParam(':timestamp', $timestamp);
         $stmt->bindParam(':pubdate', $pubDate);
         $stmt->bindParam(':lastmodified', $lastModified);
-        $stmt->bindParam(':serieindex', $bookInfo->serieIndex);
+        //$stmt->bindParam(':serieindex', $bookInfo->serieIndex);
+        $seriesInfo = $bookInfo->getSeriesInfo();
+        $stmt->bindParam(':serieindex', $seriesInfo->index);
         $stmt->bindParam(':uuid', $bookInfo->uuid);
         $stmt->bindParam(':path', $bookInfo->path);
         $stmt->bindParam(':hascover', $hasCover, PDO::PARAM_INT);
@@ -169,11 +172,18 @@ class ImportCalibre extends ImportTarget
             $bookInfo->format,
             'pdf',
         ];
+        // When using GoodReadsImport() etc.:
+        //   $bookInfo->path = $bookInfo->uri;
+        //   $bookInfo->id = entity id
+        if (str_contains($bookInfo->path, '://')) {
+            return;
+        }
+        // When using LocalBooksImport():
+        //   $bookInfo->path = pathinfo($fileName, PATHINFO_DIRNAME);
+        //   $bookInfo->id = pathinfo($fileName, PATHINFO_FILENAME);
+        $name = $bookInfo->id;
         foreach ($formats as $format) {
-            if (str_contains($bookInfo->path, '://')) {
-                continue;
-            }
-            $fileName = sprintf('%s%s%s%s%s.%s', $bookInfo->basePath, DIRECTORY_SEPARATOR, $bookInfo->path, DIRECTORY_SEPARATOR, $bookInfo->name, $format);
+            $fileName = sprintf('%s%s%s%s%s.%s', $bookInfo->basePath, DIRECTORY_SEPARATOR, $bookInfo->path, DIRECTORY_SEPARATOR, $name, $format);
             if (!is_readable($fileName)) {
                 if ($format == $bookInfo->format) {
                     $error = sprintf('Cannot read file: %s', $fileName);
@@ -187,7 +197,7 @@ class ImportCalibre extends ImportTarget
             $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
             $format = strtoupper($format);
             $stmt->bindParam(':format', $format); // Calibre format is uppercase
-            $stmt->bindParam(':name', $bookInfo->name);
+            $stmt->bindParam(':name', $name);
             $stmt->bindParam(':uncompressedSize', $uncompressedSize);
             $stmt->execute();
         }
@@ -249,19 +259,23 @@ class ImportCalibre extends ImportTarget
      */
     public function addBookSeries($bookInfo, $idBook)
     {
-        if (empty($bookInfo->serie)) {
+        if (empty($bookInfo->series)) {
+            return;
+        }
+        $seriesInfo = $bookInfo->getSeriesInfo();
+        if (empty($seriesInfo->title)) {
             return;
         }
         $link = '';
-        if (!empty($bookInfo->serieIds) && !empty($bookInfo->serieIds[0]) && $bookInfo->serieIds[0] != $bookInfo->serie) {
+        if (!empty($seriesInfo->id) && $seriesInfo->id != $seriesInfo->title) {
             $link = match ($bookInfo->source) {
-                'goodreads' => GoodReadsMatch::SERIES_URL . $bookInfo->serieIds[0],
-                'wikidata' => WikiDataMatch::link($bookInfo->serieIds[0]),
+                'goodreads' => GoodReadsMatch::SERIES_URL . $seriesInfo->id,
+                'wikidata' => WikiDataMatch::link($seriesInfo->id),
                 // @todo other sources?
-                default => $bookInfo->serieIds[0],
+                default => $seriesInfo->id,
             };
         }
-        $idSerie = $this->addSeries($bookInfo->serie, $link);
+        $idSerie = $this->addSeries($seriesInfo->title, $link);
 
         // Add the book serie link
         $sql = 'replace into books_series_link(book, series) values(:idBook, :idSerie)';
@@ -332,21 +346,18 @@ class ImportCalibre extends ImportTarget
         if (empty($bookInfo->authors)) {
             return;
         }
-        $bookInfo->authorIds ??= [];
-        $idx = 0;
-        foreach ($bookInfo->authors as $authorSort => $author) {
+        foreach ($bookInfo->authors as $authorId => $authorInfo) {
             $link = '';
-            if (count($bookInfo->authorIds) > $idx && !empty($bookInfo->authorIds[$idx]) && $bookInfo->authorIds[$idx] != $author) {
+            if (!empty($authorInfo->id) && $authorInfo->id != $authorInfo->name) {
                 $link = match ($bookInfo->source) {
-                    'goodreads' => GoodReadsMatch::AUTHOR_URL . $bookInfo->authorIds[$idx],
-                    'openlibrary' => OpenLibraryMatch::AUTHOR_URL . $bookInfo->authorIds[$idx],
-                    'wikidata' => WikiDataMatch::link($bookInfo->authorIds[$idx]),
+                    'goodreads' => GoodReadsMatch::AUTHOR_URL . $authorInfo->id,
+                    'openlibrary' => OpenLibraryMatch::AUTHOR_URL . $authorInfo->id,
+                    'wikidata' => WikiDataMatch::link($authorInfo->id),
                     // @todo other sources?
-                    default => $bookInfo->authorIds[$idx],
+                    default => $authorInfo->id,
                 };
             }
-            $idAuthor = $this->addAuthor($author, $authorSort, $link);
-            $idx++;
+            $idAuthor = $this->addAuthor($authorInfo->name, $authorInfo->sort, $link);
 
             // Add the book author link
             $sql = 'replace into books_authors_link(book, author) values(:idBook, :idAuthor)';

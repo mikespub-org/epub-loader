@@ -9,15 +9,16 @@
 
 namespace Marsender\EPubLoader\Metadata\GoogleBooks;
 
-use Marsender\EPubLoader\Metadata\AuthorInfo;
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Marsender\EPubLoader\Metadata\GoogleBooks\Volumes\Volume;
 use Exception;
+use Marsender\EPubLoader\Models\SeriesInfo;
 
 class GoogleBooksImport
 {
     /**
-     * Loads book infos from a Google Books volume
+     * Load book info from a Google Books volume
      *
      * @param string $basePath base directory
      * @param Volume $volume Google Books volume
@@ -37,22 +38,26 @@ class GoogleBooksImport
         $bookInfo->basePath = $basePath;
         // @todo check accessInfo for epub, pdf etc.
         $bookInfo->format = 'epub';
+        $bookInfo->id = (string) $volume->getId();
+        $bookInfo->uri = (string) ($volumeInfo->getCanonicalVolumeLink() ?? $volume->getSelfLink());
         // @todo use calibre_external_storage in COPS
-        $bookInfo->path = (string) $volume->getSelfLink();
+        $bookInfo->path = $bookInfo->uri;
         if (str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
-        $bookInfo->name = (string) $volume->getId();
-        $bookInfo->uuid = 'google:' . $bookInfo->name;
-        $bookInfo->uri = (string) ($volumeInfo->getCanonicalVolumeLink() ?? $volume->getSelfLink());
+        $bookInfo->uuid = 'google:' . $bookInfo->id;
         $bookInfo->title = (string) $volumeInfo->getTitle();
-        $authors = [];
-        foreach ($volumeInfo->getAuthors() as $author) {
-            $authorSort = AuthorInfo::getNameSort($author);
-            $authors[$authorSort] = $author;
+        foreach ($volumeInfo->getAuthors() as $authorName) {
+            $authorSort = AuthorInfo::getNameSort($authorName);
+            $authors[$authorSort] = $authorName;
+            $authorId = $authorName;
+            $info = [
+                'id' => '',
+                'name' => $authorSort,
+                'sort' => $authorName,
+            ];
+            $bookInfo->addAuthor($authorId, $info);
         }
-        $bookInfo->authors = $authors;
-        $bookInfo->authorIds = $volumeInfo->getAuthors();
         $bookInfo->language = (string) $volumeInfo->getLanguage();
         $bookInfo->description = (string) $volumeInfo->getDescription();
         $bookInfo->subjects = $volumeInfo->getCategories();
@@ -74,26 +79,41 @@ class GoogleBooksImport
         $bookInfo->publisher = (string) $volumeInfo->getPublisher();
         $series = $volumeInfo->getSeriesInfo();
         if (!empty($series)) {
-            $bookInfo->serieIndex = (string) $series->getBookDisplayNumber();
             // @todo use title to get series name
             if (str_contains($bookInfo->title, ':')) {
-                [$seriesName, $title] = explode(':', $bookInfo->title, 2);
-                $seriesName = preg_replace('/\s*Vol.\s*/', '', preg_replace('/\s*\d+\s*/', '', $seriesName));
-                $bookInfo->serie = trim($seriesName);
-            } elseif (!empty($series->getVolumeSeries())) {
-                $info = $series->getVolumeSeries()[0];
+                [$seriesTitle, $title] = explode(':', $bookInfo->title, 2);
+            } else {
+                $seriesTitle = $bookInfo->title;
+            }
+            $seriesTitle = preg_replace('/\s*Vol.\s*/i', '', preg_replace('/\s*\d+\s*/', '', $seriesTitle));
+            $seriesSort = SeriesInfo::getTitleSort($seriesTitle);
+            $seriesList = $series->getVolumeSeries() ?? [];
+            if (empty($seriesList)) {
+                $seriesList[] = Volumes\VolumeSeries::fromJson(['seriesId' => $seriesTitle]);
+            }
+            $index = (string) $series->getBookDisplayNumber();
+            foreach ($seriesList as $volumeSeries) {
                 // @todo get series name from id
-                $bookInfo->serie = (string) $info->getSeriesId();
-                $bookInfo->serieIds = [ (string) $info->getSeriesId() ];
+                $seriesId = (string) $volumeSeries->getSeriesId();
+                if (!empty($bookInfo->series)) {
+                    $index = (string) $volumeSeries->getOrderNumber();
+                }
+                $info = [
+                    'id' => $seriesId,
+                    'name' => $seriesTitle,
+                    'sort' => $seriesSort,
+                    'index' => $index,
+                ];
+                $bookInfo->addSeries($seriesId, $info);
             }
         }
         $bookInfo->creationDate = (string) $volumeInfo->getPublishedDate();
         // @todo no modification date here
         $bookInfo->modificationDate = $bookInfo->creationDate;
         // Timestamp is used to get latest ebooks
-        $bookInfo->timeStamp = $bookInfo->creationDate;
+        $bookInfo->timestamp = $bookInfo->creationDate;
         $bookInfo->rating = $volumeInfo->getAverageRating();
-        $bookInfo->identifiers = ['google' => $bookInfo->name];
+        $bookInfo->identifiers = ['google' => $bookInfo->id];
         if (!empty($bookInfo->isbn)) {
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }

@@ -9,7 +9,7 @@
 
 namespace Marsender\EPubLoader\Export;
 
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Exception;
 
 class ExportCsvFile extends ExportTarget
@@ -78,12 +78,14 @@ class ExportCsvFile extends ExportTarget
         $i = 1;
         $this->setProperty($i++, $bookInfo->format);
         $this->setProperty($i++, $bookInfo->basePath . DIRECTORY_SEPARATOR . $bookInfo->path);
-        $this->setProperty($i++, $bookInfo->name);
+        $this->setProperty($i++, $bookInfo->id);
         $this->setProperty($i++, $bookInfo->uuid);
         $this->setProperty($i++, $bookInfo->uri);
         $this->setProperty($i++, $bookInfo->title);
-        $this->setProperty($i++, implode(' - ', $bookInfo->authors));
-        $this->setProperty($i++, implode(' - ', array_keys($bookInfo->authors)));
+        //$this->setProperty($i++, implode(' - ', $bookInfo->authors));
+        //$this->setProperty($i++, implode(' - ', array_keys($bookInfo->authors)));
+        $this->setProperty($i++, implode(' - ', $bookInfo->getAuthorNames()));
+        $this->setProperty($i++, implode(' - ', $bookInfo->getAuthorSorts()));
         $this->setProperty($i++, $bookInfo->language);
         $this->setProperty($i++, $bookInfo->description);
         $this->setProperty($i++, implode(' - ', $bookInfo->subjects));
@@ -91,8 +93,11 @@ class ExportCsvFile extends ExportTarget
         $this->setProperty($i++, $bookInfo->isbn);
         $this->setProperty($i++, $bookInfo->rights);
         $this->setProperty($i++, $bookInfo->publisher);
-        $this->setProperty($i++, $bookInfo->serie);
-        $this->setProperty($i++, $bookInfo->serieIndex);
+        //$this->setProperty($i++, $bookInfo->serie);
+        //$this->setProperty($i++, $bookInfo->serieIndex);
+        $seriesInfo = $bookInfo->getSeriesInfo();
+        $this->setProperty($i++, $seriesInfo->title);
+        $this->setProperty($i++, $seriesInfo->index);
         $this->setProperty($i++, $bookInfo->creationDate);
         $this->setProperty($i++, $bookInfo->modificationDate);
 

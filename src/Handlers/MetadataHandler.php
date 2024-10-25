@@ -10,6 +10,9 @@
 namespace Marsender\EPubLoader\Handlers;
 
 use Marsender\EPubLoader\ActionHandler;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Marsender\EPubLoader\RequestHandler;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksMatch;
@@ -79,11 +82,12 @@ class MetadataHandler extends ActionHandler
         $authors = $this->addAuthorInfo($authors, $authorId, $sort, $offset);
         $paging = $authorId ? null : $this->db->getAuthorPaging($sort, $offset);
 
+        $dbPath = $this->dbConfig['db_path'];
         // Return info
         return [
             'authors' => $authors,
             'authorId' => $authorId,
-            'authorInfo' => $authorInfo,
+            'authorInfo' => AuthorInfo::load($dbPath, $authorInfo, $this->db),
             'matched' => $matched,
             'paging' => $paging,
         ];
@@ -165,15 +169,16 @@ class MetadataHandler extends ActionHandler
         // exact match only here - see calibre metadata plugins for more advanced features
         $seriesList = $this->getSeriesList($authorId);
 
+        $dbPath = $this->dbConfig['db_path'];
         // Return info
         return [
             'books' => $books,
             'authorId' => $authorId,
-            'authorInfo' => $authorInfo,
+            'authorInfo' => AuthorInfo::load($dbPath, $authorInfo, $this->db),
             'seriesId' => $seriesId,
-            'seriesInfo' => $seriesInfo,
+            'seriesInfo' => SeriesInfo::load($dbPath, $seriesInfo, $this->db),
             'bookId' => $bookId,
-            'bookInfo' => $bookInfo,
+            'bookInfo' => BookInfo::load($dbPath, $bookInfo, $this->db),
             'matched' => $matched,
             'authors' => $authorList,
             'series' => $seriesList,
@@ -223,13 +228,14 @@ class MetadataHandler extends ActionHandler
 
         $authorList = $this->getAuthorList();
 
+        $dbPath = $this->dbConfig['db_path'];
         // Return info
         return [
             'series' => $series,
             'authorId' => $authorId,
-            'authorInfo' => $authorInfo,
+            'authorInfo' => AuthorInfo::load($dbPath, $authorInfo, $this->db),
             'seriesId' => $seriesId,
-            'seriesInfo' => $seriesInfo,
+            'seriesInfo' => SeriesInfo::load($dbPath, $seriesInfo, $this->db),
             'matched' => $matched,
             'authors' => $authorList,
             'paging' => $paging,

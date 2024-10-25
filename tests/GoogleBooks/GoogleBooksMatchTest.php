@@ -21,7 +21,7 @@ class GoogleBooksMatchTest extends BaseTestCase
             'name' => 'Trudi Canavan',
         ];
         $query = 'Black Magician Trilogy';
-        $series = $match->findSeriesByName($query, $author);
+        $series = $match->findSeriesByName($query, $author['name']);
 
         $expected = 'books#volumes';
         $this->assertEquals($expected, $series['kind']);

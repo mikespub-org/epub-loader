@@ -6,7 +6,9 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader\Metadata;
+namespace Marsender\EPubLoader\Models;
+
+use Marsender\EPubLoader\CalibreDbLoader;
 
 /**
  * BaseInfo class contains informations about a book, author or series
@@ -14,9 +16,46 @@ namespace Marsender\EPubLoader\Metadata;
  */
 class BaseInfo
 {
+    public static string $notesColName = 'base';
+
+    public ?NoteInfo $note;
+
+    public string $source = '';
+
     public string $basePath = '';
 
     public string $id = '';
+
+    /**
+     * Summary of getNote
+     * @param ?CalibreDbLoader $db
+     * @return NoteInfo|null
+     */
+    public function getNote($db)
+    {
+        if (isset($this->note)) {
+            return $this->note;
+        }
+        if (empty($db)) {
+            return null;
+        }
+        $notes = $db->getNotes(static::$notesColName, [ $this->id ]);
+        if (empty($notes) || empty($notes[$this->id])) {
+            return null;
+        }
+        return $this->setNote($notes[$this->id]);
+    }
+
+    /**
+     * Summary of setNote
+     * @param array<mixed> $info
+     * @return NoteInfo
+     */
+    public function setNote($info)
+    {
+        $this->note = NoteInfo::load($this->basePath, $info);
+        return $this->note;
+    }
 
     /**
      * Summary of getTitleSort
@@ -79,17 +118,21 @@ class BaseInfo
     }
 
     /**
-     * Loads info from database
+     * Load info from database
      *
      * @param string $basePath base directory
      * @param array<mixed> $data
+     * @param ?CalibreDbLoader $loader
      *
-     * @return self
+     * @return self|null
      */
-    public static function load($basePath, $data)
+    public static function load($basePath, $data, $loader = null)
     {
+        if (empty($data)) {
+            return null;
+        }
         $baseInfo = new BaseInfo();
-        $baseInfo->source = 'database';
+        $baseInfo->source = $data['source'] ?? 'database';
         $baseInfo->basePath = $basePath;
         $baseInfo->id = $data['id'] ?? '';
         return $baseInfo;

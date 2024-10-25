@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 use Marsender\EPubLoader\Metadata\BaseMatch;
+use Marsender\EPubLoader\Models\AuthorInfo;
 use Exception;
 
 class GoodReadsMatch extends BaseMatch
@@ -144,11 +145,14 @@ class GoodReadsMatch extends BaseMatch
 
     /**
      * Summary of findAuthorId
-     * @param array<mixed> $author
+     * @param array<mixed>|AuthorInfo $author
      * @return string|null
      */
     public function findAuthorId($author)
     {
+        if (is_object($author)) {
+            $author = (array) $author;
+        }
         if (!empty($author['link']) && str_starts_with($author['link'], self::AUTHOR_URL)) {
             return str_replace(self::AUTHOR_URL, '', $author['link']);
         }

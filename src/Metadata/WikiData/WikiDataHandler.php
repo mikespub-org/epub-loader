@@ -10,6 +10,9 @@
 namespace Marsender\EPubLoader\Metadata\WikiData;
 
 use Marsender\EPubLoader\Handlers\MetadataHandler;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Marsender\EPubLoader\RequestHandler;
 use Exception;
 
@@ -76,11 +79,12 @@ class WikiDataHandler extends MetadataHandler
         $offset = $this->request->getId('offset');
         $result = $this->authors($authorId, $sort, $offset);
         $authorId = $result['authorId'];
+        /** @var AuthorInfo|null $authorInfo */
         $authorInfo = $result['authorInfo'];
 
         // Find matchId from author link
-        if (empty($matchId) && !empty($authorInfo) && WikiDataMatch::isValidLink($authorInfo['link'])) {
-            $matchId = WikiDataMatch::entity($authorInfo['link']);
+        if (empty($matchId) && !empty($authorInfo) && WikiDataMatch::isValidLink($authorInfo->link)) {
+            $matchId = WikiDataMatch::entity($authorInfo->link);
         }
 
         // Find match on Wikidata
@@ -93,7 +97,7 @@ class WikiDataHandler extends MetadataHandler
         if (!empty($matchId)) {
             // @todo create $matched based on $matchId
             // Update the author link
-            if (!is_null($authorId) && empty($authorInfo['link'])) {
+            if (!is_null($authorId) && empty($authorInfo->link)) {
                 $link = WikiDataMatch::link($matchId);
                 if (!$this->db->setAuthorLink($authorId, $link)) {
                     $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
@@ -101,7 +105,7 @@ class WikiDataHandler extends MetadataHandler
                 // @todo $result['authors'][$authorId]['link'] = $link;
             }
         } elseif (!empty($authorId) && !empty($authorInfo)) {
-            $name = $authorInfo['name'];
+            $name = $authorInfo->name;
             $matched = $wikimatch->findAuthors($name);
             // Find works from author for 1st match
             if (count($matched) > 0) {
@@ -126,6 +130,7 @@ class WikiDataHandler extends MetadataHandler
     protected function findAuthorLinks($match, $authors)
     {
         foreach ($authors as $id => $authorInfo) {
+            /** @var array<mixed> $authorInfo */
             if (empty($authorInfo['link'])) {
                 $matchId = $match->findAuthorId($authorInfo);
                 if (!empty($matchId)) {
@@ -152,8 +157,10 @@ class WikiDataHandler extends MetadataHandler
         $offset = $this->request->getId('offset');
         $result = $this->books($authorId, $seriesId, $bookId, $sort, $offset);
         $authorId = $result['authorId'];
+        /** @var AuthorInfo|null $authorInfo */
         $authorInfo = $result['authorInfo'];
         $seriesId = $result['seriesId'];
+        /** @var BookInfo|null $bookInfo */
         $bookInfo = $result['bookInfo'];
 
         // Update the book identifier
@@ -168,19 +175,19 @@ class WikiDataHandler extends MetadataHandler
 
         $matched = null;
         if (!empty($bookId) && !empty($bookInfo)) {
-            $matched = $wikimatch->findWorksByTitle($bookInfo['title']);
+            $matched = $wikimatch->findWorksByTitle($bookInfo->title);
         } elseif (!empty($seriesId)) {
             // @todo use author here too!?
             $matched = $wikimatch->findWorksByAuthorProperty($authorInfo);
             //$matched = array_merge($matched, $wikimatch->findWorksByAuthorName($authorInfo));
             if (empty($matched)) {
-                $matched = $wikimatch->findWorksByAuthorName($authorInfo);
+                $matched = $wikimatch->findWorksByAuthorName($authorInfo->name);
             }
         } else {
             $matched = $wikimatch->findWorksByAuthorProperty($authorInfo);
             //$matched = array_merge($matched, $wikimatch->findWorksByAuthorName($authorInfo));
             if (empty($matched)) {
-                $matched = $wikimatch->findWorksByAuthorName($authorInfo);
+                $matched = $wikimatch->findWorksByAuthorName($authorInfo->name);
             }
         }
 
@@ -239,13 +246,15 @@ class WikiDataHandler extends MetadataHandler
         $result = $this->series($authorId, $seriesId, $sort, $offset);
         // series can have multiple authors
         $authorId = $result['authorId'];
+        /** @var AuthorInfo|null $authorInfo */
         $authorInfo = $result['authorInfo'];
         $seriesId = $result['seriesId'];
+        /** @var SeriesInfo|null $seriesInfo */
         $seriesInfo = $result['seriesInfo'];
 
         // Find matchId from series link
-        if (empty($matchId) && !empty($seriesInfo) && WikiDataMatch::isValidLink($seriesInfo['link'])) {
-            $matchId = WikiDataMatch::entity($seriesInfo['link']);
+        if (empty($matchId) && !empty($seriesInfo) && WikiDataMatch::isValidLink($seriesInfo->link)) {
+            $matchId = WikiDataMatch::entity($seriesInfo->link);
         }
 
         // Find match on Wikidata
@@ -256,10 +265,10 @@ class WikiDataHandler extends MetadataHandler
         }
         $matched = null;
         if (!empty($seriesId) && !empty($seriesInfo)) {
-            $name = $seriesInfo['name'];
+            $name = $seriesInfo->title;
             $matched = $wikimatch->findSeriesByName($name);
             // Update the series link
-            if (!empty($matchId) && empty($seriesInfo['link'])) {
+            if (!empty($matchId) && empty($seriesInfo->link)) {
                 $link = WikiDataMatch::link($matchId);
                 if (!$this->db->setSeriesLink($seriesId, $link)) {
                     $this->addError($this->dbFileName, "Failed updating link {$link} for seriesId {$seriesId}");

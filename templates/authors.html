@@ -41,14 +41,9 @@
 {% if authorId %}
 <div class="part">
 	<p><b>Database Author</b></p>
-	<p>{{ include('links.html', {itemId: authorId}) }}</p>
-	<ul>
-		{% for key, value in authorInfo %}
-			<li>
-				{{ key }}: {{ value }}
-			</li>
-		{% endfor %}
-	</ul>
+<pre>
+{{authorInfo|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
+</pre>
 </div>
 {% endif %}
 {% endblock lookup %}

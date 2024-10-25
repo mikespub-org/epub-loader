@@ -13,7 +13,7 @@
 
 namespace Marsender\EPubLoader\Export;
 
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Exception;
 
 abstract class SourceExport

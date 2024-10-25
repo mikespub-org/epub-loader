@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
 use Marsender\EPubLoader\Metadata\BaseMatch;
+use Marsender\EPubLoader\Models\AuthorInfo;
 
 class OpenLibraryMatch extends BaseMatch
 {
@@ -59,12 +60,15 @@ class OpenLibraryMatch extends BaseMatch
 
     /**
      * Summary of findAuthorId
-     * @param array<mixed> $author
+     * @param array<mixed>|AuthorInfo $author
      * @param string|null $lang Language (default: en)
      * @return string|null
      */
     public function findAuthorId($author, $lang = null)
     {
+        if (is_object($author)) {
+            $author = (array) $author;
+        }
         if (!empty($author['link']) && static::isValidLink($author['link'])) {
             return static::entity($author['link']);
         }
@@ -113,15 +117,14 @@ class OpenLibraryMatch extends BaseMatch
     /**
      * Summary of findWorksByTitle
      * @param string $query
-     * @param array<mixed> $author
+     * @param string $authorName
      * @return array<string, mixed>
      */
-    public function findWorksByTitle($query, $author)
+    public function findWorksByTitle($query, $authorName)
     {
         if (empty($query)) {
             return ['numFound' => 0, 'start' => 0, 'numFoundExact' => true, 'docs' => []];
         }
-        $authorName = $author['name'];
         $cacheFile = $this->cache->getTitleQuery($query . '.' . $authorName);
         if ($this->cache->hasCache($cacheFile)) {
             return $this->cache->loadCache($cacheFile);

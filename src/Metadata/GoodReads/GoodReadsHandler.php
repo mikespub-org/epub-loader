@@ -10,6 +10,9 @@
 namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 use Marsender\EPubLoader\Handlers\MetadataHandler;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Marsender\EPubLoader\RequestHandler;
 use Exception;
 
@@ -60,11 +63,12 @@ class GoodReadsHandler extends MetadataHandler
         $offset = $this->request->getId('offset');
         $result = $this->authors($authorId, $sort, $offset);
         $authorId = $result['authorId'];
+        /** @var AuthorInfo|null $authorInfo */
         $authorInfo = $result['authorInfo'];
 
         // Find matchId from author link
-        if (empty($matchId) && !empty($authorInfo) && GoodReadsMatch::isValidLink($authorInfo['link'])) {
-            $matchId = GoodReadsMatch::entity($authorInfo['link']);
+        if (empty($matchId) && !empty($authorInfo) && GoodReadsMatch::isValidLink($authorInfo->link)) {
+            $matchId = GoodReadsMatch::entity($authorInfo->link);
         }
 
         // Find match on GoodReads
@@ -77,7 +81,7 @@ class GoodReadsHandler extends MetadataHandler
         if (!empty($matchId)) {
             $matched = $this->getAuthorsMatched($goodreads, $matchId, $authorId, $authorInfo);
         } elseif (!empty($authorId) && !empty($authorInfo)) {
-            $name = $authorInfo['name'];
+            $name = $authorInfo->name;
             $matched = $this->getAuthorsByName($goodreads, $name);
         } elseif (empty($authorId)) {
             // @todo show all availables authors if no author is selected?
@@ -123,7 +127,7 @@ class GoodReadsHandler extends MetadataHandler
      * @param GoodReadsMatch $match
      * @param string|null $matchId
      * @param int|null $authorId
-     * @param array<mixed>|null $authorInfo
+     * @param AuthorInfo|null $authorInfo
      * @return array<mixed>
      */
     protected function getAuthorsMatched($match, $matchId, $authorId, $authorInfo)
@@ -136,12 +140,12 @@ class GoodReadsHandler extends MetadataHandler
         }
         $matched[$matchId] = $found[$matchId];
         // Update the author link
-        if (!is_null($authorId) && empty($authorInfo['link'])) {
+        if (!is_null($authorId) && empty($authorInfo->link)) {
             $link = GoodReadsMatch::AUTHOR_URL . $matchId;
             if (!$this->db->setAuthorLink($authorId, $link)) {
                 $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
             }
-            // @todo $result['authors'][$authorId]['link'] = $link;
+            // @todo $result['authors'][$authorId]->link = $link;
         }
         return $matched;
     }
@@ -200,9 +204,12 @@ class GoodReadsHandler extends MetadataHandler
         $offset = $this->request->getId('offset');
         $result = $this->books($authorId, $seriesId, $bookId, $sort, $offset);
         $authorId = $result['authorId'];
+        /** @var AuthorInfo|null $authorInfo */
         $authorInfo = $result['authorInfo'];
         $seriesId = $result['seriesId'];
         $seriesInfo = $result['seriesInfo'];
+        /** @var BookInfo|null|null|null $bookInfo */
+        $bookInfo = $result['bookInfo'];
 
         // Get GoodReads author Id from gr_author.html (if any)
         $authId = $this->request->get('authId');
@@ -210,12 +217,12 @@ class GoodReadsHandler extends MetadataHandler
         $serId = $this->request->get('serId');
 
         // Find serId from series link
-        if (empty($serId) && !empty($seriesInfo) && GoodReadsMatch::isValidLink($seriesInfo['link'])) {
-            $serId = GoodReadsMatch::entity($seriesInfo['link']);
+        if (empty($serId) && !empty($seriesInfo) && GoodReadsMatch::isValidLink($seriesInfo->link)) {
+            $serId = GoodReadsMatch::entity($seriesInfo->link);
         }
         // Find authId from author link
-        if (empty($authId) && !empty($authorInfo) && GoodReadsMatch::isValidLink($authorInfo['link'])) {
-            $authId = GoodReadsMatch::entity($authorInfo['link']);
+        if (empty($authId) && !empty($authorInfo) && GoodReadsMatch::isValidLink($authorInfo->link)) {
+            $authId = GoodReadsMatch::entity($authorInfo->link);
         }
 
         // Find match on GoodReads
@@ -265,15 +272,16 @@ class GoodReadsHandler extends MetadataHandler
         $dbPath = $this->dbConfig['db_path'];
         $bookResult = GoodReadsCache::parseBook($found);
         $info = GoodReadsImport::load($dbPath, $bookResult);
+        $seriesInfo = $info->getSeriesInfo();
         $matched[] = [
             'id' => GoodReadsMatch::entity($info->uri),
             'title' => $info->title,
             'url' => $info->uri,
             'cover' => $info->cover,
             'series' => [
-                'id' => $info->serieIds ? $info->serieIds[0] : '',
-                'title' => $info->serie,
-                'index' => $info->serieIndex,
+                'id' => $seriesInfo->id,
+                'title' => $seriesInfo->title,
+                'index' => $seriesInfo->index,
             ],
         ];
         // Update the book identifier
@@ -375,13 +383,15 @@ class GoodReadsHandler extends MetadataHandler
         $result = $this->series($authorId, $seriesId, $sort, $offset);
         // series can have multiple authors
         $authorId = $result['authorId'];
+        ///** @var AuthorInfo|null $authorInfo */
         //$authorInfo = $result['authorInfo'];
         $seriesId = $result['seriesId'];
+        /** @var SeriesInfo|null $seriesInfo */
         $seriesInfo = $result['seriesInfo'];
 
         // Find matchId from series link
-        if (empty($matchId) && !empty($seriesInfo) && GoodReadsMatch::isValidLink($seriesInfo['link'])) {
-            $matchId = GoodReadsMatch::entity($seriesInfo['link']);
+        if (empty($matchId) && !empty($seriesInfo) && GoodReadsMatch::isValidLink($seriesInfo->link)) {
+            $matchId = GoodReadsMatch::entity($seriesInfo->link);
         }
 
         // Find match on GoodReads
@@ -394,7 +404,7 @@ class GoodReadsHandler extends MetadataHandler
         if (!empty($matchId)) {
             $matched = $this->getSeriesMatched($goodreads, $matchId, $seriesId, $seriesInfo);
         } elseif (!empty($seriesId) && !empty($seriesInfo)) {
-            $title = $seriesInfo['name'];
+            $title = $seriesInfo->title;
             $matched = $this->getSeriesByTitle($goodreads, $title);
         } elseif (empty($authorId)) {
             // @todo show all availables series if no author is selected?
@@ -436,7 +446,7 @@ class GoodReadsHandler extends MetadataHandler
      * @param GoodReadsMatch $match
      * @param string $matchId
      * @param int|null $seriesId
-     * @param array<mixed>|null $seriesInfo
+     * @param SeriesInfo|null $seriesInfo
      * @return array<mixed>
      */
     protected function getSeriesMatched($match, $matchId, $seriesId, $seriesInfo)
@@ -449,7 +459,7 @@ class GoodReadsHandler extends MetadataHandler
         $info = GoodReadsCache::parseSeries($found);
         $info->setId($matchId);
         // Update the series link
-        if (!empty($seriesId) && empty($seriesInfo['link'])) {
+        if (!empty($seriesId) && empty($seriesInfo->link)) {
             $link = GoodReadsMatch::SERIES_URL . $matchId;
             if (!$this->db->setSeriesLink($seriesId, $link)) {
                 $this->addError($this->dbFileName, "Failed updating link {$link} for seriesId {$seriesId}");

@@ -396,6 +396,13 @@ class RequestHandler
             'debug' => true,
         ]);
         $twig->addExtension(new \Twig\Extension\DebugExtension());
+        $filter = new \Twig\TwigFilter('object_vars', function ($object) {
+            if (!is_object($object)) {
+                return $object ?? [];
+            }
+            return get_object_vars($object);
+        });
+        $twig->addFilter($filter);
 
         $template ??= $this->template;
         // check if the template file actually exists under $templateDir here

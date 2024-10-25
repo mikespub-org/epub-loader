@@ -10,15 +10,15 @@
 namespace Marsender\EPubLoader\Metadata\LocalBooks;
 
 use Marsender\EPubLoader\Metadata\BookEPub;
-use Marsender\EPubLoader\Metadata\AuthorInfo;
-use Marsender\EPubLoader\Metadata\BookInfo;
-use Marsender\EPubLoader\Metadata\SeriesInfo;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Exception;
 
 class LocalBooksImport
 {
     /**
-     * Loads book infos from an epub file
+     * Load book info from an epub file
      *
      * @param string $basePath Epub base directory
      * @param string $fileName Epub file name (from base directory)
@@ -55,12 +55,20 @@ class LocalBooksImport
         $bookInfo->basePath = $basePath;
         $bookInfo->format = 'epub';
         $bookInfo->path = pathinfo($fileName, PATHINFO_DIRNAME);
-        $bookInfo->name = pathinfo($fileName, PATHINFO_FILENAME);
+        $bookInfo->id = pathinfo($fileName, PATHINFO_FILENAME);
         $bookInfo->uuid = $ePub->getUniqueIdentifier() ?: $ePub->getUuid();
         $bookInfo->uri = $ePub->getUri();
         $bookInfo->title = $ePub->getTitle();
-        $bookInfo->authors = $ePub->getAuthors();
-        //$bookInfo->authorIds = null;
+        $authors = $ePub->getAuthors();
+        foreach ($authors as $authorSort => $authorName) {
+            $authorId = $authorName;
+            $info = [
+                'id' => '',
+                'name' => $authorSort,
+                'sort' => $authorName,
+            ];
+            $bookInfo->addAuthor($authorId, $info);
+        }
         $bookInfo->language = $ePub->getLanguage();
         $bookInfo->description = $ePub->getDescription();
         $bookInfo->subjects = $ePub->getSubjects();
@@ -78,21 +86,28 @@ class LocalBooksImport
         if ($version == 3) {
             // Note: this will ignore collections without id, e.g. in epub-tests files:
             // <meta property="belongs-to-collection">should</meta>
-            [$bookInfo->serie, $bookInfo->serieIndex] = $ePub->getSeriesOrCollection();
-            //$bookInfo->serieIds = [];
+            [$title, $index] = $ePub->getSeriesOrCollection();
         } else {
             // Tag sample in opf file:
             //   <meta content="Histoire de la Monarchie de Juillet" name="calibre:series"/>
-            $bookInfo->serie = $ePub->getSeries();
-            //$bookInfo->serieIds = [];
+            $title = $ePub->getSeries();
             // Tag sample in opf file:
             //   <meta content="7" name="calibre:series_index"/>
-            $bookInfo->serieIndex = $ePub->getSeriesIndex();
+            $index = $ePub->getSeriesIndex();
+        }
+        if (!empty($title)) {
+            $info = [
+                'id' => '',
+                'name' => $title,
+                'sort' => SeriesInfo::getTitleSort($title),
+                'index' => $index,
+            ];
+            $bookInfo->addSeries(0, $info);
         }
         $bookInfo->creationDate = BookInfo::getSqlDate($ePub->getCreationDate()) ?? '';
         $bookInfo->modificationDate = BookInfo::getSqlDate($ePub->getModificationDate()) ?? '';
         // Timestamp is used to get latest ebooks
-        $bookInfo->timeStamp = $bookInfo->creationDate;
+        $bookInfo->timestamp = $bookInfo->creationDate;
         if (!empty($bookInfo->isbn)) {
             $bookInfo->identifiers ??= [];
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;

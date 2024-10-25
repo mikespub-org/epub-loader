@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader\Metadata\WikiData;
 
 use Marsender\EPubLoader\Metadata\BaseMatch;
+use Marsender\EPubLoader\Models\AuthorInfo;
 use Wikidata\Wikidata;
 
 class WikiDataMatch extends BaseMatch
@@ -73,12 +74,15 @@ class WikiDataMatch extends BaseMatch
 
     /**
      * Summary of findAuthorId
-     * @param array<mixed> $author
+     * @param array<mixed>|AuthorInfo $author
      * @param string|null $lang Language (default: en)
      * @return string|null
      */
     public function findAuthorId($author, $lang = null)
     {
+        if (is_object($author)) {
+            $author = (array) $author;
+        }
         if (!empty($author['link']) && static::isValidLink($author['link'])) {
             return static::entity($author['link']);
         }
@@ -94,7 +98,7 @@ class WikiDataMatch extends BaseMatch
 
     /**
      * Summary of findWorksByAuthorProperty
-     * @param array<mixed> $author
+     * @param array<mixed>|AuthorInfo $author
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>
@@ -134,16 +138,16 @@ class WikiDataMatch extends BaseMatch
 
     /**
      * Summary of findWorksByAuthorName
-     * @param array<mixed> $author
+     * @param string $authorName
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>
      */
-    public function findWorksByAuthorName($author, $lang = null, $limit = 100)
+    public function findWorksByAuthorName($authorName, $lang = null, $limit = 100)
     {
         $lang ??= $this->lang;
         $limit ??= $this->limit;
-        $query = $author['name'];
+        $query = $authorName;
         $cacheFile = $this->cache->getAuthorWorkQuery($query, $lang);
         if ($this->cache->hasCache($cacheFile)) {
             return $this->cache->loadCache($cacheFile);
@@ -190,7 +194,7 @@ class WikiDataMatch extends BaseMatch
 
     /**
      * Summary of findWorkId - @todo
-     * @param array<mixed> $author
+     * @param array<mixed>|AuthorInfo $author
      * @param array<mixed> $book
      * @param string|null $lang Language (default: en)
      * @return string|null
@@ -211,7 +215,7 @@ class WikiDataMatch extends BaseMatch
 
     /**
      * Summary of findSeriesByAuthor
-     * @param array<mixed> $author
+     * @param array<mixed>|AuthorInfo $author
      * @param string|null $lang Language (default: en)
      * @param string|int|null $limit Max count of returning items (default: 10)
      * @return array<string, mixed>

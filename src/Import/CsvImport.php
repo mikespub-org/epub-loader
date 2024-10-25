@@ -9,8 +9,9 @@
 
 namespace Marsender\EPubLoader\Import;
 
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Exception;
+use Marsender\EPubLoader\Models\SeriesInfo;
 
 class CsvImport extends SourceImport
 {
@@ -47,7 +48,7 @@ class CsvImport extends SourceImport
     }
 
     /**
-     * Loads book infos from an export/import array
+     * Load book info from an export/import array
      * @see \Marsender\EPubLoader\Export\ExportCsvFile::addBook()
      *
      * @param string $basePath base directory
@@ -70,13 +71,21 @@ class CsvImport extends SourceImport
         if (str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
-        $bookInfo->name = $array[$i++];
+        $bookInfo->id = $array[$i++];
         $bookInfo->uuid = $array[$i++];
         $bookInfo->uri = $array[$i++];
         $bookInfo->title = $array[$i++];
         $values = explode(' - ', $array[$i++]);
         $keys = explode(' - ', $array[$i++]);
-        $bookInfo->authors = array_combine($keys, $values);
+        $authors = array_combine($keys, $values);
+        foreach ($authors as $authorSort => $authorName) {
+            $info = [
+                'id' => '',
+                'name' => $authorName,
+                'sort' => $authorSort,
+            ];
+            $bookInfo->addAuthor($authorName, $info);
+        }
         $bookInfo->language = $array[$i++];
         $bookInfo->description = $array[$i++];
         $bookInfo->subjects = explode(' - ', $array[$i++]);
@@ -84,12 +93,21 @@ class CsvImport extends SourceImport
         $bookInfo->isbn = $array[$i++];
         $bookInfo->rights = $array[$i++];
         $bookInfo->publisher = $array[$i++];
-        $bookInfo->serie = $array[$i++];
-        $bookInfo->serieIndex = $array[$i++];
+        //$bookInfo->serie = $array[$i++];
+        //$bookInfo->serieIndex = $array[$i++];
+        $title = $array[$i++];
+        $index = $array[$i++];
+        $info = [
+            'id' => '',
+            'name' => $title,
+            'sort' => SeriesInfo::getTitleSort($title),
+            'index' => $index,
+        ];
+        $bookInfo->addSeries(0, $info);
         $bookInfo->creationDate = $array[$i++] ?? '';
         $bookInfo->modificationDate = $array[$i++] ?? '';
         // Timestamp is used to get latest ebooks
-        $bookInfo->timeStamp = $bookInfo->creationDate;
+        $bookInfo->timestamp = $bookInfo->creationDate;
 
         return $bookInfo;
     }

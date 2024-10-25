@@ -9,7 +9,7 @@
 
 namespace Marsender\EPubLoader\Import;
 
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use PDO;
 use Exception;
 

@@ -15,7 +15,7 @@
 namespace Marsender\EPubLoader\Import;
 
 use Marsender\EPubLoader\Import\ImportCalibre;
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Exception;
 
 abstract class SourceImport

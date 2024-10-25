@@ -10,6 +10,7 @@ namespace Marsender\EPubLoader\Tests\GoodReads;
 
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsCache;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
+use Marsender\EPubLoader\Models\AuthorInfo;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class GoodReadsMatchTest extends BaseTestCase
@@ -97,8 +98,9 @@ class GoodReadsMatchTest extends BaseTestCase
     {
         $cacheDir = dirname(__DIR__, 2) . '/cache';
         $match = new GoodReadsMatch($cacheDir);
+        $dbPath = $cacheDir . '/goodreads';
 
-        $author = ['name' => 'David Mitchell'];
+        $author = AuthorInfo::load($dbPath, ['name' => 'David Mitchell']);
         $result = $match->findAuthorId($author);
 
         $expected = '6538289.David_Mitchell';

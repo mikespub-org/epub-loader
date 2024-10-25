@@ -10,6 +10,8 @@
 namespace Marsender\EPubLoader\Metadata\OpenLibrary;
 
 use Marsender\EPubLoader\Handlers\MetadataHandler;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Marsender\EPubLoader\RequestHandler;
 use Exception;
 
@@ -63,11 +65,12 @@ class OpenLibraryHandler extends MetadataHandler
         $offset = $this->request->getId('offset');
         $result = $this->authors($authorId, $sort, $offset);
         $authorId = $result['authorId'];
+        /** @var AuthorInfo|null $authorInfo */
         $authorInfo = $result['authorInfo'];
 
         // Find matchId from author link
-        if (empty($matchId) && !empty($authorInfo) && OpenLibraryMatch::isValidLink($authorInfo['link'])) {
-            $matchId = OpenLibraryMatch::entity($authorInfo['link']);
+        if (empty($matchId) && !empty($authorInfo) && OpenLibraryMatch::isValidLink($authorInfo->link)) {
+            $matchId = OpenLibraryMatch::entity($authorInfo->link);
         }
 
         // Find match on OpenLibrary
@@ -78,12 +81,12 @@ class OpenLibraryHandler extends MetadataHandler
         }
         $matched = ['docs' => []];
         if (!empty($authorId) && !empty($authorInfo)) {
-            $name = $authorInfo['name'];
+            $name = $authorInfo->name;
             $matched = $this->getAuthorsByName($openlibrary, $name);
         } elseif (!empty($matchId)) {
             $matched['docs'][] = $openlibrary->getAuthor($matchId);
             // Update the author link
-            if (!is_null($authorId) && empty($authorInfo['link'])) {
+            if (!is_null($authorId) && empty($authorInfo->link)) {
                 $link = OpenLibraryMatch::link($matchId);
                 if (!$this->db->setAuthorLink($authorId, $link)) {
                     $this->addError($this->dbFileName, "Failed updating link {$link} for authorId {$authorId}");
@@ -109,6 +112,7 @@ class OpenLibraryHandler extends MetadataHandler
     protected function findAuthorLinks($match, $authors)
     {
         foreach ($authors as $id => $authorInfo) {
+            /** @var array<mixed> $authorInfo */
             if (empty($authorInfo['link'])) {
                 $matchId = $match->findAuthorId($authorInfo);
                 if (!empty($matchId)) {
@@ -154,15 +158,17 @@ class OpenLibraryHandler extends MetadataHandler
         $offset = $this->request->getId('offset');
         $result = $this->books($authorId, null, $bookId, $sort, $offset);
         $authorId = $result['authorId'];
+        /** @var AuthorInfo|null $authorInfo */
         $authorInfo = $result['authorInfo'];
+        /** @var BookInfo|null $bookInfo */
         $bookInfo = $result['bookInfo'];
 
         // Get OpenLibrary author Id (if any)
         $authId = $this->request->get('authId');
 
         // Find authId from author link
-        if (empty($authId) && !empty($authorInfo) && OpenLibraryMatch::isValidLink($authorInfo['link'])) {
-            $authId = OpenLibraryMatch::entity($authorInfo['link']);
+        if (empty($authId) && !empty($authorInfo) && OpenLibraryMatch::isValidLink($authorInfo->link)) {
+            $authId = OpenLibraryMatch::entity($authorInfo->link);
         }
 
         // Find match on OpenLibrary
@@ -170,11 +176,11 @@ class OpenLibraryHandler extends MetadataHandler
 
         $matched = null;
         if (!empty($bookId) && !empty($bookInfo)) {
-            $matched = $openlibrary->findWorksByTitle($bookInfo['title'], $authorInfo);
+            $matched = $openlibrary->findWorksByTitle($bookInfo->title, $authorInfo->name);
             // generic search returns 'docs' but author search returns 'entries'
             //$matched['entries'] ??= $matched['docs'];
             // Update the book identifier
-            if (!is_null($matchId) && empty($authorInfo['link'])) {
+            if (!is_null($matchId) && empty($authorInfo->link)) {
                 $this->updateBookIdentifier('olid', $bookId, $matchId);
             }
         } elseif (!empty($authId)) {
@@ -189,7 +195,7 @@ class OpenLibraryHandler extends MetadataHandler
 
         // exact match only here - see calibre metadata plugins for more advanced features
         if (!empty($authorId) && !empty($authorInfo)) {
-            $result['books'] = $this->matchBookTitles($result['books'], $matched, $authorInfo['name']);
+            $result['books'] = $this->matchBookTitles($result['books'], $matched, $authorInfo->name);
         }
 
         // different format for $matched here

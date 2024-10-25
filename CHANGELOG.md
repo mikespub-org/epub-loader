@@ -4,7 +4,9 @@
   * ...
 
 3.x.x - 2024xxxx
-  * BC: rename BookInfos class to BookInfo
+  * use authors & series arrays in BookInfo
+  * move all *Info models to Models sub-namespace
+  * rename BookInfos class to BookInfo + add other models
   * Modernize properties and parameters in class methods
   * Use common authors, books and series code in handlers
   * Show series and index in books list + support sort

@@ -11,7 +11,7 @@ namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 use Marsender\EPubLoader\CalibreDbLoader;
 use Marsender\EPubLoader\Metadata\BaseCheck;
-use Marsender\EPubLoader\Metadata\BookInfo;
+use Marsender\EPubLoader\Models\BookInfo;
 use Exception;
 
 class GoodReadsCheck extends BaseCheck
@@ -78,9 +78,9 @@ class GoodReadsCheck extends BaseCheck
             if (!empty($link['author'])) {
                 $authors[$link['author']] ??= [];
             }
-            if (!empty($bookInfo->authorIds) && count($bookInfo->authorIds) < 4) {
+            if (!empty($bookInfo->authors) && count($bookInfo->authors) < 4) {
                 if (!empty($link['author'])) {
-                    foreach (array_filter($bookInfo->authorIds) as $authorId) {
+                    foreach (array_keys($bookInfo->authors) as $authorId) {
                         $authors[$link['author']][$authorId] ??= 0;
                         $authors[$link['author']][$authorId] += 1;
                     }
@@ -92,17 +92,18 @@ class GoodReadsCheck extends BaseCheck
             if (!empty($link['series'])) {
                 $series[$link['series']] ??= [];
             }
-            if (!empty($bookInfo->serieIds) && count($bookInfo->serieIds) < 10) {
+            if (!empty($bookInfo->series) && count($bookInfo->series) < 10) {
+                $seriesInfo = $bookInfo->getSeriesInfo();
                 if (!empty($link['series'])) {
-                    foreach (array_filter($bookInfo->serieIds) as $serieId) {
+                    foreach (array_keys($bookInfo->series) as $serieId) {
                         $series[$link['series']][$serieId] ??= 0;
                         $series[$link['series']][$serieId] += 1;
                     }
-                } elseif (!empty($bookInfo->authorIds) && count($bookInfo->authorIds) < 4) {
+                } elseif (!empty($bookInfo->authors) && count($bookInfo->authors) < 4) {
                     $missing[$link['book']] ??= [];
-                    foreach (array_filter($bookInfo->serieIds) as $serieId) {
+                    foreach (array_keys($bookInfo->series) as $serieId) {
                         // @todo only valid for first series here!
-                        $missing[$link['book']][$serieId] ??= $bookInfo->serieIndex;
+                        $missing[$link['book']][$serieId] ??= $seriesInfo->index;
                     }
                 }
             }
