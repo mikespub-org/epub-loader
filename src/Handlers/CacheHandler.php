@@ -80,11 +80,11 @@ class CacheHandler extends ActionHandler
             $urlPrefix = null;
         } else {
             // <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a>
-            $endpoint = $this->request->getEndpoint();
             $action = 'caches';
-            $dbNum = $this->dbConfig['db_num'];
+            // Returns {{endpoint}}/{{action}}/{{dbNum}}
+            $actionUrl = $this->getActionUrl($action);
             $cacheName = $result['cacheName'];
-            $urlPrefix = "{$endpoint}/{$action}/{$dbNum}/{$cacheName}/";
+            $urlPrefix = "{$actionUrl}/{$cacheName}/";
         }
         // @todo format entry ids with urls in metadata cache classes
         $entry = BaseCache::getCacheEntry($this->cacheDir, $result['cacheName'], $result['cacheType'], $result['cacheEntry'], $urlPrefix);

@@ -1,0 +1,22 @@
+{% if not raw %}
+<table class="resources">
+	<!--
+	<tr class="resources">
+		<th class="left">Property</th>
+		<th>Value</th>
+	</tr>
+	-->
+	<tr>
+		<th class="left">Name</th>
+		<td><a href="{{endpoint}}/resource/{{dbNum}}?hash={{hash|replace({'-': '/'})}}">{{resource.name}}</a></td>
+	</tr>
+	<tr>
+		<td>Path</td>
+		<td>{{resource.path}}</td>
+	</tr>
+</table>
+{% else %}
+<pre>
+{{resource|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
+</pre>
+{% endif %}

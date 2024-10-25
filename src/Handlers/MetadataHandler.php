@@ -52,6 +52,9 @@ class MetadataHandler extends ActionHandler
             default:
                 $result = $this->$action();
         }
+        if (!empty($result) && is_array($result)) {
+            $result['raw'] = $this->request->get('raw');
+        }
         return $result;
     }
 
@@ -72,7 +75,7 @@ class MetadataHandler extends ActionHandler
         // Find match on ...
         $matched = null;
 
-        // Update the author link
+        // Find matchId from author link
         $authorInfo = null;
         if (!empty($authorId)) {
             $authorInfo = $authors[$authorId];
@@ -142,8 +145,6 @@ class MetadataHandler extends ActionHandler
         // Find authId from author link
         $authorInfo = $authors[$authorId];
 
-        // Update the book identifier
-
         // Find match on ...
         $matched = null;
 
@@ -154,7 +155,6 @@ class MetadataHandler extends ActionHandler
         } else {
             $books = $this->db->getBooksByAuthor($authorId, $sort, $offset);
         }
-        // use $matchId, $authId or $serId to get $matched
 
         $authorList = $this->getAuthorList();
         $identifierList = [];
@@ -166,7 +166,6 @@ class MetadataHandler extends ActionHandler
         }
         $identifierList[] = 'ID:';
         sort($identifierList);
-        // exact match only here - see calibre metadata plugins for more advanced features
         $seriesList = $this->getSeriesList($authorId);
 
         $dbPath = $this->dbConfig['db_path'];
@@ -212,7 +211,6 @@ class MetadataHandler extends ActionHandler
             if (empty($authorId)) {
                 $authorId = $seriesInfo['author'];
             }
-            // Update the series link
         } else {
             $series = $this->db->getSeriesByAuthor($authorId, $sort, $offset);
             // Find series links if requested
@@ -269,7 +267,7 @@ class MetadataHandler extends ActionHandler
     protected function getAuthorList()
     {
         // no limit for author names!?
-        return $this->db->getAuthorNames();
+        return AuthorInfo::getNameList($this->db);
     }
 
     /**
@@ -372,6 +370,9 @@ class MetadataHandler extends ActionHandler
      */
     protected function getSeriesList($authorId = null)
     {
+        if (empty($authorId)) {
+            return SeriesInfo::getTitleList($this->db);
+        }
         // no limit for series titles!?
         return $this->db->getSeriesTitles($authorId);
     }

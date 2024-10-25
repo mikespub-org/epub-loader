@@ -355,6 +355,32 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of getBookTitles
+     * @param int|null $authorId
+     * @return array<mixed>
+     */
+    public function getBookTitles($authorId = null)
+    {
+        if (!empty($authorId)) {
+            $books = $this->getBooksByAuthor($authorId);
+            $titles = [];
+            foreach ($books as $id => $book) {
+                $titles[$book['id']] = $book['title'];
+            }
+            return $titles;
+        }
+        // no limit for books titles!?
+        $sql = 'select id, title from books';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $titles = [];
+        while ($post = $stmt->fetchObject()) {
+            $titles[$post->id] = $post->title;
+        }
+        return $titles;
+    }
+
+    /**
      * Summary of getBookCountByAuthor
      * @param int|null $authorId
      * @return array<mixed>

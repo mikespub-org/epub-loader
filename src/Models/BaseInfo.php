@@ -16,46 +16,13 @@ use Marsender\EPubLoader\CalibreDbLoader;
  */
 class BaseInfo
 {
-    public static string $notesColName = 'base';
-
-    public ?NoteInfo $note;
-
     public string $source = '';
 
     public string $basePath = '';
 
     public string $id = '';
 
-    /**
-     * Summary of getNote
-     * @param ?CalibreDbLoader $db
-     * @return NoteInfo|null
-     */
-    public function getNote($db)
-    {
-        if (isset($this->note)) {
-            return $this->note;
-        }
-        if (empty($db)) {
-            return null;
-        }
-        $notes = $db->getNotes(static::$notesColName, [ $this->id ]);
-        if (empty($notes) || empty($notes[$this->id])) {
-            return null;
-        }
-        return $this->setNote($notes[$this->id]);
-    }
-
-    /**
-     * Summary of setNote
-     * @param array<mixed> $info
-     * @return NoteInfo
-     */
-    public function setNote($info)
-    {
-        $this->note = NoteInfo::load($this->basePath, $info);
-        return $this->note;
-    }
+    public bool $loaded = false;
 
     /**
      * Summary of getTitleSort
@@ -135,6 +102,10 @@ class BaseInfo
         $baseInfo->source = $data['source'] ?? 'database';
         $baseInfo->basePath = $basePath;
         $baseInfo->id = $data['id'] ?? '';
+        if (!empty($loader)) {
+            // ...
+            $baseInfo->loaded = true;
+        }
         return $baseInfo;
     }
 }

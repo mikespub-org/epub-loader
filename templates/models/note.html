@@ -1,0 +1,30 @@
+{% if not raw %}
+	{% set urlPrefix = endpoint ~ '/resource/' ~ dbNum %}
+	{% set html = note.parseHtml(urlPrefix) %}
+	<tr>
+		<td>Note (html)</td>
+		<td>{{html|raw}}</td>
+	</tr>
+	<tr>
+		<td>Note (doc)</td>
+		<td>{{note.doc}}</td>
+	</tr>
+	{% if note.resources %}
+	<tr class="resources">
+		<th>Resources</th>
+		<td>{{note.resources|length}}</td>
+	</tr>
+	{% for hash, resource in note.resources %}
+	<tr>
+		<th class="resources"><a href="{{endpoint}}/resource/{{dbNum}}?hash={{hash|replace({'-': '/'})}}">Resource {{hash}}</a></td>
+		<td>
+			{{ include('models/resource.html', {resource: resource, hash: hash, endpoint: endpoint, dbNum: dbNum}, with_context = false) }}
+		</td>
+	</tr>
+	{% endfor %}
+	{% endif %}
+{% else %}
+<pre>
+{{note|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
+</pre>
+{% endif %}

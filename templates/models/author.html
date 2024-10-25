@@ -1,0 +1,61 @@
+{% if not raw %}
+<table class="authors">
+	<!--
+	<tr class="authors">
+		<th class="left">Property</th>
+		<th>Value</th>
+	</tr>
+	-->
+	<tr>
+		<th class="left">Name</th>
+		<th><a href="{{endpoint}}/authors/{{dbNum}}/{{author.id}}">{{author.name}}</a></th>
+	</tr>
+	{% if author.link %}
+	<tr>
+		<td>Link</td>
+		<td><a rel="external" target="_blank" href="{{author.link}}">{{author.link}}</a></td>
+	</tr>
+	{% endif %}
+	{% if author.note %}
+		{{ include('models/note.html', {note: author.note, endpoint: endpoint, dbNum: dbNum}, with_context = false) }}
+	{% endif %}
+	{% if author.series %}
+	<tr class="series">
+		<th>Series</th>
+		<th>{{author.series|length}}</th>
+	</tr>
+	{% for serie in author.series %}
+	<tr>
+		<th class="series"><a href="{{endpoint}}/series/{{dbNum}}?seriesId={{serie.id}}">Series {{serie.id}}</a></td>
+		<td>
+			{{ include('models/serie.html', {serie: serie, endpoint: endpoint, dbNum: dbNum}, with_context = false) }}
+		</td>
+	</tr>
+	<tr>
+		<td></td>
+	</tr>
+	{% endfor %}
+	{% endif %}
+	{% if author.books %}
+	<tr class="books">
+		<th>Books</th>
+		<th>{{author.books|length}}</th>
+	</tr>
+	{% for book in author.books %}
+	<tr>
+		<th class="books"><a href="{{endpoint}}/books/{{dbNum}}?bookId={{book.id}}">Book {{book.id}}</a></td>
+		<td>
+			{{ include('models/book.html', {book: book, endpoint: endpoint, dbNum: dbNum}, with_context = false) }}
+		</td>
+	</tr>
+	<tr>
+		<td></td>
+	</tr>
+	{% endfor %}
+	{% endif %}
+</table>
+{% else %}
+<pre>
+{{author|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
+</pre>
+{% endif %}

@@ -114,9 +114,12 @@
 <div class="part">
 	<p><b>Database Book</b></p>
 	<p>{{ include('links.html', {itemId: authorId}) }}</p>
-<pre>
-{{bookInfo|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
-</pre>
+	{% if not raw %}
+	See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?bookId={{bookId}}&raw=1">raw</a>
+	{% else %}
+	See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?bookId={{bookId}}">parsed</a>
+	{% endif %}
+	{{ include('models/book.html', {book: bookInfo, endpoint: endpoint, dbNum: dbNum, raw: raw}, with_context = false) }}
 </div>
 {% endif %}
 {% endblock lookup %}

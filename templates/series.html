@@ -66,9 +66,12 @@
 <div class="part">
 	<p><b>Database Series</b></p>
 	<p>{{ include('links.html', {itemId: authorId}) }}</p>
-<pre>
-{{seriesInfo|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
-</pre>
+	{% if not raw %}
+	See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}&raw=1">raw</a>
+	{% else %}
+	See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?seriesId={{seriesId}}">parsed</a>
+	{% endif %}
+	{{ include('models/serie.html', {serie: seriesInfo, endpoint: endpoint, dbNum: dbNum, raw: raw}, with_context = false) }}
 </div>
 {% endif %}
 {% endblock lookup %}

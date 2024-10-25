@@ -8,6 +8,7 @@
 
 namespace Marsender\EPubLoader\Models;
 
+use Marsender\EPubLoader\ActionHandler;
 use Marsender\EPubLoader\CalibreDbLoader;
 
 /**
@@ -24,10 +25,56 @@ class NoteInfo extends BaseInfo
 
     public string $doc = '';
 
+    public string $html = '';
+
     public string $mtime = '';
 
-    /** @var array<mixed> */
-    public array $resources = [];
+    /** @var array<mixed>|null */
+    public $resources = null;
+
+    /**
+     * Summary of parseHtml - see templates/models/author.html and serie.html
+     * $urlPrefix = $handler->getActionUrl('resource');
+     * @param string $urlPrefix {{endpoint}}/{{action}}/{{dbNum}}
+     * @return string
+     */
+    public function parseHtml($urlPrefix)
+    {
+        $this->html = $this->doc;
+        $this->html = str_replace('calres://', $urlPrefix . '?hash=', $this->html);
+        $this->html = str_replace('?placement=', '&placement=', $this->html);
+        return $this->html;
+    }
+
+    /**
+     * Get list of hash => meta resources
+     * @param ?CalibreDbLoader $loader if we need to get the list
+     * @return array<mixed>
+     */
+    public function getResources($loader = null)
+    {
+        if (isset($this->resources)) {
+            return $this->resources;
+        }
+        $matches = [];
+        $this->resources = [];
+        // <img src="calres://xxh64/7c301792c52eebf7?placement=kUxDpm6orDperFNdIqiU9A">
+        if (!preg_match_all('~"calres://([^?"]*)(|\?placement=([^"]*))"~', $this->doc, $matches, PREG_SET_ORDER)) {
+            return $this->resources;
+        }
+        foreach ($matches as $match) {
+            $hash = $match[1];
+            // @todo too many conversions to/from alg-digest format
+            [$alg, $digest] = explode('/', $hash);
+            $hash = "{$alg}-{$digest}";
+            if (!empty($loader)) {
+                $this->resources[$hash] = $loader->getResourceMeta($hash);
+            } else {
+                $this->resources[$hash] = true;
+            }
+        }
+        return $this->resources;
+    }
 
     /**
      * Load notes info from database
@@ -57,9 +104,12 @@ class NoteInfo extends BaseInfo
         if (!empty($data['resources'])) {
             // ...
         }
-        if (empty($loader) || empty($noteInfo->resources)) {
+        if (empty($loader)) {
+            $noteInfo->loaded = false;
             return $noteInfo;
         }
+        $noteInfo->getResources($loader);
+        $noteInfo->loaded = true;
         return $noteInfo;
     }
 }

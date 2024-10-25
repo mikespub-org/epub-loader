@@ -85,6 +85,19 @@ class ActionHandler
     }
 
     /**
+     * Summary of getActionUrl
+     * @param string $action
+     * @return string
+     */
+    public function getActionUrl($action)
+    {
+        // <a href="{{endpoint}}/{{action}}/{{dbNum}}/...">{{item}}</a>
+        $endpoint = $this->request->getEndpoint();
+        $dbNum = $this->dbConfig['db_num'];
+        return "{$endpoint}/{$action}/{$dbNum}";
+    }
+
+    /**
      * Summary of getHandler
      * @param string $action
      * @param array<mixed> $dbConfig

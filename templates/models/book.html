@@ -1,0 +1,78 @@
+{% if not raw %}
+<table class="books">
+	<!--
+	<tr class="books">
+		<th class="left">Property</th>
+		<th>Value</th>
+	</tr>
+	-->
+	<tr>
+		<th class="left">Title</th>
+		<th><a href="{{endpoint}}/books/{{dbNum}}?bookId={{book.id}}">{{book.title}}</a></th>
+	</tr>
+	{% if book.format %}
+	<tr>
+		<td>Format</td>
+		<td>{{book.format}} {{book.formats|json_encode}}</td>
+	</tr>
+	{% endif %}
+	{% if book.language %}
+	<tr>
+		<td>Language</td>
+		<td>{{book.language}}</td>
+	</tr>
+	{% endif %}
+	{% if book.description %}
+	<tr>
+		<td>Description</td>
+		<td>{{book.description}}</td>
+	</tr>
+	{% endif %}
+	{% if book.authors %}
+	<tr class="authors">
+		<th>Authors</th>
+		<th>{{book.authors|length}}</th>
+	</tr>
+	{% for author in book.authors %}
+	<tr>
+		<th class="authors"><a href="{{endpoint}}/authors/{{dbNum}}/{{author.id}}?bookId={{book.id}}">Author {{author.id}}</a></td>
+		<td>
+			{{ include('models/author.html', {author: author, endpoint: endpoint, dbNum: dbNum}, with_context = false) }}
+		</td>
+	</tr>
+	{% endfor %}
+	{% endif %}
+	{% if book.identifiers %}
+	<tr class="identifiers">
+		<th>Identifiers</th>
+		<th>{{book.identifiers|length}}</th>
+	</tr>
+	{% for identifier in book.identifiers %}
+	<tr>
+		<th class="identifiers">Identifier {{identifier.id}}</td>
+		<td>
+			{{ include('models/identifier.html', {identifier: identifier, endpoint: endpoint, dbNum: dbNum}, with_context = false) }}
+		</td>
+	</tr>
+	{% endfor %}
+	{% endif %}
+	{% if book.series %}
+	<tr class="series">
+		<th>Series</th>
+		<th>{{book.series|length}}</th>
+	</tr>
+	{% for serie in book.series %}
+	<tr>
+		<th class="series"><a href="{{endpoint}}/series/{{dbNum}}?seriesId={{serie.id}}">Series {{serie.id}}</a></td>
+		<td>
+			{{ include('models/serie.html', {serie: serie, endpoint: endpoint, dbNum: dbNum}, with_context = false) }}
+		</td>
+	</tr>
+	{% endfor %}
+	{% endif %}
+</table>
+{% else %}
+<pre>
+{{book|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
+</pre>
+{% endif %}

@@ -16,6 +16,13 @@ use Marsender\EPubLoader\CalibreDbLoader;
  */
 class AuthorInfo extends BaseInfo
 {
+    use HasBooksTrait;
+    use HasNoteTrait;
+    use HasSeriesTrait;
+
+    /** @var array<string> */
+    public static array $authorList = [];
+
     public static string $notesColName = 'authors';
 
     public string $id = '';
@@ -25,12 +32,6 @@ class AuthorInfo extends BaseInfo
     public string $sort = '';
 
     public string $link = '';
-
-    /** @var array<SeriesInfo> */
-    public array $series = [];
-
-    /** @var array<BookInfo> */
-    public array $books = [];
 
     /**
      * Sort author by Lastname, Firstname(s)
@@ -52,6 +53,20 @@ class AuthorInfo extends BaseInfo
         $pieces = explode(' ', $str);
         $last = array_pop($pieces);
         return $last . ', ' . implode(' ', $pieces);
+    }
+
+    /**
+     * Get list of authorId => authorName
+     * @param ?CalibreDbLoader $loader if we need to get the list
+     * @return array<string>
+     */
+    public static function getNameList($loader = null)
+    {
+        if (!empty(self::$authorList) || empty($loader)) {
+            return self::$authorList;
+        }
+        self::$authorList = $loader->getAuthorNames();
+        return self::$authorList;
     }
 
     /**
@@ -82,13 +97,14 @@ class AuthorInfo extends BaseInfo
             // ...
         }
         if (empty($loader) || empty($authorInfo->id)) {
+            $authorInfo->loaded = false;
             return $authorInfo;
         }
         // From CalibreDbLoader::getBooksByAuthor():
         // id, title, sort, series_index, author, series, identifiers
         $books = $loader->getBooksByAuthor($authorInfo->id);
         foreach ($books as $id => $info) {
-            $authorInfo->books[$id] = BookInfo::load($basePath, $info);
+            $authorInfo->addBook($id, $info);
         }
         // From CalibreDbLoader::getSeriesByAuthor():
         // distinct series.id as id, series.name as name, series.sort as sort, series.link as link, author
@@ -96,8 +112,32 @@ class AuthorInfo extends BaseInfo
         $series = $loader->getSeriesByAuthor($authorInfo->id);
         foreach ($series as $id => $info) {
             $seriesId = $info['id'];
-            $authorInfo->series[$seriesId] = SeriesInfo::load($basePath, $info);
+            if (!empty($authorInfo->series[$seriesId])) {
+                $authorId = $info['author'];
+                $author = [
+                    'id' => $authorId,
+                    'name' => $authorId,
+                ];
+                $authorInfo->series[$seriesId]->addAuthor($authorId, $author);
+                continue;
+            }
+            $authorInfo->addSeries($seriesId, $info);
         }
+        // Get list of authorId => authorName
+        $authorList = AuthorInfo::getNameList($loader);
+        // Get list of seriesId => seriesName
+        $seriesList = SeriesInfo::getTitleList($loader);
+        // Get list of bookId => bookTitle
+        $bookList = BookInfo::getTitleList($loader);
+        // Set names for authors & titles for series in books
+        $authorInfo->fixBooks($authorList, $seriesList);
+        // Set names for authors & titles for books in series
+        $authorInfo->fixSeries($authorList, $bookList);
+        // @todo series have no books here
+
+        $authorInfo->getNote($loader);
+
+        $authorInfo->loaded = true;
         return $authorInfo;
     }
 }

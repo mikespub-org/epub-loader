@@ -1,0 +1,32 @@
+{% if not raw %}
+<table class="identifiers">
+	<!--
+	<tr class="identifiers">
+		<th class="left">Property</th>
+		<th>Value</th>
+	</tr>
+	-->
+	<tr>
+		<th class="left">Type</th>
+		<th>{{identifier.type}}</th>
+	</tr>
+	{% if identifier.book %}
+	<tr>
+		<td>Book</td>
+		<td>{{identifier.book}}</td>
+	</tr>
+	{% endif %}
+	<tr>
+		<td>Value</td>
+		{% if identifier.url %}
+			<td><a rel="external" target="_blank" href="{{identifier.url}}">{{identifier.value}}</a></td>
+		{% else %}
+			<td>{{identifier.value}}</td>
+		{% endif %}
+	</tr>
+</table>
+{% else %}
+<pre>
+{{identifier|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
+</pre>
+{% endif %}

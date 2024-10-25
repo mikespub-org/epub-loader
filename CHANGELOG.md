@@ -4,9 +4,13 @@
   * ...
 
 3.x.x - 2024xxxx
-  * use authors & series arrays in BookInfo
-  * move all *Info models to Models sub-namespace
-  * rename BookInfos class to BookInfo + add other models
+  * ...
+
+3.5.0 - 20241025 Expand metadata parsing + add models
+  * Add traits + loading of authors, series and notes
+  * Use authors & series arrays in BookInfo
+  * Move all *Info models to Models sub-namespace
+  * Rename BookInfos class to BookInfo + add other models
   * Modernize properties and parameters in class methods
   * Use common authors, books and series code in handlers
   * Show series and index in books list + support sort
@@ -15,7 +19,7 @@
   * Show identifiers by type in books list
   * Fix title sort and author sort on import and display
   * Use EPub::getSeriesOrCollection() when importing local books
-  * Update mikespub/php-epub-meta package to release 3.1
+  * Update mikespub/php-epub-meta package to release 3.3
 
 3.4.1 - 20241020 Add cache actions + restructure
   * Move actions on entities to internal group

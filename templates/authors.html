@@ -41,9 +41,13 @@
 {% if authorId %}
 <div class="part">
 	<p><b>Database Author</b></p>
-<pre>
-{{authorInfo|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))}}
-</pre>
+	<p>{{ include('links.html', {itemId: authorId}) }}</p>
+	{% if not raw %}
+	See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}?raw=1">raw</a>
+	{% else %}
+	See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{authorId}}">parsed</a>
+	{% endif %}
+	{{ include('models/author.html', {author: authorInfo, endpoint: endpoint, dbNum: dbNum, raw: raw}, with_context = false) }}
 </div>
 {% endif %}
 {% endblock lookup %}

@@ -17,6 +17,13 @@ use Marsender\EPubLoader\CalibreDbLoader;
  */
 class BookInfo extends BaseInfo
 {
+    use HasAuthorsTrait;
+    use HasIdentifiersTrait;
+    use HasSeriesTrait;
+
+    /** @var array<string> */
+    public static array $bookList = [];
+
     public string $id = '';
 
     public string $format = '';
@@ -34,9 +41,6 @@ class BookInfo extends BaseInfo
 
     public string $sort = '';
 
-    /** @var array<AuthorInfo> */
-    public $authors = null;
-
     public string $language = '';
 
     public string $description = '';
@@ -48,12 +52,11 @@ class BookInfo extends BaseInfo
 
     public string $isbn = '';
 
+    public string $lccn = '';
+
     public string $rights = '';
 
     public string $publisher = '';
-
-    /** @var array<SeriesInfo> */
-    public array $series = [];
 
     public string $creationDate = '';
 
@@ -62,9 +65,6 @@ class BookInfo extends BaseInfo
     public string $timestamp = '0';
 
     public float|int|null $rating = null;
-
-    /** @var array<mixed>|null */
-    public $identifiers = null;
 
     /**
      * Format an date from a date
@@ -119,66 +119,19 @@ class BookInfo extends BaseInfo
     }
 
     /**
-     * Summary of addAuthor
-     * @param mixed $authorId
-     * @param array<mixed> $info
-     * @return AuthorInfo
-     */
-    public function addAuthor($authorId, $info)
-    {
-        $authorInfo = AuthorInfo::load($this->basePath, $info);
-        if (empty($authorId)) {
-            $authorId = count($this->authors);
-        }
-        $this->authors[$authorId] = $authorInfo;
-        return $authorInfo;
-    }
-
-    /**
-     * Summary of getAuthorNames
+     * Get list of bookId => bookTitle
+     * @param ?CalibreDbLoader $loader if we need to get the list
      * @return array<string>
      */
-    public function getAuthorNames()
+    public static function getTitleList($loader = null)
     {
-        return array_column($this->authors, 'name');
-    }
-
-    /**
-     * Summary of getAuthorSorts
-     * @return array<string>
-     */
-    public function getAuthorSorts()
-    {
-        return array_column($this->authors, 'name');
-    }
-
-    /**
-     * Summary of addSeries
-     * @param mixed $seriesId
-     * @param array<mixed> $info
-     * @return SeriesInfo
-     */
-    public function addSeries($seriesId, $info)
-    {
-        $seriesInfo = SeriesInfo::load($this->basePath, $info);
-        if (empty($seriesId)) {
-            $seriesId = count($this->series);
+        /**
+        if (!empty(self::$bookList) || empty($loader)) {
+            return self::$bookList;
         }
-        $this->series[$seriesId] = $seriesInfo;
-        return $seriesInfo;
-    }
-
-    /**
-     * Get the first series or an empty one (for import/export)
-     * @return SeriesInfo
-     */
-    public function getSeriesInfo()
-    {
-        $seriesInfo = reset($this->series);
-        if (!$seriesInfo) {
-            $seriesInfo = new SeriesInfo();
-        }
-        return $seriesInfo;
+        self::$bookList = $loader->getBookTitles();
+         */
+        return self::$bookList;
     }
 
     /**
@@ -204,7 +157,7 @@ class BookInfo extends BaseInfo
         if (!empty($loader) && !empty($bookInfo->id)) {
             $details = new BookDetails($loader->getDbConnection());
             $data = array_replace($data, $details->getBookDetails($bookInfo->id));
-            // @todo convert authors & series
+            $bookInfo->loaded = true;
         } else {
             if (!empty($data['author']) && is_numeric($data['author'])) {
                 $authorId = $data['author'];
@@ -220,8 +173,10 @@ class BookInfo extends BaseInfo
                 $data['series'][$seriesId] = [
                     'id' => $seriesId,
                     'name' => $seriesId,
+                    'index' => $data['series_index'],
                 ];
             }
+            $bookInfo->loaded = false;
         }
         $bookInfo->title = $data['title'] ?? '';
         $bookInfo->sort = $data['sort'] ?? static::getTitleSort($bookInfo->title);
@@ -233,7 +188,10 @@ class BookInfo extends BaseInfo
         foreach ($data['series'] as $id => $info) {
             $bookInfo->addSeries($id, $info);
         }
-        $bookInfo->identifiers = $data['identifiers'] ?? [];
+        $data['identifiers'] ??= [];
+        foreach ($data['identifiers'] as $id => $info) {
+            $bookInfo->addIdentifier($id, $info);
+        }
         // @todo add other fields
         $bookInfo->format = $data['format'] ?? '';
         $bookInfo->formats = $data['formats'] ?? [];
@@ -257,14 +215,8 @@ class BookInfo extends BaseInfo
         if (isset($data['rating'])) {
             $bookInfo->rating = (float) $data['rating'];
         }
-        if (!empty($data['authors'])) {
-            // ...
-        }
-        if (!empty($bookInfo->identifiers)) {
-            foreach ($bookInfo->identifiers as $type => $identifier) {
-                // ...
-            }
-        }
+        // Set isbn, lccn, uri etc. based on identifiers and vice-versa
+        $bookInfo->fixIdentifiers();
         if (empty($bookInfo->cover) && !empty($bookInfo->path)) {
             if (!str_contains($bookInfo->path, '://')) {
                 $path = $basePath . '/' . $bookInfo->path;

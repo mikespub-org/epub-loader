@@ -57,9 +57,9 @@ class DatabaseHandler extends ActionHandler
             if (!empty($itemId)) {
                 $items = $this->db->getNotes($colName, [$itemId]);
                 if ($html) {
-                    $dbNum = $this->dbConfig['db_num'];
-                    $endpoint = $this->request->getEndpoint();
-                    $items[$itemId]['doc'] = str_replace('calres://', $endpoint . '/resource/' . $dbNum . '?hash=', $items[$itemId]['doc']);
+                    // {{endpoint}}/{{action}}/{{dbNum}}
+                    $urlPrefix = $this->getActionUrl('resource');
+                    $items[$itemId]['doc'] = str_replace('calres://', $urlPrefix . '?hash=', $items[$itemId]['doc']);
                     $items[$itemId]['doc'] = str_replace('?placement=', '&placement=', $items[$itemId]['doc']);
                 }
             } else {

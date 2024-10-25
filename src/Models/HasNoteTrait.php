@@ -1,0 +1,53 @@
+<?php
+/**
+ * HasNoteTrait trait
+ *
+ * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
+ * @author     mikespub
+ */
+
+namespace Marsender\EPubLoader\Models;
+
+use Marsender\EPubLoader\CalibreDbLoader;
+
+/**
+ * Deal with note property
+ */
+trait HasNoteTrait
+{
+    /** @var NoteInfo|false|null */
+    public $note = null;
+
+    /**
+     * Summary of getNote
+     * @param ?CalibreDbLoader $loader
+     * @return NoteInfo|false|null
+     */
+    public function getNote($loader = null)
+    {
+        if (isset($this->note)) {
+            return $this->note;
+        }
+        if (empty($loader)) {
+            return null;
+        }
+        $notes = $loader->getNotes(static::$notesColName, [ $this->id ]);
+        if (empty($notes) || empty($notes[$this->id])) {
+            $this->note = false;
+            return $this->note;
+        }
+        return $this->setNote($notes[$this->id], $loader);
+    }
+
+    /**
+     * Summary of setNote
+     * @param array<mixed> $info
+     * @param ?CalibreDbLoader $loader
+     * @return NoteInfo
+     */
+    public function setNote($info, $loader = null)
+    {
+        $this->note = NoteInfo::load($this->basePath, $info, $loader);
+        return $this->note;
+    }
+}

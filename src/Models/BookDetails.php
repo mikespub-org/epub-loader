@@ -50,15 +50,6 @@ class BookDetails
         }
         $book['formats'] = $this->getFormats($bookId);
         $book['identifiers'] = $this->getIdentifiers($bookId);
-        if (empty($book['isbn']) && !empty($book['identifiers']['isbn'])) {
-            $book['isbn'] = $book['identifiers']['isbn']['value'];
-        }
-        if (empty($book['lccn']) && !empty($book['identifiers']['lccn'])) {
-            $book['lccn'] = $book['identifiers']['lccn']['value'];
-        }
-        if (empty($book['uri']) && !empty($book['identifiers']['url'])) {
-            $book['uri'] = $book['identifiers']['url']['value'];
-        }
         return $book;
     }
 
