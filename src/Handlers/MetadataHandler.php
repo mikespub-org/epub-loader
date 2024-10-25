@@ -174,9 +174,9 @@ class MetadataHandler extends ActionHandler
         return [
             'books' => $books,
             'authorId' => $authorId,
-            'authorInfo' => AuthorInfo::load($dbPath, $authorInfo, $this->db),
+            'authorInfo' => AuthorInfo::load($dbPath, $authorInfo),
             'seriesId' => $seriesId,
-            'seriesInfo' => SeriesInfo::load($dbPath, $seriesInfo, $this->db),
+            'seriesInfo' => SeriesInfo::load($dbPath, $seriesInfo),
             'bookId' => $bookId,
             'bookInfo' => BookInfo::load($dbPath, $bookInfo, $this->db),
             'matched' => $matched,
@@ -233,7 +233,7 @@ class MetadataHandler extends ActionHandler
         return [
             'series' => $series,
             'authorId' => $authorId,
-            'authorInfo' => AuthorInfo::load($dbPath, $authorInfo, $this->db),
+            'authorInfo' => AuthorInfo::load($dbPath, $authorInfo),
             'seriesId' => $seriesId,
             'seriesInfo' => SeriesInfo::load($dbPath, $seriesInfo, $this->db),
             'matched' => $matched,

@@ -59,11 +59,11 @@ class AuthorInfo extends BaseInfo
      *
      * @param string $basePath base directory
      * @param array<mixed> $data
-     * @param ?CalibreDbLoader $db if we need to load books & series
+     * @param ?CalibreDbLoader $loader if we need to load books & series
      *
      * @return self|null
      */
-    public static function load($basePath, $data, $db = null)
+    public static function load($basePath, $data, $loader = null)
     {
         if (empty($data)) {
             return null;
@@ -81,16 +81,23 @@ class AuthorInfo extends BaseInfo
         if (!empty($data['series'])) {
             // ...
         }
-        if (empty($db) || empty($authorInfo->id)) {
+        if (empty($loader) || empty($authorInfo->id)) {
             return $authorInfo;
         }
         // From CalibreDbLoader::getBooksByAuthor():
         // id, title, sort, series_index, author, series, identifiers
-        $books = $db->getBooks($authorInfo->id);
+        $books = $loader->getBooksByAuthor($authorInfo->id);
+        foreach ($books as $id => $info) {
+            $authorInfo->books[$id] = BookInfo::load($basePath, $info);
+        }
         // From CalibreDbLoader::getSeriesByAuthor():
         // distinct series.id as id, series.name as name, series.sort as sort, series.link as link, author
         // series can have multiple authors
-        $series = $db->getSeriesByAuthor($authorInfo->id);
+        $series = $loader->getSeriesByAuthor($authorInfo->id);
+        foreach ($series as $id => $info) {
+            $seriesId = $info['id'];
+            $authorInfo->series[$seriesId] = SeriesInfo::load($basePath, $info);
+        }
         return $authorInfo;
     }
 }
