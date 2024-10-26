@@ -61,8 +61,12 @@ class CalibreDbLoader extends DatabaseLoader
             'authors' => 0,
             'books' => 0,
             'series' => 0,
+            'notes_db.notes' => 0,
         ];
         $tables = ['authors', 'books', 'series'];
+        if ($this->getNotesDb()) {
+            $tables[] = 'notes_db.notes';
+        }
         foreach ($tables as $table) {
             $sql = 'select count(*) as count from ' . $table;
             $stmt = $this->db->prepare($sql);
@@ -777,10 +781,44 @@ class CalibreDbLoader extends DatabaseLoader
     /**
      * Summary of getNotes
      * @param string $colName
-     * @param array<mixed> $itemIdList
+     * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    public function getNotes($colName, $itemIdList = [])
+    public function getNotes($colName, $sort = null, $offset = null)
+    {
+        if (!$this->getNotesDb()) {
+            return [];
+        }
+        $sql = 'select item, colname, length(doc) as size, mtime from notes_db.notes';
+        $params = [];
+        $sql .= ' where colname = ?';
+        $params[] = $colName;
+        if (!empty($sort) && in_array($sort, ['mtime', 'size'])) {
+            $sql .= ' order by ' . $sort . ' desc';
+        } else {
+            $sql .= ' order by item';
+        }
+        $sql .= ' limit ' . $this->limit;
+        if (!empty($offset) && is_int($offset)) {
+            $sql .= ' offset ' . (string) $offset;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $notes = [];
+        while ($post = $stmt->fetchObject()) {
+            $notes[$post->item] = (array) $post;
+        }
+        return $notes;
+    }
+
+    /**
+     * Summary of getNotesDoc
+     * @param string $colName
+     * @param array<int> $itemIdList
+     * @return array<mixed>
+     */
+    public function getNotesDoc($colName, $itemIdList = [])
     {
         if (!$this->getNotesDb()) {
             return [];

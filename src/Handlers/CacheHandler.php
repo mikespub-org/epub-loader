@@ -53,20 +53,34 @@ class CacheHandler extends ActionHandler
             $result['entry'] = json_encode($entry, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             return $result;
         }
+        $sort = $this->request->get('sort');
         $offset = $this->request->getId('offset');
-        $result['entries'] = BaseCache::getCacheEntries($this->cacheDir, $result['cacheName'], $result['cacheType'], $offset);
+        $result['entries'] = $this->getCacheEntries($result, $sort, $offset);
         $result['paging'] = null;
         foreach ($result['caches'] as $cache => $count) {
             if (strtolower((string) $cache) != $result['cacheName']) {
                 continue;
             }
             if (!empty($count[$result['cacheType']]) && $count[$result['cacheType']] > BaseCache::$limit) {
-                $result['paging'] = CalibreDbLoader::getCountPaging($count[$result['cacheType']], null, $offset, BaseCache::$limit);
+                $result['paging'] = CalibreDbLoader::getCountPaging($count[$result['cacheType']], $sort, $offset, BaseCache::$limit);
                 $result['paging']['itemId'] = $result['cacheName'] . '/' . $result['cacheType'];
             }
             break;
         }
         return $result;
+    }
+
+    /**
+     * Summary of getCacheEntries
+     * @param array<mixed> $result
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>
+     */
+    protected function getCacheEntries($result, $sort = null, $offset = null)
+    {
+        $entries = BaseCache::getCacheEntries($this->cacheDir, $result['cacheName'], $result['cacheType'], $sort, $offset);
+        return $entries;
     }
 
     /**

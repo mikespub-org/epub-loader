@@ -141,10 +141,11 @@ class GoogleBooksCache extends BaseCache
     /**
      * Summary of getEntries
      * @param string $cacheType
+     * @param string|null $sort
      * @param int|null $offset
      * @return array<mixed>
      */
-    public function getEntries($cacheType, $offset = null)
+    public function getEntries($cacheType, $sort = null, $offset = null)
     {
         $offset ??= 0;
         $entries = match ($cacheType) {
@@ -154,8 +155,29 @@ class GoogleBooksCache extends BaseCache
             'volumes' => $this->getVolumeIds(),
             default => throw new Exception('Invalid cache type'),
         };
-        $entries = array_slice($entries, $offset, static::$limit);
-        return $entries;
+        // we will order & slice later for mtime or size - see BaseCache::getSortedEntries()
+        if (empty($sort) || !in_array($sort, ['mtime', 'size'])) {
+            $entries = array_slice($entries, $offset, static::$limit);
+        }
+        $result = [];
+        foreach ($entries as $entry) {
+            $cacheFile = match ($cacheType) {
+                'authors' => $this->getAuthorQuery($entry),
+                'titles' => $this->getTitleQuery($entry),
+                'series' => $this->getSeriesQuery($entry),
+                'volumes' => $this->getVolume($entry),
+                default => throw new Exception('Invalid cache type'),
+            };
+            $result[$entry] = [
+                'id' => $entry,
+                'file' => $cacheFile,
+                'mtime' => filemtime($cacheFile),
+                'size' => filesize($cacheFile),
+            ];
+        }
+        // we order & slice here for mtime or size
+        $result = static::getSortedEntries($result, $sort, $offset);
+        return $result;
     }
 
     /**

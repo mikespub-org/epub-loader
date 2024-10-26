@@ -21,12 +21,22 @@ class WikiDataImport
      *
      * @param string $basePath base directory
      * @param array<mixed> $entity WikiData entity
+     * @param WikiDataCache|null $cache
      * @throws Exception if error
      *
      * @return BookInfo
      */
-    public static function load($basePath, $entity)
+    public static function load($basePath, $entity, $cache = null)
     {
+        if (empty($cache)) {
+            if (basename($basePath) == 'wikidata') {
+                $cacheDir = dirname($basePath);
+            } else {
+                $cacheDir = dirname(__DIR__, 3) . '/cache';
+            }
+            $cache = new WikiDataCache($cacheDir);
+        }
+
         $bookInfo = new BookInfo();
         $bookInfo->source = 'wikidata';
         $bookInfo->basePath = $basePath;
@@ -53,11 +63,18 @@ class WikiDataImport
                 continue;
             }
             $authorSort = AuthorInfo::getNameSort($authorName);
+            // author description available from cached author - not very interesting here
+            $cacheFile = $cache->getEntity($authorId);
+            if ($cache->hasCache($cacheFile)) {
+                $author = array_merge($author, $cache->loadCache($cacheFile));
+            }
+            $description = $author['description'] ?? '';
             $info = [
                 'id' => $authorId,
                 'name' => $authorSort,
                 'sort' => $authorName,
                 'link' => WikiDataMatch::link($authorId),
+                'description' => $description,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -76,12 +93,19 @@ class WikiDataImport
             $seriesId = $series['id'] ?? $idx;
             $title = $series['label'] ?? '';
             $index = $series['index'] ?? '';
+            // series description available from cached series - not very interesting here
+            $cacheFile = $cache->getEntity($seriesId);
+            if ($cache->hasCache($cacheFile)) {
+                $series = array_merge($series, $cache->loadCache($cacheFile));
+            }
+            $description = $series['description'] ?? '';
             $info = [
                 'id' => $seriesId,
                 'name' => $title,
                 'sort' => SeriesInfo::getTitleSort($title),
                 'index' => $index,
                 'link' => WikiDataMatch::link($seriesId),
+                'description' => $description,
             ];
             $bookInfo->addSeries($seriesId, $info);
             $idx++;

@@ -23,6 +23,7 @@ class CalibreDbTest extends BaseTestCase
             'authors' => 28,
             'books' => 116,
             'series' => 27,
+            'notes_db.notes' => 41,
         ];
         $this->assertEquals($expected, $stats);
     }

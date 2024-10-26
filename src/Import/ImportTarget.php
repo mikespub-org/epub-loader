@@ -76,8 +76,11 @@ abstract class ImportTarget extends DatabaseLoader
         // Create metadata database
         $this->createDatabase($dbFileName);
 
+        // Test import of existing databases
+        $dbPrefix = str_replace('metadata.db', '', basename($dbFileName));
+
         // Attach notes database
-        $notesFileName = dirname($dbFileName) . '/.calnotes/notes.db';
+        $notesFileName = dirname($dbFileName) . '/.calnotes/' . $dbPrefix . 'notes.db';
         $notesDbPath = dirname($notesFileName);
         if (!is_dir($notesDbPath)) {
             if (!mkdir($notesDbPath, 0o755, true)) {

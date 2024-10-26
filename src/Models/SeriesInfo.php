@@ -82,6 +82,10 @@ class SeriesInfo extends BaseInfo
             ];
             $seriesInfo->addAuthor($authorId, $author);
         }
+        // for import from metadata (instead of note)
+        if (!empty($data['description'])) {
+            $seriesInfo->addNote($data['description']);
+        }
         if (!empty($data['books'])) {
             // ...
         }

@@ -22,11 +22,12 @@ class GoogleBooksImport
      *
      * @param string $basePath base directory
      * @param Volume $volume Google Books volume
+     * @param GoogleBooksCache|null $cache
      * @throws Exception if error
      *
      * @return BookInfo
      */
-    public static function load($basePath, $volume)
+    public static function load($basePath, $volume, $cache = null)
     {
         $volumeInfo = $volume->getVolumeInfo();
         if (empty($volumeInfo)) {
@@ -55,6 +56,8 @@ class GoogleBooksImport
                 'id' => '',
                 'name' => $authorSort,
                 'sort' => $authorName,
+                'link' => '',
+                'description' => '',
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -103,6 +106,7 @@ class GoogleBooksImport
                     'name' => $seriesTitle,
                     'sort' => $seriesSort,
                     'index' => $index,
+                    'description' => '',
                 ];
                 $bookInfo->addSeries($seriesId, $info);
             }

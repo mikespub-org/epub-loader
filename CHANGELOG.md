@@ -4,6 +4,8 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Import author & series descriptions as notes in db
+  * Add SQLite functions for importing titles & notes
   * Attach notes db instead of opening new connection
 
 3.5.0 - 20241025 Expand metadata parsing + add models

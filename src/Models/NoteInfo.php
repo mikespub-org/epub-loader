@@ -90,7 +90,7 @@ class NoteInfo extends BaseInfo
         if (empty($data)) {
             return null;
         }
-        // From CalibreDbLoader::getNotes():
+        // From CalibreDbLoader::getNoteDoc():
         // item, colname, doc, mtime
         $noteInfo = new NoteInfo();
         $noteInfo->source = $data['source'] ?? 'database';

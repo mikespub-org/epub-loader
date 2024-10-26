@@ -31,7 +31,7 @@ trait HasNoteTrait
         if (empty($loader)) {
             return null;
         }
-        $notes = $loader->getNotes(static::$notesColName, [ $this->id ]);
+        $notes = $loader->getNotesDoc(static::$notesColName, [ (int) $this->id ]);
         if (empty($notes) || empty($notes[$this->id])) {
             $this->note = false;
             return $this->note;
@@ -49,5 +49,23 @@ trait HasNoteTrait
     {
         $this->note = NoteInfo::load($this->basePath, $info, $loader);
         return $this->note;
+    }
+
+    /**
+     * Summary of addNote
+     * @param string $description
+     * @param ?CalibreDbLoader $loader
+     * @return NoteInfo
+     */
+    public function addNote($description, $loader = null)
+    {
+        $info = [
+            'id' => '',
+            'colname' => static::$notesColName,
+            'item' => $this->id,
+            'doc' => $description,
+            'mtime' => date('c'),
+        ];
+        return $this->setNote($info, $loader);
     }
 }

@@ -1,37 +1,66 @@
 {% extends 'index.html' %}
 
 {% block content %}
+<div class="title">
+	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> in <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
+	{% block findlinks %}
+	{% endblock findlinks %}
+</div>
 <table width="100%">
 	<tr>
 		<th>Type</th>
 		<th>Notes</th>
 	</tr>
-	{% for colName, numItems in notescount %}
+	{% for column, numItems in notescount %}
 	<tr>
-		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}">{{colName}}</a></td>
+		<td>
+		{% if colName == column %}
+			<b><a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{column}}">{{column|title}}</a></b>
+		{% else %}
+			<a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{column}}">{{column|title}}</a>
+		{% endif %}
+		</td>
 		<td>{{numItems}}</td>
 	</tr>
 	{% endfor %}
 </table>
 {% if colName %}
 <div class="part">
-	<p>{{colName}} notes:</p>
-	<ul>
+	<p><b>{{colName|title}} Notes</b></p>
+	<table>
+		<tr>
+			<th><a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&sort=date">Date</a></th>
+			<th><a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&sort=size">Size</a></th>
+			<th><a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}">Entry</a></th>
+		</tr>
 		{% for id, item in items %}
-		<li>
-			{% set timestamp = (item.mtime)|round(0, 'floor') %}
-			<a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&itemId={{id}}">{{id}}</a>: {{timestamp|date('Y-m-d')}} [{{item.doc|length}}]
-			{% if itemId == id %}
-				{% if html %}
-					{{item.doc|raw}}
-				{% else %}
-					<a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&itemId={{id}}&html=1">html</a>
-					<pre>{{item.doc}}</pre>
-				{% endif %}
+		{% set timestamp = (item.mtime)|round(0, 'floor') %}
+		{% if itemId == id %}
+		<tr>
+			<td>{{timestamp|date('Y-m-d')}}</td>
+			<td align="right">{{item.doc|length|number_format(0, ',', '.')}}</td>
+			<td><a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&itemId={{id}}">{{id}}</a></td>
+		</tr>
+		<tr>
+			<td colspan="3">
+			{% if html %}
+				See <a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&itemId={{id}}">raw</a>
+				<p>{{item.doc|raw}}</p>
+			{% else %}
+				See <a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&itemId={{id}}&html=1">html</a>
+				<pre>{{item.doc}}</pre>
 			{% endif %}
-		</li>
+			</td>
+		</tr>
+		{% else %}
+		<tr>
+			<td>{{timestamp|date('Y-m-d')}}</td>
+			<td align="right">{{item.size|number_format(0, ',', '.')}}</td>
+			<td><a href="{{endpoint}}/{{action}}/{{dbNum}}?colName={{colName}}&itemId={{id}}">{{id}}</a></td>
+		</tr>
+		{% endif %}
 		{% endfor %}
-	</ul>
+	</table>
 </div>
 {% endif %}
 {% endblock content %}

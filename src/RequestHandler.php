@@ -268,6 +268,7 @@ class RequestHandler
                     'authors' => 0,
                     'books' => 0,
                     'series' => 0,
+                    'notes_db.notes' => 0,
                 ];
             }
             $epubPath = $dbConfig['epub_path'];

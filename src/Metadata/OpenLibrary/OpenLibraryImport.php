@@ -21,19 +21,21 @@ class OpenLibraryImport
      *
      * @param string $basePath base directory
      * @param WorkEntity $work OpenLibrary work
+     * @param OpenLibraryCache|null $cache
      * @throws Exception if error
      *
      * @return BookInfo
      */
-    public static function load($basePath, $work)
+    public static function load($basePath, $work, $cache = null)
     {
-        // @todo get from somewhere
-        if (basename($basePath) == 'openlibrary') {
-            $cacheDir = dirname($basePath);
-        } else {
-            $cacheDir = dirname(__DIR__, 3) . '/cache';
+        if (empty($cache)) {
+            if (basename($basePath) == 'openlibrary') {
+                $cacheDir = dirname($basePath);
+            } else {
+                $cacheDir = dirname(__DIR__, 3) . '/cache';
+            }
+            $cache = new OpenLibraryCache($cacheDir);
         }
-        $match = new OpenLibraryMatch($cacheDir);
 
         $bookInfo = new BookInfo();
         $bookInfo->source = 'openlibrary';
@@ -62,16 +64,26 @@ class OpenLibraryImport
             }
             $authorId = str_replace('/authors/', '', $authorId);
             // lookup author info here
-            $author = $match->getAuthor($authorId);
+            $cacheFile = $cache->getAuthor($authorId);
+            if (!$cache->hasCache($cacheFile)) {
+                continue;
+            }
+            $author = $cache->loadCache($cacheFile);
             if (empty($author['name'])) {
                 continue;
             }
             $authorSort = AuthorInfo::getNameSort($author['name']);
+            if (!empty($author['bio']) && is_array($author['bio'])) {
+                $description = $author['bio']['value'] ?? '';
+            } else {
+                $description = $author['bio'] ?? '';
+            }
             $info = [
                 'id' => $authorId,
                 'name' => $author['name'],
                 'sort' => $authorSort,
                 'link' => OpenLibraryMatch::link($authorId),
+                'description' => $description,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }

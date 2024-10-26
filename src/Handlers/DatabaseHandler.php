@@ -55,7 +55,7 @@ class DatabaseHandler extends ActionHandler
         $items = [];
         if (!empty($colName)) {
             if (!empty($itemId)) {
-                $items = $this->db->getNotes($colName, [$itemId]);
+                $items = $this->db->getNotesDoc($colName, [(int) $itemId]);
                 if ($html) {
                     // {{endpoint}}/{{action}}/{{dbNum}}
                     $urlPrefix = $this->getActionUrl('resource');
@@ -63,7 +63,9 @@ class DatabaseHandler extends ActionHandler
                     $items[$itemId]['doc'] = str_replace('?placement=', '&placement=', $items[$itemId]['doc']);
                 }
             } else {
-                $items = $this->db->getNotes($colName);
+                $sort = $this->request->get('sort');
+                $offset = $this->request->getId('offset');
+                $items = $this->db->getNotes($colName, $sort, $offset);
             }
             $dbPath = $this->dbConfig['db_path'];
             //foreach ($items as $id => $item) {

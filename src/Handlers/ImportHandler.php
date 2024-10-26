@@ -58,7 +58,7 @@ class ImportHandler extends ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
         // Open or create the database
-        $import = new CsvImport($calibreFileName, $createDb, $bookIdsFileName);
+        $import = new CsvImport($calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
 
         // Init csv file
         $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
@@ -85,7 +85,7 @@ class ImportHandler extends ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
         // Open or create the database
-        $import = new JsonImport($calibreFileName, $createDb, $bookIdsFileName);
+        $import = new JsonImport($calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
 
         // Add the json files into the database
         $jsonPath = $this->dbConfig['json_path'] ?? $this->dbConfig['epub_path'];
@@ -111,7 +111,7 @@ class ImportHandler extends ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . 'bookids.txt';
         // Open or create the database
-        $import = new BookImport($calibreFileName, $createDb, $bookIdsFileName);
+        $import = new BookImport($calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
         // Add the epub files into the database
         $epubPath = $this->dbConfig['epub_path'];
         [$message, $errors] = $import->loadFromPath($dbPath, $epubPath);

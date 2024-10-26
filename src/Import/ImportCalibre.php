@@ -9,7 +9,10 @@
 
 namespace Marsender\EPubLoader\Import;
 
+use Marsender\EPubLoader\Models\AuthorInfo;
 use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\NoteInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Marsender\EPubLoader\Metadata\GoodReads\GoodReadsMatch;
 use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryMatch;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataMatch;
@@ -26,13 +29,14 @@ class ImportCalibre extends ImportTarget
      *
      * @param BookInfo $bookInfo BookInfo object
      * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param string $coverField Add 'calibre_database_field_cover' field for books
      * @param string $sortField Add 'calibre_database_field_sort' field for tags
      *
      * @throws Exception if error
      *
      * @return void
      */
-    public function addBook($bookInfo, $bookId, $sortField = 'sort')
+    public function addBook($bookInfo, $bookId, $coverField = 'cover', $sortField = 'sort')
     {
         $errors = [];
 
@@ -95,9 +99,10 @@ class ImportCalibre extends ImportTarget
      * Summary of addBookEntry
      * @param BookInfo $bookInfo BookInfo object
      * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param string $coverField Add 'calibre_database_field_cover' field for books
      * @return int|null
      */
-    public function addBookEntry($bookInfo, $bookId)
+    public function addBookEntry($bookInfo, $bookId, $coverField = 'cover')
     {
         // Add the book
         $sql = 'insert into books(';
@@ -105,7 +110,7 @@ class ImportCalibre extends ImportTarget
             $sql .= 'id, ';
         }
         // Add 'calibre_database_field_cover' field for books
-        $sql .= 'title, sort, timestamp, pubdate, last_modified, series_index, uuid, path, has_cover, cover, isbn) values(';
+        $sql .= 'title, sort, timestamp, pubdate, last_modified, series_index, uuid, path, has_cover, ' . $coverField . ', isbn) values(';
         if ($bookId) {
             $sql .= ':id, ';
         }
@@ -266,16 +271,15 @@ class ImportCalibre extends ImportTarget
         if (empty($seriesInfo->title)) {
             return;
         }
-        $link = '';
-        if (!empty($seriesInfo->id) && $seriesInfo->id != $seriesInfo->title) {
-            $link = match ($bookInfo->source) {
+        if (empty($seriesInfo->link) && !empty($seriesInfo->id) && $seriesInfo->id != $seriesInfo->title) {
+            $seriesInfo->link = match ($bookInfo->source) {
                 'goodreads' => GoodReadsMatch::SERIES_URL . $seriesInfo->id,
                 'wikidata' => WikiDataMatch::link($seriesInfo->id),
                 // @todo other sources?
                 default => $seriesInfo->id,
             };
         }
-        $idSerie = $this->addSeries($seriesInfo->title, $link);
+        $idSerie = $this->addSeries($seriesInfo);
 
         // Add the book serie link
         $sql = 'replace into books_series_link(book, series) values(:idBook, :idSerie)';
@@ -287,49 +291,56 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addSeries
-     * @param string $serie series name
-     * @param string|null $link series link (if available)
+     * @param SeriesInfo $seriesInfo
      * @return int
      */
-    public function addSeries($serie, $link = null)
+    public function addSeries($seriesInfo)
     {
         // Get the serie id
-        $sql = 'select id from series where name=:serie';
+        $sql = 'select id from series where name=:title';
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':serie', $serie);
+        $stmt->bindParam(':title', $seriesInfo->title);
         $stmt->execute();
         $post = $stmt->fetchObject();
         if ($post) {
             $idSerie = $post->id;
+            if (!empty($seriesInfo->note) && !empty($seriesInfo->note->doc)) {
+                // Add series note
+                $seriesInfo->note->item = $idSerie;
+                $this->addNote($seriesInfo->note);
+            }
             return $idSerie;
         }
         // Add a new serie
-        $sql = 'insert into series(name, sort, link) values(:serie, :sort, :link)';
+        $sql = 'insert into series(name, sort, link) values(:title, :sort, :link)';
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':serie', $serie);
-        $sortString = BookInfo::getTitleSort($serie);
-        $sortString = BookInfo::getSortString($sortString);
+        $stmt->bindParam(':title', $seriesInfo->title);
+        $sortString = BookInfo::getSortString($seriesInfo->sort);
         $stmt->bindParam(':sort', $sortString);
-        $link ??= '';
-        $stmt->bindParam(':link', $link);
+        $stmt->bindParam(':link', $seriesInfo->link);
         $stmt->execute();
         // Get the serie id
-        $sql = 'select id from series where name=:serie';
+        $sql = 'select id from series where name=:title';
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':serie', $serie);
+        $stmt->bindParam(':title', $seriesInfo->title);
         $stmt->execute();
         $idSerie = null;
         while ($post = $stmt->fetchObject()) {
             if (!isset($idSerie)) {
                 $idSerie = $post->id;
             } else {
-                $error = sprintf('Multiple series for name: %s', $serie);
+                $error = sprintf('Multiple series for name: %s', $seriesInfo->title);
                 throw new Exception($error);
             }
         }
         if (!isset($idSerie)) {
-            $error = sprintf('Cannot find serie id for name: %s', $serie);
+            $error = sprintf('Cannot find serie id for name: %s', $seriesInfo->title);
             throw new Exception($error);
+        }
+        if (!empty($seriesInfo->note) && !empty($seriesInfo->note->doc)) {
+            // Add series note
+            $seriesInfo->note->item = $idSerie;
+            $this->addNote($seriesInfo->note);
         }
         return $idSerie;
     }
@@ -347,9 +358,8 @@ class ImportCalibre extends ImportTarget
             return;
         }
         foreach ($bookInfo->authors as $authorId => $authorInfo) {
-            $link = '';
-            if (!empty($authorInfo->id) && $authorInfo->id != $authorInfo->name) {
-                $link = match ($bookInfo->source) {
+            if (empty($authorInfo->link) && !empty($authorInfo->id) && $authorInfo->id != $authorInfo->name) {
+                $authorInfo->link = match ($bookInfo->source) {
                     'goodreads' => GoodReadsMatch::AUTHOR_URL . $authorInfo->id,
                     'openlibrary' => OpenLibraryMatch::AUTHOR_URL . $authorInfo->id,
                     'wikidata' => WikiDataMatch::link($authorInfo->id),
@@ -357,7 +367,7 @@ class ImportCalibre extends ImportTarget
                     default => $authorInfo->id,
                 };
             }
-            $idAuthor = $this->addAuthor($authorInfo->name, $authorInfo->sort, $link);
+            $idAuthor = $this->addAuthor($authorInfo);
 
             // Add the book author link
             $sql = 'replace into books_authors_link(book, author) values(:idBook, :idAuthor)';
@@ -370,51 +380,111 @@ class ImportCalibre extends ImportTarget
 
     /**
      * Summary of addAuthor
-     * @param string $author
-     * @param string $authorSort
-     * @param string|null $authorLink
+     * @param AuthorInfo $authorInfo
      * @return int
      */
-    public function addAuthor($author, $authorSort, $authorLink = null)
+    public function addAuthor($authorInfo)
     {
         // Get the author id
-        $sql = 'select id from authors where name=:author';
+        $sql = 'select id from authors where name=:name';
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':author', $author);
+        $stmt->bindParam(':name', $authorInfo->name);
         $stmt->execute();
         $post = $stmt->fetchObject();
         if ($post) {
             $idAuthor = $post->id;
+            if (!empty($authorInfo->note) && !empty($authorInfo->note->doc)) {
+                // Add author note
+                $authorInfo->note->item = $idAuthor;
+                $this->addNote($authorInfo->note);
+            }
             return $idAuthor;
         }
         // Add a new author
-        $sql = 'insert into authors(name, sort, link) values(:author, :sort, :link)';
+        $sql = 'insert into authors(name, sort, link) values(:name, :sort, :link)';
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':author', $author);
-        $sortString = BookInfo::getSortString($authorSort);
+        $stmt->bindParam(':name', $authorInfo->name);
+        $sortString = BookInfo::getSortString($authorInfo->sort);
         $stmt->bindParam(':sort', $sortString);
-        $link = $authorLink ?? '';
-        $stmt->bindParam(':link', $link);
+        $stmt->bindParam(':link', $authorInfo->link);
         $stmt->execute();
         // Get the author id
-        $sql = 'select id from authors where name=:author';
+        $sql = 'select id from authors where name=:name';
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':author', $author);
+        $stmt->bindParam(':name', $authorInfo->name);
         $stmt->execute();
         $idAuthor = null;
         while ($post = $stmt->fetchObject()) {
             if (!isset($idAuthor)) {
                 $idAuthor = $post->id;
             } else {
-                $error = sprintf('Multiple authors for name: %s', $author);
+                $error = sprintf('Multiple authors for name: %s', $authorInfo->name);
                 throw new Exception($error);
             }
         }
         if (!isset($idAuthor)) {
-            $error = sprintf('Cannot find author id for name: %s', $author);
+            $error = sprintf('Cannot find author id for name: %s', $authorInfo->name);
             throw new Exception($error);
         }
+        if (!empty($authorInfo->note) && !empty($authorInfo->note->doc)) {
+            // Add author note
+            $authorInfo->note->item = $idAuthor;
+            $this->addNote($authorInfo->note);
+        }
         return $idAuthor;
+    }
+
+    /**
+     * Summary of addNote
+     * @param NoteInfo $note
+     * @return int
+     */
+    public function addNote($note)
+    {
+        // Get the note id
+        $sql = 'select id from notes_db.notes where colname=:colname and item=:item';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':colname', $note->colname);
+        $stmt->bindParam(':item', $note->item, PDO::PARAM_INT);
+        $stmt->execute();
+        $post = $stmt->fetchObject();
+        if ($post) {
+            $idNote = $post->id;
+            // Update existing note
+            $sql = 'update notes_db.notes set doc=:doc where id=:id';
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':doc', $note->doc);
+            $stmt->bindParam(':id', $idNote, PDO::PARAM_INT);
+            $stmt->execute();
+            return $idNote;
+        }
+        // Add a new note
+        $sql = 'insert into notes_db.notes(colname, item, doc) values(:colname, :item, :doc)';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':colname', $note->colname);
+        $stmt->bindParam(':item', $note->item, PDO::PARAM_INT);
+        $stmt->bindParam(':doc', $note->doc);
+        $stmt->execute();
+        // Get the note id
+        $sql = 'select id from notes_db.notes where colname=:colname and item=:item';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':colname', $note->colname);
+        $stmt->bindParam(':item', $note->item, PDO::PARAM_INT);
+        $stmt->execute();
+        $idNote = null;
+        while ($post = $stmt->fetchObject()) {
+            if (!isset($idNote)) {
+                $idNote = $post->id;
+            } else {
+                $error = sprintf('Multiple notes for colname: %s item: %s', $note->colname, $note->item);
+                throw new Exception($error);
+            }
+        }
+        if (!isset($idNote)) {
+            $error = sprintf('Cannot find note id colname: %s item: %s', $note->colname, $note->item);
+            throw new Exception($error);
+        }
+        return $idNote;
     }
 
     /**

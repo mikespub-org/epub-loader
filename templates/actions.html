@@ -1,7 +1,9 @@
 {% extends 'index.html' %}
 
 {% block content %}
-<div><b>Select action</b></div>
+<div class="title">
+	<b>Select action</b>
+</div>
 {% if groups %}
 <ul>
 	{% for group, actionList in groups %}

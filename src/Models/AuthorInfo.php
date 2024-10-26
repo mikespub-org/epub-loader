@@ -90,6 +90,10 @@ class AuthorInfo extends BaseInfo
         $authorInfo->name = $data['name'] ?? '';
         $authorInfo->sort = $data['sort'] ?? static::getNameSort($authorInfo->name);
         $authorInfo->link = $data['link'] ?? '';
+        // for import from metadata (instead of note)
+        if (!empty($data['description'])) {
+            $authorInfo->addNote($data['description']);
+        }
         if (!empty($data['books'])) {
             // ...
         }

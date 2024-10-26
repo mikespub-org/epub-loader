@@ -27,6 +27,7 @@ abstract class SourceImport
     protected $target = null;
     protected int $nbBook = 0;
     protected string $fileName = '';
+    protected string $cacheDir = '';
 
     /**
      * Open an import database (or create if file does not exist)
@@ -34,11 +35,13 @@ abstract class SourceImport
      * @param string $dbFileName Calibre database file name
      * @param boolean $create Force database creation
      * @param string $bookIdsFileName File name containing a map of file names to calibre book ids
+     * @param string|null $cacheDir
      * @throws Exception if error
      */
-    public function __construct($dbFileName, $create = false, $bookIdsFileName = '')
+    public function __construct($dbFileName, $create = false, $bookIdsFileName = '', $cacheDir = null)
     {
         $this->fileName = $dbFileName;
+        $this->cacheDir = $cacheDir ?? dirname(__DIR__, 2) . '/cache';
         // @todo support other import targets beside Calibre?
         $this->target = new ImportCalibre($dbFileName, $create, $bookIdsFileName);
     }

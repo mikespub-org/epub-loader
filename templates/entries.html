@@ -7,11 +7,20 @@
 	</tr>
 </table>
 {% endif %}
-<ul>
-	{% for entry in entries %}
-	<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a></li>
+<table>
+	<tr>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?sort=mtime">Date</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?sort=size">Size</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}">Entry</a></th>
+	</tr>
+	{% for entry, item in entries %}
+	<tr>
+		<td>{{item.mtime|date('Y-m-d')}}</td>
+		<td align="right">{{item.size|number_format(0, ',', '.')}}</td>
+		<td><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a></td>
+	</tr>
 	{% endfor %}
-</ul>
+</table>
 {% if paging %}
 <table>
 	<tr>

@@ -214,17 +214,41 @@ class BaseCache
      * @param string $cacheDir
      * @param string $cacheName
      * @param string $cacheType
+     * @param string|null $sort
      * @param int|null $offset
      * @return array<mixed>
      */
-    public static function getCacheEntries($cacheDir, $cacheName, $cacheType, $offset = null)
+    public static function getCacheEntries($cacheDir, $cacheName, $cacheType, $sort = null, $offset = null)
     {
         $entries = [];
         if (empty($cacheDir) || !is_dir($cacheDir)) {
             return $entries;
         }
         $cache = static::getCacheInstance($cacheDir, $cacheName);
-        return $cache->getEntries($cacheType, $offset);
+        $entries = $cache->getEntries($cacheType, $sort, $offset);
+        return $entries;
+    }
+
+    /**
+     * Summary of getSortedEntries
+     * @param array<mixed> $entries
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>
+     */
+    public static function getSortedEntries($entries, $sort, $offset)
+    {
+        // we order & slice here for mtime or size
+        if (!empty($sort) && in_array($sort, ['mtime', 'size'])) {
+            uasort($entries, function ($a, $b) use ($sort) {
+                return $b[$sort] <=> $a[$sort];
+            });
+            $offset ??= 0;
+            if (count($entries) > static::$limit) {
+                $entries = array_slice($entries, $offset, static::$limit, true);
+            }
+        }
+        return $entries;
     }
 
     /**

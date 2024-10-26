@@ -26,7 +26,7 @@ class CalibreNotesTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/notes/0?colName=authors">authors</a>';
+        $expected = '<a href="/phpunit/notes/0?colName=authors">Authors</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = 'Notes';
         $this->assertStringContainsString($expected, $output);
@@ -53,7 +53,7 @@ class CalibreNotesTest extends BaseTestCase
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/notes/0?colName=authors&itemId=3">3</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = 'authors notes';
+        $expected = 'Authors Notes';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);

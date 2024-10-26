@@ -25,12 +25,22 @@ class GoodReadsImport
      *
      * @param string $basePath base directory
      * @param BookResult $bookResult GoodReads book show
+     * @param GoodReadsCache|null $cache
      * @throws Exception if error
      *
      * @return BookInfo
      */
-    public static function load($basePath, $bookResult)
+    public static function load($basePath, $bookResult, $cache = null)
     {
+        if (empty($cache)) {
+            if (basename($basePath) == 'goodreads') {
+                $cacheDir = dirname($basePath);
+            } else {
+                $cacheDir = dirname(__DIR__, 3) . '/cache';
+            }
+            $cache = new GoodReadsCache($cacheDir);
+        }
+
         $state = $bookResult->getProps()?->getPageProps()?->getApolloState();
         if (empty($state)) {
             throw new Exception('Invalid state for GoodReads book');
@@ -67,7 +77,6 @@ class GoodReadsImport
             $bookInfo->id = $bookInfo->uuid;
         }
         $bookInfo->title = (string) $book->getTitle();
-        $authors = [];
         $authorRef = $book->getPrimaryContributorEdge()?->getNode()?->getRef();
         $contributors = $state->getContributorMap();
         if (empty($authorRef) || empty($contributors) || empty($contributors[$authorRef])) {
@@ -82,11 +91,13 @@ class GoodReadsImport
         } else {
             $link = GoodReadsMatch::AUTHOR_URL . $authorId;
         }
+        $description = (string) $contributors[$authorRef]->getDescription();
         $info = [
             'id' => $authorId,
             'name' => $authorName,
             'sort' => $authorSort,
             'link' => $link,
+            'description' => $description,
         ];
         $bookInfo->addAuthor($authorId, $info);
         // add authors from secondaryContributorEdges if they are Author
@@ -109,11 +120,14 @@ class GoodReadsImport
             } else {
                 $link = GoodReadsMatch::AUTHOR_URL . $authorId;
             }
+            // @todo this is empty for secondary contributors
+            $description = (string) $contributors[$authorRef]->getDescription();
             $info = [
                 'id' => $authorId,
                 'name' => $authorName,
                 'sort' => $authorSort,
                 'link' => $link,
+                'description' => $description,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -151,11 +165,20 @@ class GoodReadsImport
             $title = (string) $seriesMap[$seriesRef]->getTitle();
             // save ids of the other series here for matching?
             $seriesId = str_replace('https://www.goodreads.com/series/', '', (string) $seriesMap[$seriesRef]->getWebUrl());
+            // series description is available from cached series
+            $description = '';
+            $cacheFile = $cache->getSeries($seriesId);
+            if ($cache->hasCache($cacheFile)) {
+                $found = $cache->loadCache($cacheFile);
+                $info = GoodReadsCache::parseSeries($found);
+                $description = $info->getDescription() ?? '';
+            }
             $info = [
                 'id' => $seriesId,
                 'name' => $title,
                 'sort' => SeriesInfo::getTitleSort($title),
                 'link' => GoodReadsMatch::SERIES_URL . $seriesId,
+                'description' => $description,
             ];
             if (empty($bookInfo->series)) {
                 $info['index'] = $index;
@@ -197,11 +220,13 @@ class GoodReadsImport
         // info for series in BookInfo - @todo do we want that?
         $seriesId = $seriesResult->getId();
         $title = $seriesResult->getTitle();
+        $description = $seriesResult->getDescription();
         $seriesInfo = [
             'id' => $seriesId,
             'name' => $title,
             'sort' => SeriesInfo::getTitleSort($title),
             'link' => GoodReadsMatch::SERIES_URL . $seriesId,
+            'description' => $description,
         ];
         foreach ($seriesResult->getBookList() as $key => $book) {
             if (empty($book->getBookId())) {
@@ -256,11 +281,14 @@ class GoodReadsImport
             if (str_starts_with((string) $author->getWorksListUrl(), GoodReadsMatch::AUTHOR_URL)) {
                 $authorId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $author->getWorksListUrl());
             }
+            // @todo author description is available from cached book contributors
+            $description = '';
             $info = [
                 'id' => $authorId,
                 'name' => $authorName,
                 'sort' => $authorSort,
                 'link' => $author->getWorksListUrl(),
+                'description' => $description,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }

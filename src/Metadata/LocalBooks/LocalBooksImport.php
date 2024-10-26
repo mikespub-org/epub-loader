@@ -22,11 +22,12 @@ class LocalBooksImport
      *
      * @param string $basePath Epub base directory
      * @param string $fileName Epub file name (from base directory)
+     * @param mixed $cache
      * @throws Exception if error
      *
      * @return BookInfo
      */
-    public static function load($basePath, $fileName)
+    public static function load($basePath, $fileName, $cache = null)
     {
         $fullFileName = sprintf('%s%s%s', $basePath, DIRECTORY_SEPARATOR, $fileName);
         // Check file access
@@ -66,6 +67,8 @@ class LocalBooksImport
                 'id' => '',
                 'name' => $authorSort,
                 'sort' => $authorName,
+                'link' => '',
+                'description' => '',
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -101,6 +104,8 @@ class LocalBooksImport
                 'name' => $title,
                 'sort' => SeriesInfo::getTitleSort($title),
                 'index' => $index,
+                'link' => '',
+                'description' => '',
             ];
             $bookInfo->addSeries(0, $info);
         }

@@ -9,6 +9,7 @@
 
 namespace Marsender\EPubLoader;
 
+use Marsender\EPubLoader\Models\BaseInfo;
 use PDO;
 use Exception;
 
@@ -63,10 +64,41 @@ class DatabaseLoader
             $this->db = new PDO($dsn); // Send an exception if error
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->db->exec('pragma synchronous = off');
+            $this->addSqliteFunctions();
         } catch (Exception $e) {
             $error = sprintf('Cannot open database [%s]: %s', $dsn, $e->getMessage());
             throw new Exception($error);
         }
+    }
+
+    /**
+     * Summary of addSqliteFunctions
+     * @suppress PHP0418 https://docs.devsense.com/en/vs/code%20validation/configuration#suppress-phpdoc-tag
+     * @return void
+     */
+    protected function addSqliteFunctions()
+    {
+        // Add title_sort() function for books and series
+        $this->db->sqliteCreateFunction('title_sort', function ($s) {
+            return BaseInfo::getTitleSort($s);
+        }, 1);
+        // Check if we need to add unixepoch() for notes_db.notes
+        $sql = 'SELECT sqlite_version() as version;';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        if ($post = $stmt->fetchObject()) {
+            if ($post->version >= '3.38') {
+                return;
+            }
+        }
+        // @todo no support for actual datetime conversion here
+        // mtime REAL DEFAULT (unixepoch('subsec')),
+        $this->db->sqliteCreateFunction('unixepoch', function ($s) {
+            if (!empty($s) && $s == 'subsec') {
+                return microtime(true);
+            }
+            return time();
+        }, 1);
     }
 
     /**
@@ -185,7 +217,7 @@ class DatabaseLoader
                     continue;
                 }
                 // Skip triggers using custom functions
-                if (str_contains($str, 'title_sort')) {
+                if (str_contains($str, 'uuid4')) {
                     continue;
                 }
                 // Skip full-text search tables and triggers
