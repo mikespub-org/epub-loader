@@ -459,11 +459,12 @@ class ImportCalibre extends ImportTarget
             return $idNote;
         }
         // Add a new note
-        $sql = 'insert into notes_db.notes(colname, item, doc) values(:colname, :item, :doc)';
+        $sql = 'insert into notes_db.notes(colname, item, doc, mtime) values(:colname, :item, :doc, :mtime)';
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':colname', $note->colname);
         $stmt->bindParam(':item', $note->item, PDO::PARAM_INT);
         $stmt->bindParam(':doc', $note->doc);
+        $stmt->bindParam(':mtime', $note->mtime, PDO::PARAM_INT);
         $stmt->execute();
         // Get the note id
         $sql = 'select id from notes_db.notes where colname=:colname and item=:item';

@@ -64,7 +64,7 @@ trait HasNoteTrait
             'colname' => static::$notesColName,
             'item' => $this->id,
             'doc' => $description,
-            'mtime' => date('c'),
+            'mtime' => time(),
         ];
         return $this->setNote($info, $loader);
     }
