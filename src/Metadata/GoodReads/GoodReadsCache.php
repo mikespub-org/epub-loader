@@ -198,7 +198,7 @@ class GoodReadsCache extends BaseCache
             try {
                 $bookResult = self::parseBook($data);
                 $books[$bookId] = GoodReadsImport::load($basePath, $bookResult);
-            } catch (Exception $e) {
+            } catch (Exception) {
                 $books[$bookId] = null;
             }
         }

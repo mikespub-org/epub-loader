@@ -57,7 +57,7 @@ class CacheHandler extends ActionHandler
         $result['entries'] = BaseCache::getCacheEntries($this->cacheDir, $result['cacheName'], $result['cacheType'], $offset);
         $result['paging'] = null;
         foreach ($result['caches'] as $cache => $count) {
-            if (strtolower($cache) != $result['cacheName']) {
+            if (strtolower((string) $cache) != $result['cacheName']) {
                 continue;
             }
             if (!empty($count[$result['cacheType']]) && $count[$result['cacheType']] > BaseCache::$limit) {

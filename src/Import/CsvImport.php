@@ -75,8 +75,8 @@ class CsvImport extends SourceImport
         $bookInfo->uuid = $array[$i++];
         $bookInfo->uri = $array[$i++];
         $bookInfo->title = $array[$i++];
-        $values = explode(' - ', $array[$i++]);
-        $keys = explode(' - ', $array[$i++]);
+        $values = explode(' - ', (string) $array[$i++]);
+        $keys = explode(' - ', (string) $array[$i++]);
         $authors = array_combine($keys, $values);
         foreach ($authors as $authorSort => $authorName) {
             $info = [
@@ -88,7 +88,7 @@ class CsvImport extends SourceImport
         }
         $bookInfo->language = $array[$i++];
         $bookInfo->description = $array[$i++];
-        $bookInfo->subjects = explode(' - ', $array[$i++]);
+        $bookInfo->subjects = explode(' - ', (string) $array[$i++]);
         $bookInfo->cover = $array[$i++];
         $bookInfo->isbn = $array[$i++];
         $bookInfo->rights = $array[$i++];

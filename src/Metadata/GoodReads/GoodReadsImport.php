@@ -253,7 +253,7 @@ class GoodReadsImport
             $authorId = $author->getId();
             $authorName = $author->getName();
             $authorSort = AuthorInfo::getNameSort($authorName);
-            if (str_starts_with($author->getWorksListUrl(), GoodReadsMatch::AUTHOR_URL)) {
+            if (str_starts_with((string) $author->getWorksListUrl(), GoodReadsMatch::AUTHOR_URL)) {
                 $authorId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $author->getWorksListUrl());
             }
             $info = [

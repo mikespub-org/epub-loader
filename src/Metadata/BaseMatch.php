@@ -122,7 +122,7 @@ class BaseMatch
             'google' => GoogleBooks\GoogleBooksMatch::link($value),
             'olid' => OpenLibrary\OpenLibraryMatch::link($value),
             'wd' => WikiData\WikiDataMatch::link($value),
-            'url' => str_contains($value, '://') ? $value : '',
+            'url' => str_contains((string) $value, '://') ? $value : '',
             'viaf' => 'https://viaf.org/viaf/' . $value,
             'amazon' => 'https://www.amazon.com/dp/' . $value,
             'freebase' => 'https://www.google.com/search?kgmid=' . $value,

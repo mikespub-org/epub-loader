@@ -240,7 +240,7 @@ class CalibreDbLoader
     public function getAuthorPaging($sort = null, $offset = null)
     {
         $count = $this->getAuthorCount();
-        return $this->getCountPaging($count, $sort, $offset, $this->limit);
+        return static::getCountPaging($count, $sort, $offset, $this->limit);
     }
 
     /**
@@ -437,7 +437,7 @@ class CalibreDbLoader
         // get the total of all books per author
         $count = $this->getBookCountByAuthor();
         $total = array_sum(array_values($count));
-        return $this->getCountPaging($total, $sort, $offset, $this->limit);
+        return static::getCountPaging($total, $sort, $offset, $this->limit);
     }
 
     /**
@@ -637,7 +637,7 @@ class CalibreDbLoader
         // get the total of all series per author
         $count = $this->getSeriesCountByAuthor();
         $total = array_sum(array_values($count));
-        return $this->getCountPaging($total, $sort, $offset, $this->limit);
+        return static::getCountPaging($total, $sort, $offset, $this->limit);
     }
 
     /**
@@ -782,7 +782,7 @@ class CalibreDbLoader
         }
         $found = null;
         foreach ($triggers as $name => $trigger) {
-            if (str_contains($trigger['sql'], $event)) {
+            if (str_contains((string) $trigger['sql'], $event)) {
                 $found = $name;
                 break;
             }

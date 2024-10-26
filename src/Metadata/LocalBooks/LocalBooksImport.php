@@ -109,7 +109,6 @@ class LocalBooksImport
         // Timestamp is used to get latest ebooks
         $bookInfo->timestamp = $bookInfo->creationDate;
         if (!empty($bookInfo->isbn)) {
-            $bookInfo->identifiers ??= [];
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }
 

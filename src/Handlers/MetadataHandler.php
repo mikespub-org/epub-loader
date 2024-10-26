@@ -427,7 +427,7 @@ class MetadataHandler extends ActionHandler
                 $series[$id]['entityId'] = WikiDataMatch::entity($serie['link']);
                 continue;
             }
-            if (str_starts_with($serie['link'], GoodReadsMatch::SERIES_URL)) {
+            if (str_starts_with((string) $serie['link'], GoodReadsMatch::SERIES_URL)) {
                 $series[$id]['entityType'] = 'gr_series';
                 $series[$id]['entityId'] = str_replace(GoodReadsMatch::SERIES_URL, '', $serie['link']);
                 continue;

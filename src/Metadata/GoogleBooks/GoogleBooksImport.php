@@ -85,7 +85,7 @@ class GoogleBooksImport
             } else {
                 $seriesTitle = $bookInfo->title;
             }
-            $seriesTitle = preg_replace('/\s*Vol.\s*/i', '', preg_replace('/\s*\d+\s*/', '', $seriesTitle));
+            $seriesTitle = preg_replace('/\s*Vol.\s*/i', '', (string) preg_replace('/\s*\d+\s*/', '', $seriesTitle));
             $seriesSort = SeriesInfo::getTitleSort($seriesTitle);
             $seriesList = $series->getVolumeSeries() ?? [];
             if (empty($seriesList)) {

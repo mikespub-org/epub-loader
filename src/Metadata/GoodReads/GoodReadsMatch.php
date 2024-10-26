@@ -67,11 +67,11 @@ class GoodReadsMatch extends BaseMatch
     public function parseSearchPage($query, $content)
     {
         $content = preg_replace('~^.+?<table ~s', '', $content);
-        $content = preg_replace('~<footer.+?$~s', '', $content);
+        $content = preg_replace('~<footer.+?$~s', '', (string) $content);
         $result = [];
         $matches = [];
-        if (!preg_match_all('~<tr itemscope itemtype="http://schema.org/Book">(.*?)</tr>~s', $content, $matches, PREG_SET_ORDER)) {
-            if (str_contains($content, 'No results')) {
+        if (!preg_match_all('~<tr itemscope itemtype="http://schema.org/Book">(.*?)</tr>~s', (string) $content, $matches, PREG_SET_ORDER)) {
+            if (str_contains((string) $content, 'No results')) {
                 return $result;
             }
             // save html page for testing
@@ -81,7 +81,7 @@ class GoodReadsMatch extends BaseMatch
             throw new Exception('Unable to find rows in html page: see ' . urlencode($query) . '.htm');
         }
         // support older format too
-        if (str_contains($content, ' itemprop="url">')) {
+        if (str_contains((string) $content, ' itemprop="url">')) {
             $titleMatch = '~<a class="bookTitle" href="([^"]+)" itemprop="url">\s*<span itemprop=\'name\'[^>]*>([^<]*)</span>\s*</a>~s';
             $authorMatch = '~<a class="authorName" href="([^"]+)" itemprop="url">\s*<span itemprop="name">([^<]*)</span>\s*</a>~s';
         } else {
@@ -102,7 +102,7 @@ class GoodReadsMatch extends BaseMatch
                 throw new Exception('Unable to find bookId in html title: see ' . urlencode($query) . '.htm');
             }
             $bookId = $href[1];
-            $bookTitle = trim(preg_replace('~\s+~', ' ', $title[2]));
+            $bookTitle = trim((string) preg_replace('~\s+~', ' ', $title[2]));
             $book = [
                 'id' => $bookId,
                 'title' => $bookTitle,
@@ -129,7 +129,7 @@ class GoodReadsMatch extends BaseMatch
                     throw new Exception('Unable to find authorId in html author: see ' . urlencode($query) . '.htm');
                 }
                 $authorId = $href[1];
-                $authorName = trim(preg_replace('~\s+~', ' ', $author[2]));
+                $authorName = trim((string) preg_replace('~\s+~', ' ', $author[2]));
                 if (!isset($result[$authorId])) {
                     $result[$authorId] = [
                         'id' => $authorId,
@@ -153,7 +153,7 @@ class GoodReadsMatch extends BaseMatch
         if (is_object($author)) {
             $author = (array) $author;
         }
-        if (!empty($author['link']) && str_starts_with($author['link'], self::AUTHOR_URL)) {
+        if (!empty($author['link']) && str_starts_with((string) $author['link'], self::AUTHOR_URL)) {
             return str_replace(self::AUTHOR_URL, '', $author['link']);
         }
         $entityId = null;
@@ -212,11 +212,11 @@ class GoodReadsMatch extends BaseMatch
     /**
      * Summary of getCachedAuthorNames
      * @internal using cached author lists
-     * @return mixed
+     * @return array<string, string>
      */
     public function getCachedAuthorNames()
     {
-        return $this->cache->cachedMethod('goodreads/author_names.json', [$this->cache, 'getAuthorNames']);
+        return $this->cache->cachedMethod('goodreads/author_names.json', $this->cache->getAuthorNames(...));
     }
 
     /**
@@ -294,11 +294,11 @@ class GoodReadsMatch extends BaseMatch
     /**
      * Summary of getCachedSeriesTitles
      * @internal using cached series
-     * @return mixed
+     * @return array<string, string>
      */
     public function getCachedSeriesTitles()
     {
-        return $this->cache->cachedMethod('goodreads/series_titles.json', [$this->cache, 'getSeriesTitles']);
+        return $this->cache->cachedMethod('goodreads/series_titles.json', $this->cache->getSeriesTitles(...));
     }
 
     /**

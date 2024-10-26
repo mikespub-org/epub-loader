@@ -3,3 +3,4 @@ vendor/
 *.cache
 clover.xml
 coverage/
+rector.php

@@ -272,7 +272,7 @@ class GoodReadsCheck extends BaseCheck
                 continue;
             }
             // check against existing links too
-            if (str_starts_with($link['author_link'], $this->match::AUTHOR_URL)) {
+            if (str_starts_with((string) $link['author_link'], (string) $this->match::AUTHOR_URL)) {
                 $todo[$link['author']] = 1;
                 continue;
             }
@@ -290,7 +290,7 @@ class GoodReadsCheck extends BaseCheck
             $authorInfo['slug'] = $this->match::authorSlug($authorInfo['name']);
             // exact match first
             foreach ($authors[$authorId] as $matchId => $count) {
-                if (!str_ends_with($matchId, $authorInfo['slug'])) {
+                if (!str_ends_with((string) $matchId, (string) $authorInfo['slug'])) {
                     continue;
                 }
                 $authorInfo['match'] = $matchId;
@@ -300,7 +300,7 @@ class GoodReadsCheck extends BaseCheck
                     $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
                     break;
                 }
-                if (str_ends_with($authorInfo['link'], '/' . $matchId)) {
+                if (str_ends_with((string) $authorInfo['link'], '/' . $matchId)) {
                     // nothing to update here
                     break;
                 }
@@ -320,7 +320,7 @@ class GoodReadsCheck extends BaseCheck
                 }
                 break;
             }
-            if (!empty($matches[$authorId]) || strlen($authorInfo['slug']) < 4) {
+            if (!empty($matches[$authorId]) || strlen((string) $authorInfo['slug']) < 4) {
                 $check[$authorId] = [
                     'info' => $authorInfo,
                     'cache' => $authors[$authorId],
@@ -330,7 +330,7 @@ class GoodReadsCheck extends BaseCheck
             }
             // partial match next
             foreach ($authors[$authorId] as $matchId => $count) {
-                if (!str_contains($matchId, $authorInfo['slug'])) {
+                if (!str_contains((string) $matchId, (string) $authorInfo['slug'])) {
                     continue;
                 }
                 $authorInfo['partial'] = $matchId;
@@ -340,7 +340,7 @@ class GoodReadsCheck extends BaseCheck
                     $update .= "UPDATE authors SET link='{$matchUrl}' WHERE id={$authorId};\n";
                     break;
                 }
-                if (str_ends_with($authorInfo['link'], '/' . $matchId)) {
+                if (str_ends_with((string) $authorInfo['link'], '/' . $matchId)) {
                     // nothing to update here
                     break;
                 }
@@ -383,7 +383,7 @@ class GoodReadsCheck extends BaseCheck
                 continue;
             }
             if (!empty($author['link'])) {
-                if (str_starts_with($author['link'], $this->match::AUTHOR_URL)) {
+                if (str_starts_with((string) $author['link'], (string) $this->match::AUTHOR_URL)) {
                     $matchId = str_replace($this->match::AUTHOR_URL, '', $author['link']);
                     try {
                         $this->match->getAuthor($matchId);
@@ -405,7 +405,7 @@ class GoodReadsCheck extends BaseCheck
             $slug = $this->match::authorSlug($author['name']);
             $matchIds = null;
             foreach ($matched as $id => $value) {
-                if (str_ends_with($value['id'], '.' . $slug)) {
+                if (str_ends_with((string) $value['id'], '.' . $slug)) {
                     $matchIds ??= [];
                     $matchIds[] = $value['id'];
                 }
@@ -428,11 +428,11 @@ class GoodReadsCheck extends BaseCheck
             $foundId = null;
             foreach ($books as $bookId => $book) {
                 $title = $book['title'];
-                if (str_contains($title, ':')) {
-                    $title = trim(explode(':', $title)[0]);
+                if (str_contains((string) $title, ':')) {
+                    $title = trim(explode(':', (string) $title)[0]);
                 }
-                if (str_contains($title, '(')) {
-                    $title = trim(explode('(', $title)[0]);
+                if (str_contains((string) $title, '(')) {
+                    $title = trim(explode('(', (string) $title)[0]);
                 }
                 $books[$bookId]['title'] = $title;
                 foreach ($matchIds as $matchId) {
@@ -441,7 +441,7 @@ class GoodReadsCheck extends BaseCheck
                             $foundId = $matchId;
                             break 3;
                         }
-                        if (str_contains($item['title'], $title)) {
+                        if (str_contains((string) $item['title'], (string) $title)) {
                             $foundId = $matchId;
                             break 3;
                         }
@@ -469,7 +469,7 @@ class GoodReadsCheck extends BaseCheck
                             $foundId = $matchId;
                             break 3;
                         }
-                        if (str_contains($item['title'], $title)) {
+                        if (str_contains((string) $item['title'], (string) $title)) {
                             $foundId = $matchId;
                             break 3;
                         }
@@ -537,7 +537,7 @@ class GoodReadsCheck extends BaseCheck
                 continue;
             }
             // check against existing links too
-            if (str_starts_with($link['series_link'], $this->match::SERIES_URL)) {
+            if (str_starts_with((string) $link['series_link'], (string) $this->match::SERIES_URL)) {
                 $todo[$link['series']] = 1;
                 continue;
             }
@@ -555,7 +555,7 @@ class GoodReadsCheck extends BaseCheck
                 $info[$key]['slug'] = $this->match::seriesSlug($data['name']);
                 // exact match first
                 foreach ($series[$seriesId] as $matchId => $count) {
-                    if (!str_ends_with($matchId, $info[$key]['slug'])) {
+                    if (!str_ends_with((string) $matchId, (string) $info[$key]['slug'])) {
                         continue;
                     }
                     $info[$key]['match'] = $matchId;
@@ -565,7 +565,7 @@ class GoodReadsCheck extends BaseCheck
                         $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
                         break;
                     }
-                    if (str_ends_with($info[$key]['link'], '/' . $matchId)) {
+                    if (str_ends_with((string) $info[$key]['link'], '/' . $matchId)) {
                         // nothing to update here
                         break;
                     }
@@ -585,12 +585,12 @@ class GoodReadsCheck extends BaseCheck
                     }
                     break;
                 }
-                if (!empty($matches[$seriesId]) || strlen($info[$key]['slug']) < 4) {
+                if (!empty($matches[$seriesId]) || strlen((string) $info[$key]['slug']) < 4) {
                     break;
                 }
                 // partial match next
                 foreach ($series[$seriesId] as $matchId => $count) {
-                    if (!str_contains($matchId, $info[$key]['slug'])) {
+                    if (!str_contains((string) $matchId, (string) $info[$key]['slug'])) {
                         continue;
                     }
                     $info[$key]['partial'] = $matchId;
@@ -600,7 +600,7 @@ class GoodReadsCheck extends BaseCheck
                         $update .= "UPDATE series SET link='{$matchUrl}' WHERE id={$seriesId};\n";
                         break;
                     }
-                    if (str_ends_with($info[$key]['link'], '/' . $matchId)) {
+                    if (str_ends_with((string) $info[$key]['link'], '/' . $matchId)) {
                         // nothing to update here
                         break;
                     }
@@ -644,7 +644,7 @@ class GoodReadsCheck extends BaseCheck
                 continue;
             }
             if (!empty($link)) {
-                if (str_starts_with($link, $this->match::SERIES_URL)) {
+                if (str_starts_with((string) $link, (string) $this->match::SERIES_URL)) {
                     $matchId = str_replace($this->match::SERIES_URL, '', $link);
                     try {
                         $this->match->getSeries($matchId);
@@ -690,7 +690,7 @@ class GoodReadsCheck extends BaseCheck
         $series = [];
         $seriesLinks = $this->db->getSeriesLinks();
         foreach ($seriesLinks as $seriesId => $link) {
-            if (!empty($link) && str_starts_with($link, $this->match::SERIES_URL)) {
+            if (!empty($link) && str_starts_with((string) $link, (string) $this->match::SERIES_URL)) {
                 $matchId = str_replace($this->match::SERIES_URL, '', $link);
                 $series[$matchId] = $seriesId;
             }
@@ -803,7 +803,7 @@ class GoodReadsCheck extends BaseCheck
 
         $todo = [];
         foreach ($authorList as $authorId => $author) {
-            if (empty($author['link']) || !str_starts_with($author['link'], $this->match::AUTHOR_URL)) {
+            if (empty($author['link']) || !str_starts_with((string) $author['link'], (string) $this->match::AUTHOR_URL)) {
                 continue;
             }
             $matchId = str_replace($this->match::AUTHOR_URL, '', $author['link']);
@@ -835,7 +835,7 @@ class GoodReadsCheck extends BaseCheck
                 }
                 if (empty($foundId)) {
                     foreach ($bookList as $item) {
-                        if (str_contains($item['title'], $title)) {
+                        if (str_contains((string) $item['title'], (string) $title)) {
                             $foundId = $item['id'];
                             break;
                         }

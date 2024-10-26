@@ -52,7 +52,7 @@ class DataCapture
     {
         $type = gettype($item);
         if (is_object($item)) {
-            $node['$comment'] ??= get_class($item);
+            $node['$comment'] ??= $item::class;
             if (method_exists($item, 'all')) {
                 $item = $item->all();
                 // flatten collection here!?
@@ -96,7 +96,7 @@ class DataCapture
         $pattern = $this->patterns[$path] ?? null;
         $example = null;
         foreach ($item as $key => $val) {
-            if (!empty($pattern) && preg_match($pattern, $key)) {
+            if (!empty($pattern) && preg_match($pattern, (string) $key)) {
                 $example ??= $key;
                 $key = $pattern;
             }
