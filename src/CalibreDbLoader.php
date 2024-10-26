@@ -17,53 +17,9 @@ use PDO;
  * CalibreDbLoader class allows to open or create a new Calibre database,
  * and then add BookInfo objects into the database
  */
-class CalibreDbLoader
+class CalibreDbLoader extends DatabaseLoader
 {
-    /** @var PDO|null */
-    protected $db = null;
-    /** @var string|null */
-    protected $dbFileName = null;
-    /** @var PDO|null */
-    protected $notesDb;
     public int $limit = 500;
-    public bool $readOnly = false;
-
-    /**
-     * Open a Calibre database
-     *
-     * @param string $dbFileName Calibre database file name
-     */
-    public function __construct($dbFileName)
-    {
-        $this->dbFileName = $dbFileName;
-        $this->openDatabase($dbFileName);
-        if (!is_writable($this->dbFileName)) {
-            $this->readOnly = true;
-        }
-    }
-
-    /**
-     * Open an sqlite database
-     *
-     * @param string $dbFileName Database file name
-     * @throws Exception if error
-     *
-     * @return void
-     */
-    protected function openDatabase($dbFileName)
-    {
-        try {
-            // Init the Data Source Name
-            $dsn = 'sqlite:' . $dbFileName;
-            // Open the database
-            $this->db = new PDO($dsn); // Send an exception if error
-            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->db->exec('pragma synchronous = off');
-        } catch (Exception $e) {
-            $error = sprintf('Cannot open database [%s]: %s', $dsn, $e->getMessage());
-            throw new Exception($error);
-        }
-    }
 
     /**
      * Check database for debug
@@ -81,15 +37,6 @@ class CalibreDbLoader
             $title = $post->title;
             $sort = $post->sort;
         }
-    }
-
-    /**
-     * Summary of getDbConnection
-     * @return PDO|null
-     */
-    public function getDbConnection()
-    {
-        return $this->db;
     }
 
     /**
@@ -807,26 +754,24 @@ class CalibreDbLoader
 
     /**
      * Summary of getNotesDb
-     * @return PDO|null
+     * @return bool
      */
     public function getNotesDb()
     {
         if (!$this->hasNotes()) {
-            return null;
+            return false;
+        }
+        $databases = $this->getDatabaseList();
+        if (!empty($databases['notes_db'])) {
+            return true;
         }
         $notesFileName = dirname((string) $this->dbFileName) . '/.calnotes/notes.db';
-        try {
-            // Init the Data Source Name
-            $dsn = 'sqlite:' . $notesFileName;
-            // Open the database
-            $this->notesDb = new PDO($dsn); // Send an exception if error
-            $this->notesDb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->notesDb->exec('pragma synchronous = off');
-            return $this->notesDb;
-        } catch (Exception $e) {
-            $error = sprintf('Cannot open database [%s]: %s', $dsn, $e->getMessage());
-            throw new Exception($error);
+        $this->attachDatabase($notesFileName, 'notes_db');
+        $databases = $this->getDatabaseList();
+        if (!empty($databases['notes_db'])) {
+            return true;
         }
+        return false;
     }
 
     /**
@@ -837,10 +782,10 @@ class CalibreDbLoader
      */
     public function getNotes($colName, $itemIdList = [])
     {
-        if (is_null($this->getNotesDb())) {
+        if (!$this->getNotesDb()) {
             return [];
         }
-        $sql = 'select item, colname, doc, mtime from notes';
+        $sql = 'select item, colname, doc, mtime from notes_db.notes';
         $params = [];
         $sql .= ' where colname = ?';
         $params[] = $colName;
@@ -848,7 +793,7 @@ class CalibreDbLoader
             $sql .= ' and item in (' . str_repeat('?,', count($itemIdList) - 1) . '?)';
             $params = array_merge($params, $itemIdList);
         }
-        $stmt = $this->notesDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $notes = [];
         while ($post = $stmt->fetchObject()) {
@@ -863,11 +808,11 @@ class CalibreDbLoader
      */
     public function getNotesCount()
     {
-        if (is_null($this->getNotesDb())) {
+        if (!$this->getNotesDb()) {
             return [];
         }
-        $sql = 'select colname, count(*) as numitems from notes group by colname';
-        $stmt = $this->notesDb->prepare($sql);
+        $sql = 'select colname, count(*) as numitems from notes_db.notes group by colname';
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $count = [];
         while ($post = $stmt->fetchObject()) {
@@ -883,16 +828,16 @@ class CalibreDbLoader
      */
     public function getResources($hash = null)
     {
-        if (is_null($this->getNotesDb())) {
+        if (!$this->getNotesDb()) {
             return [];
         }
-        $sql = 'select hash, name from resources';
+        $sql = 'select hash, name from notes_db.resources';
         $params = [];
         if (!empty($hash)) {
             $sql .= ' where hash = ?';
             $params[] = $hash;
         }
-        $stmt = $this->notesDb->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $names = [];
         while ($post = $stmt->fetchObject()) {

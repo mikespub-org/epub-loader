@@ -9,22 +9,12 @@
 
 namespace Marsender\EPubLoader\Import;
 
+use Marsender\EPubLoader\DatabaseLoader;
 use Marsender\EPubLoader\Models\BookInfo;
-use PDO;
 use Exception;
 
-abstract class ImportTarget
+abstract class ImportTarget extends DatabaseLoader
 {
-    /**
-     * Calibre database sql file that comes unmodified from Calibre project:
-     * https://raw.githubusercontent.com/kovidgoyal/calibre/master/resources/metadata_sqlite.sql
-     */
-    protected static string $createDbSql = 'schema/metadata_sqlite.sql';
-
-    /** @var PDO|null */
-    protected $db = null;
-    /** @var string|null */
-    protected $fileName = null;
     /** @var array<string, mixed>|null */
     protected $bookId = null;
     protected string $bookIdFileName = '';
@@ -38,14 +28,18 @@ abstract class ImportTarget
      */
     public function __construct($dbFileName, $create = false, $bookIdsFileName = '')
     {
-        $this->fileName = $dbFileName;
+        $this->dbFileName = $dbFileName;
         if ($create) {
-            $this->createDatabase($dbFileName);
+            $this->createDatabases($dbFileName);
             if (!empty($bookIdsFileName)) {
                 $this->loadBookIds($bookIdsFileName);
             }
         } else {
             $this->openDatabase($dbFileName);
+            $notesFileName = dirname($dbFileName) . '/.calnotes/notes.db';
+            if (file_exists($notesFileName)) {
+                $this->attachDatabase($notesFileName, 'notes_db');
+            }
         }
     }
 
@@ -71,90 +65,37 @@ abstract class ImportTarget
     abstract public function addBook($bookInfo, $bookId, $sortField = 'sort');
 
     /**
-     * Create an sqlite database
+     * Create sqlite databases (Calibre metadata + notes)
      *
      * @param string $dbFileName Database file name
-     *
      * @throws Exception if error
-     *
      * @return void
      */
-    protected function createDatabase($dbFileName)
+    protected function createDatabases($dbFileName)
     {
-        $sqlFileName = dirname(__DIR__, 2) . '/' . static::$createDbSql;
-        // Read the sql file
+        // Create metadata database
+        $this->createDatabase($dbFileName);
+
+        // Attach notes database
+        $notesFileName = dirname($dbFileName) . '/.calnotes/notes.db';
+        $notesDbPath = dirname($notesFileName);
+        if (!is_dir($notesDbPath)) {
+            if (!mkdir($notesDbPath, 0o755, true)) {
+                throw new Exception('Cannot create directory: ' . $notesDbPath);
+            }
+        }
+        $this->attachDatabase($notesFileName, 'notes_db', true);
+
+        // Read notes sql file
+        $sqlFileName = dirname(__DIR__, 2) . '/' . static::$notesDbSql;
         $content = file_get_contents($sqlFileName);
         if ($content === false) {
             $error = sprintf('Cannot read sql file: %s', $sqlFileName);
             throw new Exception($error);
         }
 
-        // Remove the database file
-        if (file_exists($dbFileName) && !unlink($dbFileName)) {
-            $error = sprintf('Cannot remove database file: %s', $dbFileName);
-            throw new Exception($error);
-        }
-
-        // Create the new database file
-        $this->openDatabase($dbFileName);
-
-        // Create the database tables
-        try {
-            $sqlArray = explode('CREATE ', $content);
-            foreach ($sqlArray as $sql) {
-                $sql = trim($sql);
-                if (empty($sql)) {
-                    continue;
-                }
-                $sql = 'CREATE ' . $sql;
-                $str = strtolower($sql);
-                if (str_contains($str, 'create view')) {
-                    continue;
-                }
-                if (str_contains($str, 'title_sort')) {
-                    continue;
-                }
-                if (str_contains($str, 'fts5')) {
-                    continue;
-                }
-                // Add 'calibre_database_field_cover' field for books
-                if (str_contains($sql, 'has_cover BOOL DEFAULT 0,')) {
-                    $sql = str_replace('has_cover BOOL DEFAULT 0,', 'has_cover BOOL DEFAULT 0,' . ' cover TEXT NOT NULL DEFAULT "",', $sql);
-                }
-                // Add 'calibre_database_field_sort' field for tags
-                if (str_contains($sql, 'CREATE TABLE tags ')) {
-                    $sql = str_replace('name TEXT NOT NULL COLLATE NOCASE,', 'name TEXT NOT NULL COLLATE NOCASE,' . ' sort TEXT COLLATE NOCASE,', $sql);
-                }
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute();
-            }
-        } catch (Exception $e) {
-            $error = sprintf('Cannot create database: %s', $e->getMessage());
-            throw new Exception($error);
-        }
-    }
-
-    /**
-     * Open an sqlite database
-     *
-     * @param string $dbFileName Database file name
-     * @throws Exception if error
-     *
-     * @return void
-     */
-    protected function openDatabase($dbFileName)
-    {
-        try {
-            // Init the Data Source Name
-            $dsn = 'sqlite:' . $dbFileName;
-            // Open the database
-            $this->db = new PDO($dsn); // Send an exception if error
-            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->db->exec('pragma synchronous = off');
-        } catch (Exception $e) {
-            $error = sprintf('Cannot open database [%s]: %s', $dsn, $e->getMessage());
-            throw new Exception($error);
-        }
+        // Create notes database tables
+        $this->createDbTables($content, false);
     }
 
     /**
