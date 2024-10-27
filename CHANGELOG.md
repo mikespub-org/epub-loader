@@ -4,6 +4,7 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Add $gConfig['template_dir'] option in config.php.example
   * Import author & series descriptions as notes in db
   * Add SQLite functions for importing titles & notes
   * Attach notes db instead of opening new connection

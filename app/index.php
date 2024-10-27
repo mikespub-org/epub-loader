@@ -85,7 +85,8 @@ if (is_array($result)) {
     $data['result'] = $result;
 }
 
-$templateDir = null;  // $handler->templateDir = dirname(__DIR__) . '/templates';
+// Specify a template directory to override the standard templates
+$templateDir = $gConfig['template_dir'] ?? null;  // $handler->templateDir = dirname(__DIR__) . '/templates';
 $template = null;  // $handler->template;
 
 header('Content-type: text/html; charset=utf-8');

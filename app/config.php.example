@@ -21,6 +21,7 @@ $gConfig['app_name'] = 'EPub Loader';
 
 /**
  * Application version
+ * @deprecated 3.5.1 see RequestHandler::VERSION
  */
 //$gConfig['version'] = '3.5';
 
@@ -41,6 +42,11 @@ $gConfig['create_db'] = true;
  * Specify a cache directory for any Google or Wikidata lookup
  */
 $gConfig['cache_dir'] = dirname(__DIR__) . '/cache';
+
+/**
+ * Specify a template directory to override the standard templates
+ */
+//$gConfig['template_dir'] = dirname(__DIR__) . '/templates/twigged/loader';
 
 /**
  * Databases infos
@@ -101,6 +107,7 @@ $gConfig['groups']['Internal'] = [
 ];
 $gConfig['groups']['Extra'] = [
     'notes' => 'Get Calibre Notes',
+    // update metadata in epub files
     //'meta' => 'EPub Metadata App',
     'hello_world' => 'Example: Hello, World - see app/example.php',
     'goodbye' => 'Example: Goodbye - see app/example.php',
