@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "47b3f8dbee77c7c6101e887689d28c7d",
+    "content-hash": "e04fb153556248440d163351e4c73783",
     "packages": [
         {
             "name": "illuminate/collections",
@@ -280,16 +280,16 @@
         },
         {
             "name": "mikespub/php-epub-meta",
-            "version": "3.3.0",
+            "version": "3.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mikespub-org/php-epub-meta.git",
-                "reference": "e1638d61f6cc53dc73fcc9f5459a62b2e4843dbb"
+                "reference": "348f904d88857b7d81448eaa29586c74d3740361"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/e1638d61f6cc53dc73fcc9f5459a62b2e4843dbb",
-                "reference": "e1638d61f6cc53dc73fcc9f5459a62b2e4843dbb",
+                "url": "https://api.github.com/repos/mikespub-org/php-epub-meta/zipball/348f904d88857b7d81448eaa29586c74d3740361",
+                "reference": "348f904d88857b7d81448eaa29586c74d3740361",
                 "shasum": ""
             },
             "require": {
@@ -302,7 +302,7 @@
                 "php": ">=8.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "^11.4"
+                "phpunit/phpunit": "^10.5||^11.4"
             },
             "suggest": {
                 "mikespub/epub-loader": "epub-loader is a utility resource for ebooks",
@@ -346,22 +346,22 @@
             ],
             "support": {
                 "issues": "https://github.com/mikespub-org/php-epub-meta/issues",
-                "source": "https://github.com/mikespub-org/php-epub-meta/tree/3.3.0"
+                "source": "https://github.com/mikespub-org/php-epub-meta/tree/3.3.1"
             },
-            "time": "2024-10-23T17:33:38+00:00"
+            "time": "2024-10-27T17:27:13+00:00"
         },
         {
             "name": "mikespub/survos-wikidata",
-            "version": "5.1",
+            "version": "5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mikespub-org/survos-wikidata.git",
-                "reference": "5cf098807e8ea1bee6a36e994bb56b101e03867d"
+                "reference": "f7a4c4dd2ae15b8c212233c7c667fcfc16d43ae8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mikespub-org/survos-wikidata/zipball/5cf098807e8ea1bee6a36e994bb56b101e03867d",
-                "reference": "5cf098807e8ea1bee6a36e994bb56b101e03867d",
+                "url": "https://api.github.com/repos/mikespub-org/survos-wikidata/zipball/f7a4c4dd2ae15b8c212233c7c667fcfc16d43ae8",
+                "reference": "f7a4c4dd2ae15b8c212233c7c667fcfc16d43ae8",
                 "shasum": ""
             },
             "require": {
@@ -371,7 +371,7 @@
             },
             "require-dev": {
                 "phpstan/phpstan": "^1.12",
-                "phpunit/phpunit": "^10.5",
+                "phpunit/phpunit": "^10.5||^11.4",
                 "rector/rector": "^1.2"
             },
             "type": "library",
@@ -409,7 +409,7 @@
                 "wikidata"
             ],
             "support": {
-                "source": "https://github.com/mikespub-org/survos-wikidata/tree/5.1"
+                "source": "https://github.com/mikespub-org/survos-wikidata/tree/5.2"
             },
             "funding": [
                 {
@@ -421,7 +421,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2024-09-29T12:45:18+00:00"
+            "time": "2024-10-27T17:34:55+00:00"
         },
         {
             "name": "psr/container",
@@ -646,16 +646,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v7.1.5",
+            "version": "v7.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "abca35865118edf35a23f2f24978a1784c831cb4"
+                "reference": "274e2f6886b43a36f8bd5dfeb67215f7ebf9e291"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/abca35865118edf35a23f2f24978a1784c831cb4",
-                "reference": "abca35865118edf35a23f2f24978a1784c831cb4",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/274e2f6886b43a36f8bd5dfeb67215f7ebf9e291",
+                "reference": "274e2f6886b43a36f8bd5dfeb67215f7ebf9e291",
                 "shasum": ""
             },
             "require": {
@@ -720,7 +720,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v7.1.5"
+                "source": "https://github.com/symfony/http-client/tree/v7.1.6"
             },
             "funding": [
                 {
@@ -736,7 +736,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-20T13:35:23+00:00"
+            "time": "2024-10-22T09:40:50+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
