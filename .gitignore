@@ -4,3 +4,4 @@ vendor/
 clover.xml
 coverage/
 rector.php
+composer.lock
