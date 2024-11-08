@@ -16,6 +16,8 @@ use Exception;
 
 class OpenLibraryImport
 {
+    public const SOURCE = 'openlibrary';
+
     /**
      * Load book info from an OpenLibrary work
      *
@@ -38,7 +40,7 @@ class OpenLibraryImport
         }
 
         $bookInfo = new BookInfo();
-        $bookInfo->source = 'openlibrary';
+        $bookInfo->source = self::SOURCE;
         $bookInfo->basePath = $basePath;
         // @todo check details format and/or links for epub, pdf etc.
         $bookInfo->format = 'epub';
@@ -68,22 +70,36 @@ class OpenLibraryImport
             if (!$cache->hasCache($cacheFile)) {
                 continue;
             }
-            $author = $cache->loadCache($cacheFile);
-            if (empty($author['name'])) {
+            $authorData = $cache->loadCache($cacheFile);
+            if (empty($authorData['name'])) {
                 continue;
             }
-            $authorSort = AuthorInfo::getNameSort($author['name']);
-            if (!empty($author['bio']) && is_array($author['bio'])) {
-                $description = $author['bio']['value'] ?? '';
+            $authorEntity = OpenLibraryCache::parseAuthorEntity($authorData);
+            $authorSort = AuthorInfo::getNameSort($authorEntity->getName());
+            $bio = $authorEntity->getBio();
+            if (!empty($bio) && is_array($bio)) {
+                $description = $bio['value'] ?? '';
             } else {
-                $description = $author['bio'] ?? '';
+                $description = $bio ?? '';
+            }
+            $covers = $authorEntity->getPhotos();
+            if (!empty($covers) && is_array($covers)) {
+                // pick the lowest cover number?
+                //sort($covers, SORT_NUMERIC);
+                $cover = reset($covers);
+                // @see https://openlibrary.org/dev/docs/api/covers
+                $image = "https://covers.openlibrary.org/a/id/{$cover}-M.jpg";
+            } else {
+                $image = "https://covers.openlibrary.org/a/olid/{$authorId}-M.jpg";
             }
             $info = [
                 'id' => $authorId,
-                'name' => $author['name'],
+                'name' => $authorEntity->getName(),
                 'sort' => $authorSort,
                 'link' => OpenLibraryMatch::link($authorId),
+                'image' => $image,
                 'description' => $description,
+                'source' => self::SOURCE,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -96,10 +112,14 @@ class OpenLibraryImport
         if (!empty($work->getCovers())) {
             $covers = $work->getCovers();
             // pick the lowest cover number?
-            sort($covers, SORT_NUMERIC);
+            //sort($covers, SORT_NUMERIC);
             $cover = reset($covers);
             // @see https://openlibrary.org/dev/docs/api/covers
             $bookInfo->cover = "https://covers.openlibrary.org/b/id/{$cover}-M.jpg";
+        } else {
+            // @todo we need an edition OL...M olid for this to work
+            //$workId = $bookInfo->id;
+            //$bookInfo->cover = "https://covers.openlibrary.org/b/olid/{$workid}-M.jpg";
         }
         // @todo ...
         //$bookInfo->addSeries(0, '...');

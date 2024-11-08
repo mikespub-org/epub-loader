@@ -17,6 +17,8 @@ use Exception;
 
 class LocalBooksImport
 {
+    public const SOURCE = 'local';
+
     /**
      * Load book info from an epub file
      *
@@ -52,7 +54,7 @@ class LocalBooksImport
         // Load the book infos
         $bookInfo = new BookInfo();
 
-        $bookInfo->source = 'local';
+        $bookInfo->source = self::SOURCE;
         $bookInfo->basePath = $basePath;
         $bookInfo->format = 'epub';
         $bookInfo->path = pathinfo($fileName, PATHINFO_DIRNAME);
@@ -65,10 +67,12 @@ class LocalBooksImport
             $authorId = $authorName;
             $info = [
                 'id' => '',
-                'name' => $authorSort,
-                'sort' => $authorName,
+                'name' => $authorName,
+                'sort' => $authorSort,
                 'link' => '',
+                'image' => '',
                 'description' => '',
+                'source' => self::SOURCE,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -105,7 +109,9 @@ class LocalBooksImport
                 'sort' => SeriesInfo::getTitleSort($title),
                 'index' => $index,
                 'link' => '',
+                'image' => '',
                 'description' => '',
+                'source' => self::SOURCE,
             ];
             $bookInfo->addSeries(0, $info);
         }

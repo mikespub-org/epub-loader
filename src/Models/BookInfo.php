@@ -159,14 +159,17 @@ class BookInfo extends BaseInfo
             $data = array_replace($data, $details->getBookDetails($bookInfo->id));
             $bookInfo->loaded = true;
         } else {
+            // From CalibreDbLoader::getBooks():
             if (!empty($data['author']) && is_numeric($data['author'])) {
                 $authorId = $data['author'];
                 $data['authors'] = [];
                 $data['authors'][$authorId] = [
                     'id' => $authorId,
                     'name' => $authorId,
+                    'source' => $bookInfo->source,
                 ];
             }
+            // From CalibreDbLoader::getBooks():
             if (!empty($data['series']) && is_numeric($data['series'])) {
                 $seriesId = $data['series'];
                 $data['series'] = [];
@@ -174,6 +177,7 @@ class BookInfo extends BaseInfo
                     'id' => $seriesId,
                     'name' => $seriesId,
                     'index' => $data['series_index'],
+                    'source' => $bookInfo->source,
                 ];
             }
             $bookInfo->loaded = false;

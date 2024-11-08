@@ -68,15 +68,9 @@ $gConfig['databases'][] = ['name' => 'EPub Tests', 'db_path' => dirname(__DIR__,
  */
 /**
 $gConfig['callbacks'] = [
-    'setAuthorImage' => $this->setAuthorImage(...),
-    'setAuthorLink' => $this->setAuthorLink(...),
-    'setAuthorNote' => $this->setAuthorNote(...),
-    'setBookImage' => $this->setBookImage(...),
-    'setBookLink' => $this->setBookLink(...),
-    'setBookNote' => $this->setBookNote(...),
-    'setSeriesImage' => $this->setSeriesImage(...),
-    'setSeriesLink' => $this->setSeriesLink(...),
-    'setSeriesNote' => $this->setSeriesNote(...),
+    'setAuthorInfo' => $this->setAuthorInfo(...),
+    'setSeriesInfo' => $this->setSeriesInfo(...),
+    'setBookInfo' => $this->setBookInfo(...),
 ];
 */
 

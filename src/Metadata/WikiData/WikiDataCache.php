@@ -589,16 +589,16 @@ class WikiDataCache extends BaseCache
      * Summary of parseEntity
      * @param array<mixed> $data
      * @param string $lang
-     * @return Entity|array<mixed>|null
+     * @return array<mixed>
      */
     public static function parseEntity($data, $lang = 'en')
     {
         if (empty($data['properties']) || empty($data['properties']['P31'])) {
-            return null;
+            return [];
         }
         $instanceOf = $data['properties']['P31'];
         if (empty($instanceOf['values'])) {
-            return null;
+            return [];
         }
         $data['type'] = null;
         foreach ($instanceOf['values'] as $value) {
@@ -609,7 +609,7 @@ class WikiDataCache extends BaseCache
             }
         }
         if (empty($data['type'])) {
-            return null;
+            return [];
         }
         unset($data['properties']['P31']);
         // @todo parse author, book, series etc.
@@ -630,7 +630,7 @@ class WikiDataCache extends BaseCache
     /**
      * Summary of parseAuthor
      * @param array<mixed> $data
-     * @return array<mixed>|null
+     * @return array<mixed>
      */
     public static function parseAuthor($data)
     {
@@ -766,7 +766,7 @@ class WikiDataCache extends BaseCache
     /**
      * Summary of parseBook
      * @param array<mixed> $data
-     * @return array<mixed>|null
+     * @return array<mixed>
      */
     public static function parseBook($data)
     {
@@ -850,7 +850,7 @@ class WikiDataCache extends BaseCache
     /**
      * Summary of parseSeries
      * @param array<mixed> $data
-     * @return array<mixed>|null
+     * @return array<mixed>
      */
     public static function parseSeries($data)
     {
@@ -923,7 +923,7 @@ class WikiDataCache extends BaseCache
     /**
      * Summary of parsePublisher
      * @param array<mixed> $data
-     * @return array<mixed>|null
+     * @return array<mixed>
      */
     public static function parsePublisher($data)
     {

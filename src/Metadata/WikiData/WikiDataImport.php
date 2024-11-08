@@ -16,6 +16,8 @@ use Exception;
 
 class WikiDataImport
 {
+    public const SOURCE = 'wikidata';
+
     /**
      * Load book info from a WikiData entity
      *
@@ -38,7 +40,7 @@ class WikiDataImport
         }
 
         $bookInfo = new BookInfo();
-        $bookInfo->source = 'wikidata';
+        $bookInfo->source = self::SOURCE;
         $bookInfo->basePath = $basePath;
         // @todo check details format and/or links for epub, pdf etc.
         $bookInfo->format = 'epub';
@@ -66,15 +68,20 @@ class WikiDataImport
             // author description available from cached author - not very interesting here
             $cacheFile = $cache->getEntity($authorId);
             if ($cache->hasCache($cacheFile)) {
-                $author = array_merge($author, $cache->loadCache($cacheFile));
+                $authorData = $cache->loadCache($cacheFile);
+                $authorEntity = WikiDataCache::parseEntity($authorData);
+                $author = array_merge($author, $authorEntity);
             }
+            $image = $author['cover'] ?? '';
             $description = $author['description'] ?? '';
             $info = [
                 'id' => $authorId,
                 'name' => $authorSort,
                 'sort' => $authorName,
                 'link' => WikiDataMatch::link($authorId),
+                'image' => $image,
                 'description' => $description,
+                'source' => self::SOURCE,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -96,8 +103,11 @@ class WikiDataImport
             // series description available from cached series - not very interesting here
             $cacheFile = $cache->getEntity($seriesId);
             if ($cache->hasCache($cacheFile)) {
-                $series = array_merge($series, $cache->loadCache($cacheFile));
+                $seriesData = $cache->loadCache($cacheFile);
+                $seriesEntity = WikiDataCache::parseEntity($seriesData);
+                $series = array_merge($series, $seriesEntity);
             }
+            $image = $series['cover'] ?? '';
             $description = $series['description'] ?? '';
             $info = [
                 'id' => $seriesId,
@@ -105,7 +115,9 @@ class WikiDataImport
                 'sort' => SeriesInfo::getTitleSort($title),
                 'index' => $index,
                 'link' => WikiDataMatch::link($seriesId),
+                'image' => $image,
                 'description' => $description,
+                'source' => self::SOURCE,
             ];
             $bookInfo->addSeries($seriesId, $info);
             $idx++;

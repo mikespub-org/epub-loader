@@ -17,6 +17,8 @@ use Marsender\EPubLoader\Models\SeriesInfo;
 
 class GoogleBooksImport
 {
+    public const SOURCE = 'googlebooks';
+
     /**
      * Load book info from a Google Books volume
      *
@@ -35,7 +37,7 @@ class GoogleBooksImport
         }
 
         $bookInfo = new BookInfo();
-        $bookInfo->source = 'google';
+        $bookInfo->source = self::SOURCE;
         $bookInfo->basePath = $basePath;
         // @todo check accessInfo for epub, pdf etc.
         $bookInfo->format = 'epub';
@@ -57,7 +59,9 @@ class GoogleBooksImport
                 'name' => $authorSort,
                 'sort' => $authorName,
                 'link' => '',
+                'image' => '',
                 'description' => '',
+                'source' => self::SOURCE,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -106,7 +110,9 @@ class GoogleBooksImport
                     'name' => $seriesTitle,
                     'sort' => $seriesSort,
                     'index' => $index,
+                    'image' => '',
                     'description' => '',
+                    'source' => self::SOURCE,
                 ];
                 $bookInfo->addSeries($seriesId, $info);
             }

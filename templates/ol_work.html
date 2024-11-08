@@ -48,12 +48,20 @@
 </div>
 <div><b>Open Library Work {{workId}}</b></div>
 {% if workId ends with 'A' %}
-<p>See <a href="{{endpoint}}/caches/{{dbNum}}/openlibrary/entities/A?entry={{workId}}">cache entry</a></p>
-<img src="https://covers.openlibrary.org/a/olid/{{workId}}-M.jpg"/>
+	<p>See <a href="{{endpoint}}/caches/{{dbNum}}/openlibrary/entities/A?entry={{workId}}">cache entry</a></p>
+	{% if work.photos %}
+		<img src="https://covers.openlibrary.org/a/id/{{work.photos|first}}-M.jpg"/>
+	{% else %}
+		<img src="https://covers.openlibrary.org/a/olid/{{workId}}-M.jpg"/>
+	{% endif %}
 {% endif %}
-{% if workId ends with 'W' and work.covers %}
-<p>See <a href="{{endpoint}}/caches/{{dbNum}}/openlibrary/entities/W?entry={{workId}}">cache entry</a></p>
-<img src="https://covers.openlibrary.org/b/id/{{work.covers|sort|first}}-M.jpg"/>
+{% if workId ends with 'W' %}
+	<p>See <a href="{{endpoint}}/caches/{{dbNum}}/openlibrary/entities/W?entry={{workId}}">cache entry</a></p>
+	{% if work.covers %}
+		<img src="https://covers.openlibrary.org/b/id/{{work.covers|first}}-M.jpg"/>
+	{% else %}
+		{# <img src="https://covers.openlibrary.org/b/olid/{{workId}}-M.jpg"/> #}
+	{% endif %}
 {% endif %}
 <ul>
 {% for key, value in work %}

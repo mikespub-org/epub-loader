@@ -20,6 +20,8 @@ use Exception;
 
 class GoodReadsImport
 {
+    public const SOURCE = 'goodreads';
+
     /**
      * Load book info from a GoodReads book
      *
@@ -59,7 +61,7 @@ class GoodReadsImport
         $work = $workMap[$workRef];
 
         $bookInfo = new BookInfo();
-        $bookInfo->source = 'goodreads';
+        $bookInfo->source = self::SOURCE;
         $bookInfo->basePath = $basePath;
         // @todo check details format and/or links for epub, pdf etc.
         $bookInfo->format = 'epub';
@@ -91,7 +93,9 @@ class GoodReadsImport
         } else {
             $link = GoodReadsMatch::AUTHOR_URL . $authorId;
         }
+        // author image may be available for primary contributor
         $image = (string) $contributors[$authorRef]->getProfileImageUrl();
+        // author description may be available for primary contributor
         $description = (string) $contributors[$authorRef]->getDescription();
         $info = [
             'id' => $authorId,
@@ -100,6 +104,7 @@ class GoodReadsImport
             'link' => $link,
             'image' => $image,
             'description' => $description,
+            'source' => self::SOURCE,
         ];
         $bookInfo->addAuthor($authorId, $info);
         // add authors from secondaryContributorEdges if they are Author
@@ -132,6 +137,7 @@ class GoodReadsImport
                 'link' => $link,
                 'image' => $image,
                 'description' => $description,
+                'source' => self::SOURCE,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
@@ -173,16 +179,20 @@ class GoodReadsImport
             $description = '';
             $cacheFile = $cache->getSeries($seriesId);
             if ($cache->hasCache($cacheFile)) {
-                $found = $cache->loadCache($cacheFile);
-                $info = GoodReadsCache::parseSeries($found);
-                $description = $info->getDescription() ?? '';
+                $seriesData = $cache->loadCache($cacheFile);
+                $seriesResult = GoodReadsCache::parseSeries($seriesData);
+                $description = $seriesResult->getDescription() ?? '';
             }
+            // series image is not available
+            $image = '';
             $info = [
                 'id' => $seriesId,
                 'name' => $title,
                 'sort' => SeriesInfo::getTitleSort($title),
                 'link' => GoodReadsMatch::SERIES_URL . $seriesId,
+                'image' => $image,
                 'description' => $description,
+                'source' => self::SOURCE,
             ];
             if (empty($bookInfo->series)) {
                 $info['index'] = $index;
@@ -224,13 +234,16 @@ class GoodReadsImport
         // info for series in BookInfo - @todo do we want that?
         $seriesId = $seriesResult->getId();
         $title = $seriesResult->getTitle();
+        $image = '';
         $description = $seriesResult->getDescription();
         $seriesInfo = [
             'id' => $seriesId,
             'name' => $title,
             'sort' => SeriesInfo::getTitleSort($title),
             'link' => GoodReadsMatch::SERIES_URL . $seriesId,
+            'image' => $image,
             'description' => $description,
+            'source' => self::SOURCE,
         ];
         foreach ($seriesResult->getBookList() as $key => $book) {
             if (empty($book->getBookId())) {
@@ -256,7 +269,7 @@ class GoodReadsImport
     public static function loadSeriesBook($basePath, $book, $seriesInfo)
     {
         $bookInfo = new BookInfo();
-        $bookInfo->source = 'goodreads';
+        $bookInfo->source = self::SOURCE;
         $bookInfo->basePath = $basePath;
         // @todo check details format and/or links for epub, pdf etc.
         $bookInfo->format = 'epub';
@@ -286,13 +299,16 @@ class GoodReadsImport
                 $authorId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $author->getWorksListUrl());
             }
             // @todo author description is available from cached book contributors
+            $image = '';
             $description = '';
             $info = [
                 'id' => $authorId,
                 'name' => $authorName,
                 'sort' => $authorSort,
                 'link' => $author->getWorksListUrl(),
+                'image' => $image,
                 'description' => $description,
+                'source' => self::SOURCE,
             ];
             $bookInfo->addAuthor($authorId, $info);
         }
