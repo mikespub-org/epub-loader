@@ -346,6 +346,11 @@ class WikiDataHandler extends MetadataHandler
         $authorList = $this->getAuthorList();
         $seriesList = $this->getSeriesList($authorId);
 
+        $callback = false;
+        if (!empty($entityId) && !empty($entity)) {
+            $callback = $this->check_callback($entity);
+        }
+
         // Return info
         return [
             'entity' => $entity,
@@ -354,6 +359,95 @@ class WikiDataHandler extends MetadataHandler
             'seriesId' => $seriesId,
             'authors' => $authorList,
             'series' => $seriesList,
+            'callback' => $callback,
         ];
+    }
+
+    /**
+     * Summary of check_callback
+     * @param mixed $entity
+     * @return mixed
+     */
+    public function check_callback($entity)
+    {
+        $parsed = WikiDataCache::parseEntity($entity);
+        if (empty($parsed)) {
+            return false;
+        }
+        return match ($parsed['type']) {
+            'author' => $this->callSetAuthorInfo($parsed),
+            'book' => $this->callSetAuthorInfo($parsed),
+            'series' => $this->callSetAuthorInfo($parsed),
+            default => false,
+        };
+    }
+
+    /**
+     * Summary of callSetAuthorInfo
+     * @param mixed $parsed
+     * @return mixed
+     */
+    public function callSetAuthorInfo($parsed)
+    {
+        // check if we have a callback + the calibre id for it
+        $authorId = $this->request->get('authorId');
+        $callbacks = $this->request->getCallbacks();
+        $callback = $callbacks['setAuthorInfo'] ?? '';
+        if (empty($authorId) || empty($callback)) {
+            return false;
+        }
+        $basePath = $this->cacheDir . '/wikidata';
+        $authorInfo = [];  // WikiDataImport::loadAuthor($basePath, $parsed);
+        if (empty($authorInfo)) {
+            return false;
+        }
+        $result = $callback($authorId, $authorInfo);
+        return $result;
+    }
+
+    /**
+     * Summary of callSetBookInfo
+     * @param mixed $parsed
+     * @return mixed
+     */
+    public function callSetBookInfo($parsed)
+    {
+        // check if we have a callback + the calibre id for it
+        $bookId = $this->request->get('bookId');
+        $callbacks = $this->request->getCallbacks();
+        $callback = $callbacks['setBookInfo'] ?? '';
+        if (empty($bookId) || empty($callback)) {
+            return false;
+        }
+        $basePath = $this->cacheDir . '/wikidata';
+        $bookInfo = WikiDataImport::load($basePath, $parsed);
+        if (empty($bookInfo)) {
+            return false;
+        }
+        $result = $callback($bookId, $bookInfo);
+        return $result;
+    }
+
+    /**
+     * Summary of callSetSeriesInfo
+     * @param mixed $parsed
+     * @return mixed
+     */
+    public function callSetSeriesInfo($parsed)
+    {
+        // check if we have a callback + the calibre id for it
+        $seriesId = $this->request->get('seriesId');
+        $callbacks = $this->request->getCallbacks();
+        $callback = $callbacks['setSeriesInfo'] ?? '';
+        if (empty($seriesId) || empty($callback)) {
+            return false;
+        }
+        $basePath = $this->cacheDir . '/wikidata';
+        $seriesInfo = [];  // WikiDataImport::loadSeries($basePath, $parsed);
+        if (empty($seriesInfo)) {
+            return false;
+        }
+        $result = $callback($seriesId, $seriesInfo);
+        return $result;
     }
 }

@@ -48,7 +48,7 @@ class OpenLibraryImport
         $bookInfo->uri = (string) OpenLibraryMatch::link($bookInfo->id);
         // @todo use calibre_external_storage in COPS
         $bookInfo->path = $bookInfo->uri;
-        if (str_starts_with($bookInfo->path, $basePath)) {
+        if (!empty($basePath) && str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
         $bookInfo->uuid = 'olid:' . $bookInfo->id;

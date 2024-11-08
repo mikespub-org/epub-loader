@@ -30,6 +30,9 @@ class WikiDataImport
      */
     public static function load($basePath, $entity, $cache = null)
     {
+        if (empty($entity) || $entity['type'] != 'book') {
+            throw new Exception('Wrong entity type to load BookInfo');
+        }
         if (empty($cache)) {
             if (basename($basePath) == 'wikidata') {
                 $cacheDir = dirname($basePath);
@@ -48,7 +51,7 @@ class WikiDataImport
         $bookInfo->uri = (string) WikiDataMatch::link($bookInfo->id);
         // @todo use calibre_external_storage in COPS
         $bookInfo->path = $bookInfo->uri;
-        if (str_starts_with($bookInfo->path, $basePath)) {
+        if (!empty($basePath) && str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
         $bookInfo->uuid = 'wd:' . $bookInfo->id;
@@ -76,8 +79,8 @@ class WikiDataImport
             $description = $author['description'] ?? '';
             $info = [
                 'id' => $authorId,
-                'name' => $authorSort,
-                'sort' => $authorName,
+                'name' => $authorName,
+                'sort' => $authorSort,
                 'link' => WikiDataMatch::link($authorId),
                 'image' => $image,
                 'description' => $description,

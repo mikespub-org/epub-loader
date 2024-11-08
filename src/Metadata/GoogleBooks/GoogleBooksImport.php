@@ -45,19 +45,19 @@ class GoogleBooksImport
         $bookInfo->uri = (string) ($volumeInfo->getCanonicalVolumeLink() ?? $volume->getSelfLink());
         // @todo use calibre_external_storage in COPS
         $bookInfo->path = $bookInfo->uri;
-        if (str_starts_with($bookInfo->path, $basePath)) {
+        if (!empty($basePath) && str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
         $bookInfo->uuid = 'google:' . $bookInfo->id;
         $bookInfo->title = (string) $volumeInfo->getTitle();
         foreach ($volumeInfo->getAuthors() as $authorName) {
+            $authorName = self::fixAuthorName($authorName);
             $authorSort = AuthorInfo::getNameSort($authorName);
-            $authors[$authorSort] = $authorName;
             $authorId = $authorName;
             $info = [
                 'id' => '',
-                'name' => $authorSort,
-                'sort' => $authorName,
+                'name' => $authorName,
+                'sort' => $authorSort,
                 'link' => '',
                 'image' => '',
                 'description' => '',
@@ -130,6 +130,28 @@ class GoogleBooksImport
         }
 
         return $bookInfo;
+    }
+
+    /**
+     * Summary of fixAuthorName
+     * @param string $authorName
+     * @return string
+     */
+    public static function fixAuthorName($authorName)
+    {
+        if (str_contains($authorName, '(')) {
+            [$first, $last] = explode('(', $authorName, 2);
+            $authorName = trim($first);
+        }
+        if (str_contains($authorName, ',')) {
+            [$last, $first] = explode(',', $authorName, 2);
+            $authorName = trim($first) . ' ' . trim($last);
+        }
+        $title = explode(' ', $authorName)[0];
+        if (in_array(strtolower($title), ['sir', 'dr.'])) {
+            $authorName = trim(substr($authorName, strlen($title)));
+        }
+        return $authorName;
     }
 
     /**

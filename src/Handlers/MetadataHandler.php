@@ -77,8 +77,13 @@ class MetadataHandler extends ActionHandler
 
         // Find matchId from author link
         $authorInfo = null;
+        $callback = false;
         if (!empty($authorId)) {
             $authorInfo = $authors[$authorId];
+            $callbacks = $this->request->getCallbacks();
+            if (!empty($callbacks['setAuthorInfo'])) {
+                $callback = true;
+            }
         }
 
         // Find author links if requested
@@ -93,6 +98,7 @@ class MetadataHandler extends ActionHandler
             'authorInfo' => AuthorInfo::load($dbPath, $authorInfo, $this->db),
             'matched' => $matched,
             'paging' => $paging,
+            'callback' => $callback,
         ];
     }
 
@@ -111,6 +117,7 @@ class MetadataHandler extends ActionHandler
         // Get authId from template
         // Get serId from template
         $bookInfo = null;
+        $callback = false;
         if (!empty($bookId)) {
             $books = $this->db->getBooks($bookId);
             if (empty($authorId)) {
@@ -120,6 +127,10 @@ class MetadataHandler extends ActionHandler
                 $seriesId = $books[$bookId]['series'];
             }
             $bookInfo = $books[$bookId];
+            $callbacks = $this->request->getCallbacks();
+            if (!empty($callbacks['setBookInfo'])) {
+                $callback = true;
+            }
         }
         // Find serId from series link
         $seriesInfo = null;
@@ -185,6 +196,7 @@ class MetadataHandler extends ActionHandler
             //'identifierType' => '',
             //'matchId' => $matchId,
             //'serId' => $serId,
+            'callback' => $callback,
         ];
     }
 
@@ -204,12 +216,17 @@ class MetadataHandler extends ActionHandler
         $matched = null;
 
         $seriesInfo = null;
+        $callback = false;
         if (!empty($seriesId)) {
             $series = $this->db->getSeries($seriesId, $authorId, null, $sort, $offset);
             // series can have multiple authors - pick the first
             $seriesInfo = reset($series);
             if (empty($authorId)) {
                 $authorId = $seriesInfo['author'];
+            }
+            $callbacks = $this->request->getCallbacks();
+            if (!empty($callbacks['setSeriesInfo'])) {
+                $callback = true;
             }
         } else {
             $series = $this->db->getSeriesByAuthor($authorId, $sort, $offset);
@@ -237,6 +254,7 @@ class MetadataHandler extends ActionHandler
             'matched' => $matched,
             'authors' => $authorList,
             'paging' => $paging,
+            'callback' => $callback,
         ];
     }
 

@@ -53,7 +53,12 @@
 		<td>{{item.name}}</td>
 		<td><a href="{{endpoint}}/{{bookAction}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}" title="Books in Series">{{item.books}}</a></td>
 		<td>{% if seriesId == item.id %}<strong>Search</strong>{% else %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}">Search</a>{% endif %}</td>
-		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}&matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
+		<td>
+			<input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" />
+			{% if item.entityId %}
+				<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{item.author}}?seriesId={{item.id}}&matchId={{item.entityId}}">{{item.entityId}}</a>
+			{% endif %}
+		</td>
 	</tr>
 	{% endfor %}
 	{% if paging %}

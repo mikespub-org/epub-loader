@@ -29,7 +29,12 @@
 		<td>
 			{{ include('links.html', {itemId: item.id}) }}
 		</td>
-		<td><input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" /> {% if item.entityId %}<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{item.id}}?matchId={{item.entityId}}">{{item.entityId}}</a>{% endif %}</td>
+		<td>
+			<input type="url" name="link[{{item.id}}]" value="{{item.link}}" size="32" />
+			{% if item.entityId %}
+				<a href="{{endpoint}}/{{item.entityType}}/{{dbNum}}/{{item.id}}?matchId={{item.entityId}}">{{item.entityId}}</a>
+			{% endif %}
+		</td>
 	</tr>
 	{% endfor %}
 	{% if paging %}

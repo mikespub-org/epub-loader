@@ -68,7 +68,7 @@ class CsvImport extends SourceImport
         $i = 0;
         $bookInfo->format = $array[$i++];
         $bookInfo->path = $array[$i++];
-        if (str_starts_with($bookInfo->path, $basePath)) {
+        if (!empty($basePath) && str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
         $bookInfo->id = $array[$i++];

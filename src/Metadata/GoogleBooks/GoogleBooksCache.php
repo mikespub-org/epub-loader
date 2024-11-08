@@ -26,115 +26,140 @@ class GoogleBooksCache extends BaseCache
      * Summary of getAuthorQuery
      * Path: '/google/authors/' . $query . '.' . $lang . '.' . $limit . '.json'
      * @param string $query
-     * @param string $lang Language (default: en)
+     * @param ?string $lang Language (default: en)
      * @param string|int $limit Max count of returning items (default: 40)
      * @return string
      */
     public function getAuthorQuery($query, $lang = 'en', $limit = 40)
     {
-        $cacheFile = $this->cacheDir . '/google/authors/' . $query . '.' . $lang . '.' . $limit . '.json';
-        return $cacheFile;
+        if (!empty($lang)) {
+            return $this->cacheDir . '/google/authors/' . $query . '.' . $lang . '.' . $limit . '.json';
+        }
+        // $query includes .$lang
+        return $this->cacheDir . '/google/authors/' . $query . '.' . $limit . '.json';
     }
 
     /**
      * Summary of getAuthorQueries
      * Path: '/google/authors/'
-     * @param string $lang Language (default: en)
+     * @param ?string $lang Language (default: null)
      * @param string|int $limit Max count of returning items (default: 40)
      * @return array<string>
      */
-    public function getAuthorQueries($lang = 'en', $limit = 40)
+    public function getAuthorQueries($lang = null, $limit = 40)
     {
         $baseDir = $this->cacheDir . '/google/authors/';
-        return parent::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+        if (!empty($lang)) {
+            return parent::getFiles($baseDir, '*.' . $lang . '.' . $limit . '.json', true);
+        }
+        return parent::getFiles($baseDir, '*.' . $limit . '.json', true);
     }
 
     /**
      * Summary of getTitleQuery
      * Path: '/google/titles/' . $query . '.' . $lang . '.json'
      * @param string $query
-     * @param string $lang Language (default: en)
+     * @param ?string $lang Language (default: en)
      * @return string
      */
     public function getTitleQuery($query, $lang = 'en')
     {
-        $cacheFile = $this->cacheDir . '/google/titles/' . $query . '.' . $lang . '.json';
-        return $cacheFile;
+        if (!empty($lang)) {
+            return $this->cacheDir . '/google/titles/' . $query . '.' . $lang . '.json';
+        }
+        // $query includes .$lang
+        return $this->cacheDir . '/google/titles/' . $query . '.json';
     }
 
     /**
      * Summary of getTitleQueries
      * Path: '/google/titles/'
-     * @param string $lang Language (default: en)
+     * @param ?string $lang Language (default: null)
      * @return array<string>
      */
-    public function getTitleQueries($lang = 'en')
+    public function getTitleQueries($lang = null)
     {
         $baseDir = $this->cacheDir . '/google/titles/';
-        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
+        if (!empty($lang)) {
+            return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
+        }
+        return parent::getFiles($baseDir, '*.json', true);
     }
 
     /**
      * Summary of getSeriesQuery
      * Path: '/google/series/' . $query . '.' . $lang . '.json'
      * @param string $query
-     * @param string $lang Language (default: en)
+     * @param ?string $lang Language (default: en)
      * @return string
      */
     public function getSeriesQuery($query, $lang = 'en')
     {
-        $cacheFile = $this->cacheDir . '/google/series/' . $query . '.' . $lang . '.json';
-        return $cacheFile;
+        if (!empty($lang)) {
+            return $this->cacheDir . '/google/series/' . $query . '.' . $lang . '.json';
+        }
+        // $query includes .$lang
+        return $this->cacheDir . '/google/series/' . $query . '.json';
     }
 
     /**
      * Summary of getSeriesQueries
      * Path: '/google/series/'
-     * @param string $lang Language (default: en)
+     * @param ?string $lang Language (default: null)
      * @return array<string>
      */
-    public function getSeriesQueries($lang = 'en')
+    public function getSeriesQueries($lang = null)
     {
         $baseDir = $this->cacheDir . '/google/series/';
-        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
+        if (!empty($lang)) {
+            return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
+        }
+        return parent::getFiles($baseDir, '*.json', true);
     }
 
     /**
      * Summary of getVolume
      * Path: '/google/volumes/' . $volumeId . '.' . $lang . '.json'
      * @param string $volumeId
-     * @param string $lang Language (default: en)
+     * @param ?string $lang Language (default: en)
      * @return string
      */
     public function getVolume($volumeId, $lang = 'en')
     {
-        $cacheFile = $this->cacheDir . '/google/volumes/' . $volumeId . '.' . $lang . '.json';
-        return $cacheFile;
+        if (!empty($lang)) {
+            return $this->cacheDir . '/google/volumes/' . $volumeId . '.' . $lang . '.json';
+        }
+        // $volumeId includes .$lang
+        return $this->cacheDir . '/google/volumes/' . $volumeId . '.json';
     }
 
     /**
      * Summary of getVolumeIds
      * Path: '/google/volumes/'
-     * @param string $lang Language (default: en)
+     * @param ?string $lang Language (default: null)
      * @return array<string>
      */
-    public function getVolumeIds($lang = 'en')
+    public function getVolumeIds($lang = null)
     {
         $baseDir = $this->cacheDir . '/google/volumes/';
-        return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
+        if (!empty($lang)) {
+            return parent::getFiles($baseDir, '*.' . $lang . '.json', true);
+        }
+        return parent::getFiles($baseDir, '*.json', true);
     }
 
     /**
      * Summary of getStats
+     * @param ?string $lang Language (default: null)
      * @return array<mixed>
      */
-    public function getStats()
+    public function getStats($lang = null)
     {
         return [
-            'authors' => count($this->getAuthorQueries()),
-            'titles' => count($this->getTitleQueries()),
-            'series' => count($this->getSeriesQueries()),
-            'volumes' => count($this->getVolumeIds()),
+            'authors' => count($this->getAuthorQueries($lang)),
+            'titles' => count($this->getTitleQueries($lang)),
+            'series' => count($this->getSeriesQueries($lang)),
+            'volumes' => count($this->getVolumeIds($lang)),
         ];
     }
 
@@ -143,16 +168,17 @@ class GoogleBooksCache extends BaseCache
      * @param string $cacheType
      * @param string|null $sort
      * @param int|null $offset
+     * @param ?string $lang Language (default: null)
      * @return array<mixed>
      */
-    public function getEntries($cacheType, $sort = null, $offset = null)
+    public function getEntries($cacheType, $sort = null, $offset = null, $lang = null)
     {
         $offset ??= 0;
         $entries = match ($cacheType) {
-            'authors' => $this->getAuthorQueries(),
-            'titles' => $this->getTitleQueries(),
-            'series' => $this->getSeriesQueries(),
-            'volumes' => $this->getVolumeIds(),
+            'authors' => $this->getAuthorQueries($lang),
+            'titles' => $this->getTitleQueries($lang),
+            'series' => $this->getSeriesQueries($lang),
+            'volumes' => $this->getVolumeIds($lang),
             default => throw new Exception('Invalid cache type'),
         };
         // we will order & slice later for mtime or size - see BaseCache::getSortedEntries()
@@ -162,10 +188,10 @@ class GoogleBooksCache extends BaseCache
         $result = [];
         foreach ($entries as $entry) {
             $cacheFile = match ($cacheType) {
-                'authors' => $this->getAuthorQuery($entry),
-                'titles' => $this->getTitleQuery($entry),
-                'series' => $this->getSeriesQuery($entry),
-                'volumes' => $this->getVolume($entry),
+                'authors' => $this->getAuthorQuery($entry, $lang),
+                'titles' => $this->getTitleQuery($entry, $lang),
+                'series' => $this->getSeriesQuery($entry, $lang),
+                'volumes' => $this->getVolume($entry, $lang),
                 default => throw new Exception('Invalid cache type'),
             };
             $result[$entry] = [
@@ -185,15 +211,16 @@ class GoogleBooksCache extends BaseCache
      * @param string $cacheType
      * @param string $cacheEntry
      * @param string|null $urlPrefix
+     * @param ?string $lang Language (default: null)
      * @return array<mixed>|null
      */
-    public function getEntry($cacheType, $cacheEntry, $urlPrefix = null)
+    public function getEntry($cacheType, $cacheEntry, $urlPrefix = null, $lang = null)
     {
         $cacheFile = match ($cacheType) {
-            'authors' => $this->getAuthorQuery($cacheEntry),
-            'titles' => $this->getTitleQuery($cacheEntry),
-            'series' => $this->getSeriesQuery($cacheEntry),
-            'volumes' => $this->getVolume($cacheEntry),
+            'authors' => $this->getAuthorQuery($cacheEntry, $lang),
+            'titles' => $this->getTitleQuery($cacheEntry, $lang),
+            'series' => $this->getSeriesQuery($cacheEntry, $lang),
+            'volumes' => $this->getVolume($cacheEntry, $lang),
             default => throw new Exception('Invalid cache type'),
         };
         if ($cacheType == 'titles' && !$this->hasCache($cacheFile)) {
@@ -202,6 +229,7 @@ class GoogleBooksCache extends BaseCache
         }
         if ($this->hasCache($cacheFile)) {
             $entry = $this->loadCache($cacheFile);
+            // @todo pass along $lang extracted from $cacheEntry here?
             return match ($cacheType) {
                 'authors' => $this->formatSearch($entry, $urlPrefix),
                 'titles' => $this->formatSearch($entry, $urlPrefix),
@@ -228,11 +256,13 @@ class GoogleBooksCache extends BaseCache
         foreach ($result->getItems() as $id => $volume) {
             $result->items[$id] = GoogleBooksImport::load($this->cacheDir . '/google', $volume);
             $volumeId = $result->items[$id]->id;
-            $cacheFile = $this->getVolume($id);
+            // @todo language taken from search result here!?
+            $lang = $result->items[$id]->language ?? 'en';
+            $cacheFile = $this->getVolume($volumeId, $lang);
             if ($this->hasCache($cacheFile)) {
-                $result->items[$id]->id = "<a href='{$urlPrefix}volumes?entry={$volumeId}'>{$volumeId}</a>";
+                $result->items[$id]->id = "<a href='{$urlPrefix}volumes?entry={$volumeId}.{$lang}'>{$volumeId}</a>";
             } else {
-                $result->items[$id]->id = "<a href='{$urlPrefix}volumes?entry={$volumeId}'>{$volumeId}</a> ?";
+                $result->items[$id]->id = "<a href='{$urlPrefix}volumes?entry={$volumeId}.{$lang}'>{$volumeId}</a> ?";
             }
         }
         return (array) $result;
@@ -242,13 +272,15 @@ class GoogleBooksCache extends BaseCache
      * Summary of formatVolume
      * @param array<mixed>|null $entry
      * @param string|null $urlPrefix
+     * @param ?string $lang Language (default: null)
      * @return array<mixed>|null
      */
-    public function formatVolume($entry, $urlPrefix)
+    public function formatVolume($entry, $urlPrefix, $lang = null)
     {
         if (is_null($entry) || is_null($urlPrefix)) {
             return $entry;
         }
+        $lang ??= 'en';
         $volume = self::parseVolume($entry);
         $bookInfo = GoogleBooksImport::load($this->cacheDir . '/google', $volume);
         return (array) $bookInfo;

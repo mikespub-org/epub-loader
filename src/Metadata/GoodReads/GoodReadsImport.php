@@ -70,7 +70,7 @@ class GoodReadsImport
         $bookInfo->uri = (string) $book->getWebUrl();
         // @todo use calibre_external_storage in COPS
         $bookInfo->path = $bookInfo->uri;
-        if (str_starts_with($bookInfo->path, $basePath)) {
+        if (!empty($basePath) && str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
         if (!empty($bookInfo->id)) {
@@ -350,7 +350,7 @@ class GoodReadsImport
         }
         // @todo use calibre_external_storage in COPS
         $bookInfo->path = $bookInfo->uri;
-        if (str_starts_with($bookInfo->path, $basePath)) {
+        if (!empty($basePath) && str_starts_with($bookInfo->path, $basePath)) {
             $bookInfo->path = substr($bookInfo->path, strlen($basePath) + 1);
         }
         if (!empty($bookInfo->id)) {
