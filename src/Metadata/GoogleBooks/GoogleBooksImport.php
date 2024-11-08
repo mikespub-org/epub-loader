@@ -123,6 +123,7 @@ class GoogleBooksImport
         // Timestamp is used to get latest ebooks
         $bookInfo->timestamp = $bookInfo->creationDate;
         $bookInfo->rating = $volumeInfo->getAverageRating();
+        $bookInfo->count = $volumeInfo->getRatingsCount();
         $bookInfo->identifiers = ['google' => $bookInfo->id];
         if (!empty($bookInfo->isbn)) {
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;

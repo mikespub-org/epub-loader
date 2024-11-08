@@ -37,12 +37,12 @@ class GoodReadsCacheTest extends BaseTestCase
                 continue;
             }
             $result = $cache::parseSearch($matched);
-            $authorMap = $result->getAuthorMap($authorId);
-            if (empty($authorMap)) {
+            $authorEntry = $result->getAuthorEntry($authorId);
+            if (empty($authorEntry)) {
                 continue;
             }
             $count = 0;
-            foreach ($authorMap->getBooks() as $book) {
+            foreach ($authorEntry->getBooks() as $book) {
                 if ($book->getCount() < 1000) {
                     break;
                 }

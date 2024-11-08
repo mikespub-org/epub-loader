@@ -13,6 +13,7 @@ use Marsender\EPubLoader\Models\AuthorInfo;
 use Marsender\EPubLoader\Models\BookInfo;
 use Marsender\EPubLoader\Models\SeriesInfo;
 use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Search\AuthorEntry;
 use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Series\Book as SeriesBook;
@@ -211,12 +212,81 @@ class GoodReadsImport
         // Timestamp is used to get latest ebooks
         $bookInfo->timestamp = $bookInfo->creationDate;
         $bookInfo->rating = $work->getStats()?->getAverageRating();
+        $bookInfo->count = $work->getStats()?->getRatingsCount();
         $bookInfo->identifiers = ['goodreads' => $bookInfo->id];
         if (!empty($bookInfo->isbn)) {
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }
 
         return $bookInfo;
+    }
+
+    /**
+     * Load author & book info from a GoodReads search
+     *
+     * @param string $basePath base directory
+     * @param SearchResult $searchResult GoodReads search
+     * @throws Exception if error
+     *
+     * @return array<mixed>
+     */
+    public static function loadSearch($basePath, $searchResult)
+    {
+        $entries = $searchResult->getProperties();
+        // <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a>
+        foreach ($entries as $authorId => $authorEntry) {
+            $authorEntry = self::loadSearchAuthor($basePath, $authorEntry);
+            $entries[$authorId] = $authorEntry;
+        }
+        return $entries;
+    }
+
+    /**
+     * Load author & book info from a GoodReads search entry
+     *
+     * @param string $basePath base directory
+     * @param AuthorEntry $authorEntry GoodReads search entry
+     * @throws Exception if error
+     *
+     * @return AuthorInfo
+     */
+    public static function loadSearchAuthor($basePath, $authorEntry)
+    {
+        $authorInfo = new AuthorInfo();
+        $authorInfo->source = self::SOURCE;
+        $authorInfo->basePath = $basePath;
+        $authorInfo->id = (string) $authorEntry->getId();
+        $authorInfo->name = (string) $authorEntry->getName();
+        $authorInfo->sort = AuthorInfo::getNameSort($authorInfo->name);
+        $authorInfo->link = GoodReadsMatch::AUTHOR_URL . $authorInfo->id;
+        //$authorInfo->addNote($data['description']);
+        //$authorInfo->image = $data['image'] ?? '';
+        foreach ($authorEntry->getBooks() as $id => $book) {
+            $bookId = (string) $book->getId();
+            $entryId = GoodReadsMatch::bookid($bookId);
+            $title = (string) $book->getTitle();
+            $cover = (string) $book->getCover();
+            $description = '';
+            $rating = (float) $book->getRating();
+            $count = (int) $book->getCount();
+            $info = [
+                'id' => $bookId,
+                'title' => $title,
+                'sort' => BookInfo::getTitleSort($title),
+                'cover' => $cover,
+                'uri' => GoodReadsMatch::link($bookId),
+                'description' => $description,
+                'rating' => $rating,
+                'count' => $count,
+                'author' => $authorInfo->id,
+                //'series' => $seriesInfo->id,
+                'source' => self::SOURCE,
+            ];
+            $authorInfo->addBook($bookId, $info);
+        }
+        //$authorInfo->addSeries($seriesId, $info);
+
+        return $authorInfo;
     }
 
     /**
@@ -329,6 +399,7 @@ class GoodReadsImport
         // Timestamp is used to get latest ebooks
         $bookInfo->timestamp = BookInfo::getSqlDate($bookInfo->creationDate);
         $bookInfo->rating = $book->getAvgRating();
+        $bookInfo->count = $book->getRatingsCount();
         $bookInfo->identifiers = ['goodreads' => $bookInfo->id];
 
         return $bookInfo;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Same format as SearchResult, but only 1 AuthorMap in properties
+ * Same format as SearchResult, but only 1 AuthorEntry in properties
  */
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Authors;

@@ -8,11 +8,11 @@ namespace Marsender\EPubLoader\Metadata\GoodReads\Search;
 
 class SearchResult
 {
-    /** @var array<string, AuthorMap>|null */
+    /** @var array<string, AuthorEntry>|null */
     public ?array $properties;
 
     /**
-     * @param array<string, AuthorMap>|null $properties
+     * @param array<string, AuthorEntry>|null $properties
      */
     public function __construct(?array $properties)
     {
@@ -20,14 +20,14 @@ class SearchResult
     }
 
     /**
-     * @return array<string, AuthorMap>|null
+     * @return array<string, AuthorEntry>|null
      */
     public function getProperties(): ?array
     {
         return $this->properties;
     }
 
-    public function getAuthorMap(string $key): ?AuthorMap
+    public function getAuthorEntry(string $key): ?AuthorEntry
     {
         return $this->properties[$key] ?? null;
     }
@@ -41,7 +41,7 @@ class SearchResult
         $properties = [];
         $propertiesKeys = preg_grep('/^\d+/', array_keys($data)) ?: [];
         foreach ($propertiesKeys as $key) {
-            $properties[$key] = ($data[$key] ?? null) !== null ? AuthorMap::fromJson($data[$key]) : null;
+            $properties[$key] = ($data[$key] ?? null) !== null ? AuthorEntry::fromJson($data[$key]) : null;
         }
         return new self(
             $properties

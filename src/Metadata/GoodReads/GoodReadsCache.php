@@ -9,8 +9,11 @@
 namespace Marsender\EPubLoader\Metadata\GoodReads;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
+use Marsender\EPubLoader\Models\AuthorInfo;
 use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Marsender\EPubLoader\Metadata\GoodReads\Books\BookResult;
+use Marsender\EPubLoader\Metadata\GoodReads\Search\AuthorEntry;
 use Marsender\EPubLoader\Metadata\GoodReads\Search\SearchResult;
 use Marsender\EPubLoader\Metadata\GoodReads\Series\SeriesResult;
 use Exception;
@@ -105,12 +108,12 @@ class GoodReadsCache extends BaseCache
             return null;
         }
         $result = self::parseSearch($data);
-        $authorMap = $result->getAuthorMap($authorId);
-        if (empty($authorMap)) {
+        $authorEntry = $result->getAuthorEntry($authorId);
+        if (empty($authorEntry)) {
             return null;
         }
         $books = [];
-        $bookList = $authorMap->getBooks() ?? [];
+        $bookList = $authorEntry->getBooks() ?? [];
         foreach ($bookList as $book) {
             $bookId = $book->getId() ?? count($books);
             $books[$bookId] = (array) $book;
@@ -304,29 +307,42 @@ class GoodReadsCache extends BaseCache
             return $entry;
         }
         $result = self::parseSearch($entry);
-        $entry = $result->getProperties();
+        $entries = $result->getProperties();
         // <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a>
-        foreach ($entry as $authorId => $author) {
-            $id = $author->getId();
-            $cacheFile = $this->getAuthor($id);
+        foreach ($entries as $authorId => $authorEntry) {
+            $authorEntry = self::formatSearchAuthor($authorEntry, $urlPrefix);
+            $entries[$authorId] = $authorEntry;
+        }
+        return $entries;
+    }
+
+    /**
+     * Summary of formatSearchAuthor
+     * @param AuthorEntry $author
+     * @param string|null $urlPrefix
+     * @return AuthorEntry
+     */
+    public function formatSearchAuthor($author, $urlPrefix)
+    {
+        $id = $author->getId();
+        $cacheFile = $this->getAuthor($id);
+        if ($this->hasCache($cacheFile)) {
+            $author->id = "<a href='{$urlPrefix}author/list?entry={$id}'>{$id}</a>";
+        } else {
+            $author->id = "<a href='{$urlPrefix}author/list?entry={$id}'>{$id}</a> ?";
+        }
+        $author->books ??= [];
+        foreach ($author->getBooks() as $key => $book) {
+            $bookId = $book->getId();
+            $entryId = GoodReadsMatch::bookid($bookId);
+            $cacheFile = $this->getBook($entryId);
             if ($this->hasCache($cacheFile)) {
-                $entry[$authorId]->id = "<a href='{$urlPrefix}author/list?entry={$id}'>{$id}</a>";
+                $author->books[$key]->id = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$bookId}</a>";
             } else {
-                $entry[$authorId]->id = "<a href='{$urlPrefix}author/list?entry={$id}'>{$id}</a> ?";
-            }
-            $author->books ??= [];
-            foreach ($author->getBooks() as $key => $book) {
-                $bookId = $book->getId();
-                $entryId = GoodReadsMatch::bookid(bookId: $bookId);
-                $cacheFile = $this->getBook($entryId);
-                if ($this->hasCache($cacheFile)) {
-                    $entry[$authorId]->books[$key]->id = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$bookId}</a>";
-                } else {
-                    $entry[$authorId]->books[$key]->id = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$bookId}</a> ?";
-                }
+                $author->books[$key]->id = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$bookId}</a> ?";
             }
         }
-        return $entry;
+        return $author;
     }
 
     /**
@@ -350,33 +366,6 @@ class GoodReadsCache extends BaseCache
             $series['bookList'][$id] = (array) $bookInfo;
         }
         return $series;
-        /**
-        foreach ($result->getBookList() as $key => $book) {
-            if (empty($book->getBookId())) {
-                continue;
-            }
-            $entryId = $book->getBookId();
-            $cacheFile = $this->getBook($entryId);
-            $url = $book->getBookUrl() ?? $entryId;
-            if ($this->hasCache($cacheFile)) {
-                $book->bookUrl = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a>";
-            } else {
-                $book->bookUrl = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a> ?";
-            }
-            if (!empty($book->getAuthor()) && !empty($book->getAuthor()->getId())) {
-                $entryId = str_replace(GoodReadsMatch::AUTHOR_URL, '', $book->getAuthor()->getWorksListUrl() ?? '');
-                $cacheFile = $this->getAuthor($entryId);
-                $url = $book->getAuthor()->getWorksListUrl() ?? $entryId;
-                if ($this->hasCache($cacheFile)) {
-                    $book->author->worksListUrl = "<a href='{$urlPrefix}author/list?entry={$entryId}'>{$url}</a>";
-                } else {
-                    $book->author->worksListUrl = "<a href='{$urlPrefix}author/list?entry={$entryId}'>{$url}</a> ?";
-                }
-            }
-            $result->bookList[$key] = $book;
-        }
-        return (array) $result;
-         */
     }
 
     /**
@@ -394,55 +383,6 @@ class GoodReadsCache extends BaseCache
         $bookInfo = GoodReadsImport::load($this->cacheDir . '/goodreads', $result);
         $bookInfo = $this->formatBookInfo($bookInfo, $urlPrefix);
         return (array) $bookInfo;
-        /**
-        foreach ($result->getProps()->getPageProps()->getApolloState()->getBookMap() as $bookId => $book) {
-            if (empty($book->getLegacyId())) {
-                continue;
-            }
-            $entryId = $book->getLegacyId();
-            $cacheFile = $this->getBook((string) $entryId);
-            $url = $book->getWebUrl() ?? $entryId;
-            if ($this->hasCache($cacheFile)) {
-                $book->webUrl = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a>";
-            } else {
-                $book->webUrl = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a> ?";
-            }
-            $result->props->pageProps->apolloState->bookMap[$bookId] = $book;
-        }
-        foreach ($result->getProps()->getPageProps()->getApolloState()->getContributorMap() as $authorId => $author) {
-            if (empty($author->getLegacyId())) {
-                continue;
-            }
-            $entryId = str_replace(GoodReadsMatch::AUTHOR_URL, '', str_replace('/show/', '/list/', $author->getWebUrl() ?? ''));
-            $cacheFile = $this->getAuthor($entryId);
-            $url = $author->getWebUrl() ?? $author->getLegacyId();
-            if ($this->hasCache($cacheFile)) {
-                $author->webUrl = "<a href='{$urlPrefix}author/list?entry={$entryId}'>{$url}</a>";
-            } else {
-                $author->webUrl = "<a href='{$urlPrefix}author/list?entry={$entryId}'>{$url}</a> ?";
-            }
-            $result->props->pageProps->apolloState->contributorMap[$authorId] = $author;
-        }
-        foreach ($result->getProps()->getPageProps()->getApolloState()->getSeriesMap() as $seriesId => $series) {
-            if (empty($series->getWebUrl()) || !str_starts_with($series->getWebUrl(), GoodReadsMatch::SERIES_URL)) {
-                continue;
-            }
-            $entryId = str_replace(GoodReadsMatch::SERIES_URL, '', $series->getWebUrl());
-            $cacheFile = $this->getSeries($entryId);
-            $url = $series->getWebUrl();
-            if ($this->hasCache($cacheFile)) {
-                $series->webUrl = "<a href='{$urlPrefix}series?entry={$entryId}'>{$url}</a>";
-            } else {
-                $series->webUrl = "<a href='{$urlPrefix}series?entry={$entryId}'>{$url}</a> ?";
-            }
-            $result->props->pageProps->apolloState->seriesMap[$seriesId] = $series;
-        }
-        foreach ($result->getProps()->getPageProps()->getApolloState()->getReviewMap() as $reviewId => $review) {
-            $review->text = htmlspecialchars($review->getText() ?? '');
-            $result->props->pageProps->apolloState->reviewMap[$reviewId] = $review;
-        }
-        return (array) $result;
-         */
     }
 
     /**
@@ -453,37 +393,88 @@ class GoodReadsCache extends BaseCache
      */
     public function formatBookInfo($bookInfo, $urlPrefix)
     {
-        $entryId = $bookInfo->id;
-        $cacheFile = $this->getBook((string) $entryId);
-        $url = $bookInfo->uri ?? $entryId;
+        $bookId = $bookInfo->id;
+        $entryId = GoodReadsMatch::bookid($bookId);
+        $cacheFile = $this->getBook($entryId);
+        $url = $bookInfo->uri ?? $bookId;
         if ($this->hasCache($cacheFile)) {
-            $bookInfo->uri = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a>";
+            $bookInfo->uri = "<a href='{$urlPrefix}book/show?entry={$bookId}'>{$url}</a>";
         } else {
-            $bookInfo->uri = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$url}</a> ?";
+            $bookInfo->uri = "<a href='{$urlPrefix}book/show?entry={$bookId}'>{$url}</a> ?";
         }
         if (!empty($bookInfo->authors)) {
             foreach ($bookInfo->authors as $id => $authorInfo) {
-                $authorId = $authorInfo->id;
-                $cacheFile = $this->getAuthor($authorId);
-                if ($this->hasCache($cacheFile)) {
-                    $bookInfo->authors[$id]->id = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a>";
-                } else {
-                    $bookInfo->authors[$id]->id = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a> ?";
-                }
+                $authorInfo = self::formatAuthorInfo($authorInfo, $urlPrefix);
+                $bookInfo->authors[$id] = $authorInfo;
             }
         }
         if (!empty($bookInfo->series)) {
             foreach ($bookInfo->series as $id => $seriesInfo) {
-                $seriesId = $seriesInfo->id;
-                $cacheFile = $this->getSeries($seriesId);
-                if ($this->hasCache($cacheFile)) {
-                    $bookInfo->series[$id]->id = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a>";
-                } else {
-                    $bookInfo->series[$id]->id = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a> ?";
-                }
+                $seriesInfo = self::formatSeriesInfo($seriesInfo, $urlPrefix);
+                $bookInfo->series[$id] = $seriesInfo;
             }
         }
         return $bookInfo;
+    }
+
+    /**
+     * Summary of formatAuthorInfo
+     * @param AuthorInfo $authorInfo
+     * @param string|null $urlPrefix
+     * @return AuthorInfo
+     */
+    public function formatAuthorInfo($authorInfo, $urlPrefix)
+    {
+        $authorId = $authorInfo->id;
+        $cacheFile = $this->getAuthor($authorId);
+        if ($this->hasCache($cacheFile)) {
+            $authorInfo->id = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a>";
+        } else {
+            $authorInfo->id = "<a href='{$urlPrefix}author/list?entry={$authorId}'>{$authorId}</a> ?";
+        }
+        if (!empty($authorInfo->books)) {
+            foreach ($authorInfo->books as $id => $bookInfo) {
+                $bookInfo = self::formatBookInfo($bookInfo, $urlPrefix);
+                $authorInfo->books[$id] = $bookInfo;
+            }
+        }
+        if (!empty($authorInfo->series)) {
+            foreach ($authorInfo->series as $id => $seriesInfo) {
+                $seriesInfo = self::formatSeriesInfo($seriesInfo, $urlPrefix);
+                $authorInfo->series[$id] = $seriesInfo;
+            }
+        }
+        return $authorInfo;
+    }
+
+    /**
+     * Summary of formatSeriesInfo
+     * @param SeriesInfo $seriesInfo
+     * @param string|null $urlPrefix
+     * @return SeriesInfo
+     */
+    public function formatSeriesInfo($seriesInfo, $urlPrefix)
+    {
+        $seriesId = $seriesInfo->id;
+        $cacheFile = $this->getSeries($seriesId);
+        if ($this->hasCache($cacheFile)) {
+            $seriesInfo->id = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a>";
+        } else {
+            $seriesInfo->id = "<a href='{$urlPrefix}series?entry={$seriesId}'>{$seriesId}</a> ?";
+        }
+        if (!empty($seriesInfo->authors)) {
+            foreach ($seriesInfo->authors as $id => $authorInfo) {
+                $authorInfo = self::formatAuthorInfo($authorInfo, $urlPrefix);
+                $seriesInfo->authors[$id] = $authorInfo;
+            }
+        }
+        if (!empty($seriesInfo->books)) {
+            foreach ($seriesInfo->books as $id => $bookInfo) {
+                $bookInfo = self::formatBookInfo($bookInfo, $urlPrefix);
+                $seriesInfo->books[$id] = $bookInfo;
+            }
+        }
+        return $seriesInfo;
     }
 
     /**
@@ -496,6 +487,19 @@ class GoodReadsCache extends BaseCache
     public static function parseSearch($data)
     {
         $result = SearchResult::fromJson($data);
+        return $result;
+    }
+
+    /**
+     * Parse JSON data for GoodReads author in search result
+     *
+     * @param array<mixed> $data
+     *
+     * @return AuthorEntry
+     */
+    public static function parseSearchAuthor($data)
+    {
+        $result = AuthorEntry::fromJson($data);
         return $result;
     }
 

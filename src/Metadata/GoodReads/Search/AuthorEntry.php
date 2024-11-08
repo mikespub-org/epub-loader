@@ -2,7 +2,7 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Search;
 
-class AuthorMap
+class AuthorEntry
 {
     public ?string $id;
     public ?string $name;

@@ -39,6 +39,7 @@ class BookDetails
         $book['language'] = $this->getLanguage($bookId);
         $book['description'] = $this->getDescription($bookId);
         $book['rating'] = $this->getRating($bookId);
+        $book['count'] = -1;
         $book['publisher'] = $this->getPublisher($bookId);
         $book['subjects'] = $this->getSubjects($bookId);
         $book['authors'] = $this->getAuthors($bookId);

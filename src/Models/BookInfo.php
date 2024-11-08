@@ -66,6 +66,8 @@ class BookInfo extends BaseInfo
 
     public float|int|null $rating = null;
 
+    public int|null $count = null;
+
     /**
      * Format an date from a date
      *
@@ -218,6 +220,9 @@ class BookInfo extends BaseInfo
         $bookInfo->timestamp = $data['timestamp'] ?? '';
         if (isset($data['rating'])) {
             $bookInfo->rating = (float) $data['rating'];
+        }
+        if (isset($data['count'])) {
+            $bookInfo->count = (int) $data['count'];
         }
         // Set isbn, lccn, uri etc. based on identifiers and vice-versa
         $bookInfo->fixIdentifiers();
