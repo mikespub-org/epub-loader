@@ -33,6 +33,8 @@ class AuthorInfo extends BaseInfo
 
     public string $link = '';
 
+    public string $image = '';
+
     /**
      * Sort author by Lastname, Firstname(s)
      *
@@ -94,6 +96,7 @@ class AuthorInfo extends BaseInfo
         if (!empty($data['description'])) {
             $authorInfo->addNote($data['description']);
         }
+        $authorInfo->image = $data['image'] ?? '';
         if (!empty($data['books'])) {
             // ...
         }

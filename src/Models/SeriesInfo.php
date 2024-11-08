@@ -33,6 +33,8 @@ class SeriesInfo extends BaseInfo
 
     public string $link = '';
 
+    public string $image = '';
+
     public string $index = '';
 
     /**
@@ -86,6 +88,7 @@ class SeriesInfo extends BaseInfo
         if (!empty($data['description'])) {
             $seriesInfo->addNote($data['description']);
         }
+        $seriesInfo->image = $data['image'] ?? '';
         if (!empty($data['books'])) {
             // ...
         }

@@ -91,12 +91,14 @@ class GoodReadsImport
         } else {
             $link = GoodReadsMatch::AUTHOR_URL . $authorId;
         }
+        $image = (string) $contributors[$authorRef]->getProfileImageUrl();
         $description = (string) $contributors[$authorRef]->getDescription();
         $info = [
             'id' => $authorId,
             'name' => $authorName,
             'sort' => $authorSort,
             'link' => $link,
+            'image' => $image,
             'description' => $description,
         ];
         $bookInfo->addAuthor($authorId, $info);
@@ -121,12 +123,14 @@ class GoodReadsImport
                 $link = GoodReadsMatch::AUTHOR_URL . $authorId;
             }
             // @todo this is empty for secondary contributors
+            $image = (string) $contributors[$authorRef]->getProfileImageUrl();
             $description = (string) $contributors[$authorRef]->getDescription();
             $info = [
                 'id' => $authorId,
                 'name' => $authorName,
                 'sort' => $authorSort,
                 'link' => $link,
+                'image' => $image,
                 'description' => $description,
             ];
             $bookInfo->addAuthor($authorId, $info);

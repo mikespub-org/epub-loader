@@ -187,6 +187,7 @@ class GoogleBooksMatch extends BaseMatch
         return [
             'en' => 'English',
             'fr' => 'Français',
+            'de' => 'Deutsch',
         ];
     }
 }

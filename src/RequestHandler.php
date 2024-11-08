@@ -77,6 +77,7 @@ class RequestHandler
         $this->gConfig['endpoint'] ??= static::ENDPOINT;
         $this->gConfig['app_name'] ??= static::APP_NAME;
         $this->gConfig['version'] ??= static::VERSION;
+        $this->gConfig['callbacks'] ??= [];
     }
 
     /**
@@ -362,6 +363,15 @@ class RequestHandler
         }
         $this->gErrorArray = $handler->getErrors();
         return $result;
+    }
+
+    /**
+     * Summary of getCallbacks
+     * @return array<mixed>
+     */
+    public function getCallbacks()
+    {
+        return $this->gConfig['callbacks'] ?? [];
     }
 
     /**
