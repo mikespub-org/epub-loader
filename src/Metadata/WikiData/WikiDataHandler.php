@@ -376,8 +376,8 @@ class WikiDataHandler extends MetadataHandler
         }
         return match ($parsed['type']) {
             'author' => $this->callSetAuthorInfo($parsed),
-            'book' => $this->callSetAuthorInfo($parsed),
-            'series' => $this->callSetAuthorInfo($parsed),
+            'book' => $this->callSetBookInfo($parsed),
+            'series' => $this->callSetSeriesInfo($parsed),
             default => false,
         };
     }
@@ -397,7 +397,7 @@ class WikiDataHandler extends MetadataHandler
             return false;
         }
         $basePath = $this->cacheDir . '/wikidata';
-        $authorInfo = [];  // WikiDataImport::loadAuthor($basePath, $parsed);
+        $authorInfo = WikiDataImport::loadAuthor($basePath, $parsed);
         if (empty($authorInfo)) {
             return false;
         }
@@ -443,7 +443,7 @@ class WikiDataHandler extends MetadataHandler
             return false;
         }
         $basePath = $this->cacheDir . '/wikidata';
-        $seriesInfo = [];  // WikiDataImport::loadSeries($basePath, $parsed);
+        $seriesInfo = WikiDataImport::loadSeries($basePath, $parsed);
         if (empty($seriesInfo)) {
             return false;
         }

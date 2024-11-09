@@ -10,6 +10,7 @@
 namespace Marsender\EPubLoader\Models;
 
 use Marsender\EPubLoader\CalibreDbLoader;
+use Marsender\EPubLoader\Metadata\BaseMatch;
 
 /**
  * BookInfo class contains informations about a book,
@@ -118,6 +119,44 @@ class BookInfo extends BaseInfo
         $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
 
         $this->uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
+
+    /**
+     * Set isbn, lccn, uri etc. based on identifiers and vice-versa
+     * @return self
+     */
+    public function fixIdentifiers()
+    {
+        $type = 'isbn';
+        if (empty($this->isbn) && !empty($this->identifiers[$type])) {
+            $this->isbn = $this->identifiers[$type]['value'];
+        } elseif (!empty($this->isbn) && empty($this->identifiers[$type])) {
+            $this->setIdentifier($type, $this->isbn);
+        }
+
+        $type = 'lccn';
+        if (empty($this->lccn) && !empty($this->identifiers[$type])) {
+            $this->lccn = $this->identifiers[$type]['value'];
+        } elseif (!empty($this->lccn) && empty($this->identifiers[$type])) {
+            $this->setIdentifier($type, $this->lccn);
+        }
+
+        $type = 'url';
+        if (empty($this->uri) && !empty($this->identifiers[$type])) {
+            $this->uri = $this->identifiers[$type]['value'];
+        } elseif (!empty($this->uri) && empty($this->identifiers[$type])) {
+            $this->setIdentifier($type, $this->uri);
+        }
+
+        foreach ($this->identifiers as $type => $identifier) {
+            if (empty($identifier['url']) && !empty($identifier['value'])) {
+                $url = BaseMatch::getTypeLink($identifier['type'], $identifier['value']);
+                if (!empty($url)) {
+                    $this->identifiers[$type]['url'] = $url;
+                }
+            }
+        }
+        return $this;
     }
 
     /**

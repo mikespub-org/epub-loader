@@ -19,6 +19,7 @@ class AuthorInfo extends BaseInfo
     use HasBooksTrait;
     use HasNoteTrait;
     use HasSeriesTrait;
+    use HasIdentifiersTrait;
 
     /** @var array<string> */
     public static array $authorList = [];
@@ -101,6 +102,9 @@ class AuthorInfo extends BaseInfo
             // ...
         }
         if (!empty($data['series'])) {
+            // ...
+        }
+        if (!empty($data['identifiers'])) {
             // ...
         }
         if (empty($loader) || empty($authorInfo->id)) {

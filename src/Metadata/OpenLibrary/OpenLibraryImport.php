@@ -16,7 +16,7 @@ use Exception;
 
 class OpenLibraryImport
 {
-    public const SOURCE = 'openlibrary';
+    public const SOURCE = 'OpenLibrary';
 
     /**
      * Load book info from an OpenLibrary work

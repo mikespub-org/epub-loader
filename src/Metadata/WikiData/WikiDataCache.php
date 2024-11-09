@@ -654,6 +654,12 @@ class WikiDataCache extends BaseCache
         }
         $author = $data;
         $author['identifiers'] = self::addBookIdentifiers($author['identifiers'], $author['properties']);
+        // P800: notable work
+        $author['bookList'] = null;
+        if (!empty($author['properties']['P800'])) {
+            $author['bookList'] = $author['properties']['P800']['values'] ?? [];
+            unset($author['properties']['P800']);
+        }
         // @todo parse author, book, series etc.
 
         //unset($author['properties']);

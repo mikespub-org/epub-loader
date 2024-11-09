@@ -21,7 +21,7 @@ use Exception;
 
 class GoodReadsImport
 {
-    public const SOURCE = 'goodreads';
+    public const SOURCE = 'GoodReads';
 
     /**
      * Load book info from a GoodReads book

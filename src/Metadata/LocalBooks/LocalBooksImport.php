@@ -17,7 +17,7 @@ use Exception;
 
 class LocalBooksImport
 {
-    public const SOURCE = 'local';
+    public const SOURCE = 'Local Books';
 
     /**
      * Load book info from an epub file

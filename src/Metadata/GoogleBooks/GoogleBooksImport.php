@@ -17,7 +17,7 @@ use Marsender\EPubLoader\Models\SeriesInfo;
 
 class GoogleBooksImport
 {
-    public const SOURCE = 'googlebooks';
+    public const SOURCE = 'Google Books';
 
     /**
      * Load book info from a Google Books volume
