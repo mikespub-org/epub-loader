@@ -124,6 +124,39 @@ class GoogleBooksImport
         if (!empty($bookInfo->isbn)) {
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }
+        // store what's left in properties
+        $volume->kind = null;
+        $volume->id = null;
+        $volume->etag = null;
+        $volume->selfLink = null;
+        $volume->getVolumeInfo()->canonicalVolumeLink = null;
+        $volume->getVolumeInfo()->title = null;
+        $volume->getVolumeInfo()->authors = null;
+        $volume->getVolumeInfo()->language = null;
+        $volume->getVolumeInfo()->description = null;
+        $volume->getVolumeInfo()->categories = null;
+        if ($volume->getVolumeInfo()->getImageLinks()) {
+            $volume->getVolumeInfo()->getImageLinks()->thumbnail = null;
+        }
+        if ($volume->getVolumeInfo()->getIndustryIdentifiers()) {
+            $identifiers = [];
+            foreach ($volume->getVolumeInfo()->getIndustryIdentifiers() as $idx => $identifier) {
+                if (in_array($identifier->type, ['ISBN_13', 'ISBN_10'])) {
+                    continue;
+                }
+                $identifiers[] = $identifier;
+            }
+            $volume->getVolumeInfo()->industryIdentifiers = $identifiers;
+        }
+        $volume->getVolumeInfo()->publisher = null;
+        if ($volume->getVolumeInfo()->getSeriesInfo()) {
+            $volume->getVolumeInfo()->getSeriesInfo()->kind = null;
+            $volume->getVolumeInfo()->getSeriesInfo()->bookDisplayNumber = null;
+        }
+        $volume->getVolumeInfo()->publishedDate = null;
+        $volume->getVolumeInfo()->averageRating = null;
+        $volume->getVolumeInfo()->ratingsCount = null;
+        $bookInfo->properties = BookInfo::filterProperties($volume);
 
         return $bookInfo;
     }

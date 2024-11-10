@@ -217,8 +217,8 @@ class GoodReadsImport
         if (!empty($bookInfo->isbn)) {
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }
+        // store what's left in properties
         $bookInfo->properties = [];
-        $consumed = [];
         $book->getWork()->ref = null;
         $book->legacyId = null;
         $book->webUrl = null;
@@ -240,18 +240,11 @@ class GoodReadsImport
         }
         $book->getDetails()->publicationTime = null;
         $book->getDetails()->typename = null;
-        $book = self::filterProperties($book) ?? [];
-        $bookInfo->properties['book'] = array_filter($book, function ($key) use ($consumed) {
-            return !in_array($key, $consumed);
-        }, ARRAY_FILTER_USE_KEY);
-        $consumed = [];
+        $bookInfo->properties['book'] = BookInfo::filterProperties($book);
         $work->getDetails()->publicationTime = null;
         $work->getStats()->averageRating = null;
         $work->getStats()->ratingsCount = null;
-        $work = self::filterProperties($work) ?? [];
-        $bookInfo->properties['work'] = array_filter($work, function ($key) use ($consumed) {
-            return !in_array($key, $consumed);
-        }, ARRAY_FILTER_USE_KEY);
+        $bookInfo->properties['work'] = BookInfo::filterProperties($work);
         foreach ($contributors as $idx => $contributor) {
             $contributor->id = null;
             $contributor->name = null;
@@ -267,10 +260,7 @@ class GoodReadsImport
             }
             $contributors[$idx] = $contributor;
         }
-        $contributors = self::filterProperties($contributors) ?? [];
-        $bookInfo->properties['contributors'] = array_filter($contributors, function ($key) use ($consumed) {
-            return !in_array($key, $consumed);
-        }, ARRAY_FILTER_USE_KEY);
+        $bookInfo->properties['contributors'] = BookInfo::filterProperties($contributors);
         foreach ($seriesMap as $idx => $series) {
             $series->id = null;
             $series->title = null;
@@ -278,32 +268,9 @@ class GoodReadsImport
             $series->typename = null;
             $seriesMap[$idx] = $series;
         }
-        $seriesMap = self::filterProperties($seriesMap) ?? [];
-        $bookInfo->properties['seriesMap'] = array_filter($seriesMap, function ($key) use ($consumed) {
-            return !in_array($key, $consumed);
-        }, ARRAY_FILTER_USE_KEY);
+        $bookInfo->properties['seriesMap'] = BookInfo::filterProperties($seriesMap);
 
         return $bookInfo;
-    }
-
-    public static function filterProperties($object)
-    {
-        if (is_object($object)) {
-            $object = (array) $object;
-        }
-        $result = [];
-        foreach ($object as $key => $value) {
-            if (is_object($value) || is_array($value)) {
-                $value = self::filterProperties($value);
-            }
-            if (!is_null($value)) {
-                $result[$key] = $value;
-            }
-        }
-        if (empty($result)) {
-            return null;
-        }
-        return $result;
     }
 
     /**
@@ -370,6 +337,7 @@ class GoodReadsImport
             $authorInfo->addBook($bookId, $info);
         }
         //$authorInfo->addSeries($seriesId, $info);
+        // store what's left in properties
         $consumed = ['id', 'name', 'books'];
         $authorInfo->properties = array_filter((array) $authorEntry, function ($key) use ($consumed) {
             return !in_array($key, $consumed);
@@ -490,6 +458,7 @@ class GoodReadsImport
         $bookInfo->rating = $book->getAvgRating();
         $bookInfo->count = $book->getRatingsCount();
         $bookInfo->identifiers = ['goodreads' => $bookInfo->id];
+        // store what's left in properties
         $consumed = ['bookId', 'bookUrl', 'bookTitleBare', 'description', 'imageUrl', 'seriesHeader', 'publicationDate', 'avgRating', 'ratingsCount'];
         $bookInfo->properties = array_filter((array) $book, function ($key) use ($consumed) {
             return !in_array($key, $consumed);
