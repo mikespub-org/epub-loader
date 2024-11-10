@@ -1,10 +1,6 @@
 <?php
 /**
  * BookInfo class
- *
- * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
- * @author     Didier Corbière <contact@atoll-digital-library.org>
- * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Models;
@@ -21,6 +17,7 @@ class BookInfo extends BaseInfo
     use HasAuthorsTrait;
     use HasIdentifiersTrait;
     use HasSeriesTrait;
+    use HasPropertiesTrait;
 
     /** @var array<string> */
     public static array $bookList = [];
@@ -263,6 +260,7 @@ class BookInfo extends BaseInfo
         if (isset($data['count'])) {
             $bookInfo->count = (int) $data['count'];
         }
+        $bookInfo->properties = $data['properties'] ?? [];
         // Set isbn, lccn, uri etc. based on identifiers and vice-versa
         $bookInfo->fixIdentifiers();
         if (empty($bookInfo->cover) && !empty($bookInfo->path)) {

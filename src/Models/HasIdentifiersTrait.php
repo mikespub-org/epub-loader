@@ -1,15 +1,12 @@
 <?php
 /**
  * HasIdentifiersTrait trait
- *
- * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
- * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Models;
 
 /**
- * Deal with authors property
+ * Deal with identifiers property
  */
 trait HasIdentifiersTrait
 {

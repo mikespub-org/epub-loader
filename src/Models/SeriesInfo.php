@@ -1,9 +1,6 @@
 <?php
 /**
  * SeriesInfo class
- *
- * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
- * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Models;
@@ -20,6 +17,7 @@ class SeriesInfo extends BaseInfo
     use HasBooksTrait;
     use HasNoteTrait;
     use HasIdentifiersTrait;
+    use HasPropertiesTrait;
 
     /** @var array<string> */
     public static array $seriesList = [];
@@ -99,6 +97,7 @@ class SeriesInfo extends BaseInfo
         if (!empty($data['identifiers'])) {
             // ...
         }
+        $seriesInfo->properties = $data['properties'] ?? [];
         if (empty($loader) || empty($seriesInfo->id)) {
             $seriesInfo->loaded = false;
             return $seriesInfo;

@@ -1,9 +1,6 @@
 <?php
 /**
  * HasAuthorsTrait trait
- *
- * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
- * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Models;
@@ -14,7 +11,7 @@ namespace Marsender\EPubLoader\Models;
 trait HasAuthorsTrait
 {
     /** @var array<AuthorInfo> */
-    public $authors = null;
+    public $authors = [];
 
     /**
      * Summary of addAuthor

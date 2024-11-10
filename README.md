@@ -97,3 +97,4 @@ This package is available under the GNU General Public License v2 or later - see
 EPub Loader was first distributed as [resource for COPS](https://github.com/seblucas/cops/tree/master/resources/epub-loader) - Calibre OPDS (and HTML) PHP Server. This fork is now a separate package that can work alone or be integrated with other web applications.
 
 Copyright (C) 2013-2021 Didier Corbière
+Copyright (C) 2023-     mikespub

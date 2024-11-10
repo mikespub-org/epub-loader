@@ -1,10 +1,6 @@
 <?php
 /**
  * GoodReadsImport class
- *
- * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
- * @author     Didier Corbière <contact@atoll-digital-library.org>
- * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Metadata\GoodReads;
@@ -184,13 +180,17 @@ class GoodReadsImport
                 $seriesResult = GoodReadsCache::parseSeries($seriesData);
                 $description = $seriesResult->getDescription() ?? '';
             }
+            $link = (string) $seriesMap[$seriesRef]->getWebUrl();
+            if (empty($link)) {
+                $link = GoodReadsMatch::SERIES_URL . $seriesId;
+            }
             // series image is not available
             $image = '';
             $info = [
                 'id' => $seriesId,
                 'name' => $title,
                 'sort' => SeriesInfo::getTitleSort($title),
-                'link' => GoodReadsMatch::SERIES_URL . $seriesId,
+                'link' => $link,
                 'image' => $image,
                 'description' => $description,
                 'source' => self::SOURCE,
@@ -217,8 +217,93 @@ class GoodReadsImport
         if (!empty($bookInfo->isbn)) {
             $bookInfo->identifiers['isbn'] = $bookInfo->isbn;
         }
+        $bookInfo->properties = [];
+        $consumed = [];
+        $book->getWork()->ref = null;
+        $book->legacyId = null;
+        $book->webUrl = null;
+        $book->title = null;
+        $book->primaryContributorEdge = null;
+        $book->secondaryContributorEdges = null;
+        $book->getDetails()->getLanguage()->name = null;
+        $book->getDetails()->getLanguage()->typename = null;
+        $book->description = null;
+        $book->bookGenres = null;
+        $book->imageUrl = null;
+        $book->getDetails()->isbn13 = null;
+        $book->getDetails()->publisher = null;
+        foreach ($book->bookSeries as $idx => $series) {
+            $series->getSeries()->ref = null;
+            $series->userPosition = null;
+            $series->typename = null;
+            $book->bookSeries[$idx] = $series;
+        }
+        $book->getDetails()->publicationTime = null;
+        $book->getDetails()->typename = null;
+        $book = self::filterProperties($book) ?? [];
+        $bookInfo->properties['book'] = array_filter($book, function ($key) use ($consumed) {
+            return !in_array($key, $consumed);
+        }, ARRAY_FILTER_USE_KEY);
+        $consumed = [];
+        $work->getDetails()->publicationTime = null;
+        $work->getStats()->averageRating = null;
+        $work->getStats()->ratingsCount = null;
+        $work = self::filterProperties($work) ?? [];
+        $bookInfo->properties['work'] = array_filter($work, function ($key) use ($consumed) {
+            return !in_array($key, $consumed);
+        }, ARRAY_FILTER_USE_KEY);
+        foreach ($contributors as $idx => $contributor) {
+            $contributor->id = null;
+            $contributor->name = null;
+            $contributor->webUrl = null;
+            $contributor->profileImageUrl = null;
+            $contributor->description = null;
+            $contributor->typename = null;
+            if ($contributor->getWorks()) {
+                $contributor->getWorks()->typename = null;
+            }
+            if ($contributor->getFollowers()) {
+                $contributor->getFollowers()->typename = null;
+            }
+            $contributors[$idx] = $contributor;
+        }
+        $contributors = self::filterProperties($contributors) ?? [];
+        $bookInfo->properties['contributors'] = array_filter($contributors, function ($key) use ($consumed) {
+            return !in_array($key, $consumed);
+        }, ARRAY_FILTER_USE_KEY);
+        foreach ($seriesMap as $idx => $series) {
+            $series->id = null;
+            $series->title = null;
+            $series->webUrl = null;
+            $series->typename = null;
+            $seriesMap[$idx] = $series;
+        }
+        $seriesMap = self::filterProperties($seriesMap) ?? [];
+        $bookInfo->properties['seriesMap'] = array_filter($seriesMap, function ($key) use ($consumed) {
+            return !in_array($key, $consumed);
+        }, ARRAY_FILTER_USE_KEY);
 
         return $bookInfo;
+    }
+
+    public static function filterProperties($object)
+    {
+        if (is_object($object)) {
+            $object = (array) $object;
+        }
+        $result = [];
+        foreach ($object as $key => $value) {
+            if (is_object($value) || is_array($value)) {
+                $value = self::filterProperties($value);
+            }
+            if (!is_null($value)) {
+                $result[$key] = $value;
+            }
+        }
+        if (empty($result)) {
+            return null;
+        }
+        return $result;
     }
 
     /**
@@ -285,6 +370,10 @@ class GoodReadsImport
             $authorInfo->addBook($bookId, $info);
         }
         //$authorInfo->addSeries($seriesId, $info);
+        $consumed = ['id', 'name', 'books'];
+        $authorInfo->properties = array_filter((array) $authorEntry, function ($key) use ($consumed) {
+            return !in_array($key, $consumed);
+        }, ARRAY_FILTER_USE_KEY);
 
         return $authorInfo;
     }
@@ -401,7 +490,10 @@ class GoodReadsImport
         $bookInfo->rating = $book->getAvgRating();
         $bookInfo->count = $book->getRatingsCount();
         $bookInfo->identifiers = ['goodreads' => $bookInfo->id];
-
+        $consumed = ['bookId', 'bookUrl', 'bookTitleBare', 'description', 'imageUrl', 'seriesHeader', 'publicationDate', 'avgRating', 'ratingsCount'];
+        $bookInfo->properties = array_filter((array) $book, function ($key) use ($consumed) {
+            return !in_array($key, $consumed);
+        }, ARRAY_FILTER_USE_KEY);
         return $bookInfo;
     }
 

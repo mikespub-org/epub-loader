@@ -1,9 +1,6 @@
 <?php
 /**
  * GoodReadsCache class
- *
- * @license    GPL v2 or later (http://www.gnu.org/licenses/gpl.html)
- * @author     mikespub
  */
 
 namespace Marsender\EPubLoader\Metadata\GoodReads;
@@ -307,42 +304,13 @@ class GoodReadsCache extends BaseCache
             return $entry;
         }
         $result = self::parseSearch($entry);
-        $entries = $result->getProperties();
+        $entries = GoodReadsImport::loadSearch($this->cacheDir . '/goodreads', $result);
         // <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{entry}}">{{entry}}</a>
-        foreach ($entries as $authorId => $authorEntry) {
-            $authorEntry = self::formatSearchAuthor($authorEntry, $urlPrefix);
-            $entries[$authorId] = $authorEntry;
+        foreach ($entries as $authorId => $authorInfo) {
+            $authorInfo = self::formatAuthorInfo($authorInfo, $urlPrefix);
+            $entries[$authorId] = $authorInfo;
         }
         return $entries;
-    }
-
-    /**
-     * Summary of formatSearchAuthor
-     * @param AuthorEntry $author
-     * @param string|null $urlPrefix
-     * @return AuthorEntry
-     */
-    public function formatSearchAuthor($author, $urlPrefix)
-    {
-        $id = $author->getId();
-        $cacheFile = $this->getAuthor($id);
-        if ($this->hasCache($cacheFile)) {
-            $author->id = "<a href='{$urlPrefix}author/list?entry={$id}'>{$id}</a>";
-        } else {
-            $author->id = "<a href='{$urlPrefix}author/list?entry={$id}'>{$id}</a> ?";
-        }
-        $author->books ??= [];
-        foreach ($author->getBooks() as $key => $book) {
-            $bookId = $book->getId();
-            $entryId = GoodReadsMatch::bookid($bookId);
-            $cacheFile = $this->getBook($entryId);
-            if ($this->hasCache($cacheFile)) {
-                $author->books[$key]->id = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$bookId}</a>";
-            } else {
-                $author->books[$key]->id = "<a href='{$urlPrefix}book/show?entry={$entryId}'>{$bookId}</a> ?";
-            }
-        }
-        return $author;
     }
 
     /**
@@ -352,7 +320,7 @@ class GoodReadsCache extends BaseCache
      * @param string $seriesId
      * @return array<mixed>|null
      */
-    public function formatSeries($entry, $urlPrefix, $seriesId)
+    public function formatSeries($entry, $urlPrefix, $seriesId): array|null
     {
         if (is_null($entry) || is_null($urlPrefix)) {
             return $entry;
