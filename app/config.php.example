@@ -20,12 +20,6 @@ $gConfig['endpoint'] = $_SERVER['SCRIPT_NAME'] ?? null;
 $gConfig['app_name'] = 'EPub Loader';
 
 /**
- * Application version
- * @deprecated 3.5.1 see RequestHandler::VERSION
- */
-//$gConfig['version'] = '3.5';
-
-/**
  * Admin email
  */
 $gConfig['admin_email'] = '';
@@ -73,12 +67,6 @@ $gConfig['callbacks'] = [
     'setBookInfo' => $this->setBookInfo(...),
 ];
 */
-
-/**
- * Available actions
- * @deprecated 3.3.0 use action groups instead
- */
-$gConfig['actions'] = [];
 
 /**
  * Available action groups
