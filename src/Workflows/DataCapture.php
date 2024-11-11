@@ -3,7 +3,7 @@
  * DataCapture class
  */
 
-namespace Marsender\EPubLoader\Import;
+namespace Marsender\EPubLoader\Workflows;
 
 class DataCapture
 {

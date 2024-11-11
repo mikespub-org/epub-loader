@@ -1,14 +1,14 @@
 <?php
 /**
- * ExportCsvFile class
+ * CsvFileWriter class
  */
 
-namespace Marsender\EPubLoader\Export;
+namespace Marsender\EPubLoader\Workflows\Writers;
 
 use Marsender\EPubLoader\Models\BookInfo;
 use Exception;
 
-class ExportCsvFile extends ExportTarget
+class CsvFileWriter extends FileWriter
 {
     /** @var array<string>|null */
     protected $lines = null;
@@ -135,7 +135,7 @@ class ExportCsvFile extends ExportTarget
     }
 
     /**
-     * Summary of GetContent
+     * Summary of getContent
      * @return string
      */
     protected function getContent()

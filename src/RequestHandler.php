@@ -73,7 +73,11 @@ class RequestHandler
         $this->gConfig['endpoint'] ??= static::ENDPOINT;
         $this->gConfig['app_name'] ??= static::APP_NAME;
         $this->gConfig['version'] ??= static::VERSION;
+        // remove callback action if no callbacks are defined
         $this->gConfig['callbacks'] ??= [];
+        if (empty($this->gConfig['callbacks'])) {
+            //unset($this->gConfig['actions']['callback']);
+        }
     }
 
     /**
@@ -303,7 +307,7 @@ class RequestHandler
             $result = ['result' => $result];
         }
         $result['databases'] = $this->gConfig['databases'];
-        if ($action == 'caches') {
+        if (in_array($action, ['caches', 'callback'])) {
             $result = $this->getDatabaseStats($action, $result);
         }
         $result['action'] = $action;
@@ -408,6 +412,14 @@ class RequestHandler
                 return $object ?? [];
             }
             return get_object_vars($object);
+        });
+        $twig->addFilter($filter);
+        $filter = new \Twig\TwigFilter('class_name', function ($fqcn) {
+            if (is_object($fqcn)) {
+                $fqcn = $fqcn::class;
+            }
+            $pieces = explode('\\', $fqcn);
+            return last($pieces);
         });
         $twig->addFilter($filter);
 

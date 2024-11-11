@@ -1,14 +1,15 @@
 <?php
 /**
- * LocalBooksTrait for use in BookExport and BookImport
+ * BookReader class
  */
 
-namespace Marsender\EPubLoader\Metadata\LocalBooks;
+namespace Marsender\EPubLoader\Workflows\Readers;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
+use Marsender\EPubLoader\Metadata\LocalBooks\LocalBooksImport;
 use Exception;
 
-trait LocalBooksTrait
+class BookReader extends SourceReader
 {
     /**
      * Load books from epub files in path
@@ -16,11 +17,10 @@ trait LocalBooksTrait
      * @param string $basePath base directory
      * @param string $epubPath relative to $basePath
      *
-     * @return array{string, array<mixed>}
+     * @return void
      */
-    public function loadFromPath($basePath, $epubPath)
+    public function process($basePath, $epubPath)
     {
-        $errors = [];
         $nbOk = 0;
         $nbError = 0;
         if (!empty($epubPath)) {
@@ -31,16 +31,16 @@ trait LocalBooksTrait
                     // Load the book infos
                     $bookInfo = LocalBooksImport::load($basePath, $filePath);
                     // Add the book
-                    $bookId = $this->getBookId($filePath);
-                    $this->addBook($bookInfo, $bookId);
+                    $bookId = $this->workflow->getBookId($filePath);
+                    $this->workflow->addBook($bookInfo, $bookId);
                     $nbOk++;
                 } catch (Exception $e) {
-                    $errors[$file] = $e->getMessage();
+                    $this->addError($file, $e->getMessage());
                     $nbError++;
                 }
             }
         }
-        $message = sprintf('%s %s - %d files OK - %d files Error', $this->label, $this->fileName, $nbOk, $nbError);
-        return [$message, $errors];
+        $message = sprintf('%s - %d files OK - %d files Error', $basePath . DIRECTORY_SEPARATOR . $epubPath, $nbOk, $nbError);
+        $this->addMessage($basePath, $message);
     }
 }

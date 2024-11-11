@@ -4,6 +4,9 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Turn import/export into workflows with readers & writers
+  * Load left-over properties into Info (gr & gb)
+  * Load author image & book rating count for callbacks
   * Add $gConfig['template_dir'] option in config.php.example
   * Import author & series descriptions as notes in db
   * Add SQLite functions for importing titles & notes

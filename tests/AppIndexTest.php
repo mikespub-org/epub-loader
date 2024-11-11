@@ -91,7 +91,7 @@ class AppIndexTest extends BaseTestCase
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/csv_export">Export CSV records with available epub files</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '/tests/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
+        $expected = '/tests/BaseWithSomeBooks/. - 2 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);
@@ -179,7 +179,7 @@ class AppIndexTest extends BaseTestCase
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/db_load">Create Calibre database with available epub files</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '/calibre/library/metadata.db - 164 files OK - 2 files Error';
+        $expected = '/calibre/library/. - 164 files OK - 2 files Error';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);

@@ -1,15 +1,15 @@
 <?php
 /**
- * CsvImport class
+ * CsvFileReader class
  */
 
-namespace Marsender\EPubLoader\Import;
+namespace Marsender\EPubLoader\Workflows\Readers;
 
 use Marsender\EPubLoader\Models\BookInfo;
-use Exception;
 use Marsender\EPubLoader\Models\SeriesInfo;
+use Exception;
 
-class CsvImport extends SourceImport
+class CsvFileReader extends SourceReader
 {
     public const CSV_SEPARATOR = "\t";
     public const CSV_ENCLOSURE = "'";
@@ -18,13 +18,12 @@ class CsvImport extends SourceImport
      * Load books from CSV export/import file
      * @param string $basePath base directory
      * @param string $fileName
-     * @return array{string, array<mixed>}
+     * @return void
      */
-    public function loadFromPath($basePath, $fileName)
+    public function process($basePath, $fileName)
     {
         $handle = fopen($fileName, 'r');
         $headers = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE);
-        $errors = [];
         $nbOk = 0;
         $nbError = 0;
         while (($data = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE)) !== false) {
@@ -32,15 +31,15 @@ class CsvImport extends SourceImport
                 // Load the book infos
                 $bookInfo = self::loadFromArray($basePath, $data);
                 // Add the book
-                $this->addBook($bookInfo, 0);
+                $this->workflow->addBook($bookInfo, 0);
                 $nbOk++;
             } catch (Exception $e) {
-                $errors[$data[1]] = $e->getMessage();
+                $this->addError($data[1], $e->getMessage());
                 $nbError++;
             }
         }
         $message = sprintf('Import ebooks from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError);
-        return [$message, $errors];
+        $this->addMessage($fileName, $message);
     }
 
     /**

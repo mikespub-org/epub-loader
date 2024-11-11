@@ -7,10 +7,8 @@ namespace Marsender\EPubLoader\Handlers;
 
 use Marsender\EPubLoader\ActionHandler;
 use Marsender\EPubLoader\RequestHandler;
-use Marsender\EPubLoader\Import\BookImport;
-use Marsender\EPubLoader\Import\CsvImport;
-use Marsender\EPubLoader\Import\JsonImport;
-use Exception;
+use Marsender\EPubLoader\Workflows\Import;
+use Marsender\EPubLoader\Workflows\Workflow;
 
 class ImportHandler extends ActionHandler
 {
@@ -54,17 +52,21 @@ class ImportHandler extends ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
         // Open or create the database
-        $import = new CsvImport($calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
+        $sourceType = Workflow::CSV_FILES;
+        $import = new Import($sourceType, $calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
 
         // Init csv file
         $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
         // Add the epub files from the import file
-        [$message, $errors] = $import->loadFromPath($dbPath, $fileName);
+        $import->process($dbPath, $fileName);
+        $errors = $import->getErrors();
         if (!empty($errors)) {
             foreach ($errors as $file => $error) {
                 $this->addError($file, $error);
             }
         }
+        $messages = $import->getMessages();
+        $message = implode("\n", $messages);
         // Display info
         return $message . '<br />';
     }
@@ -81,16 +83,20 @@ class ImportHandler extends ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
         // Open or create the database
-        $import = new JsonImport($calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
 
         // Add the json files into the database
         $jsonPath = $this->dbConfig['json_path'] ?? $this->dbConfig['epub_path'];
-        [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
+        $import->process($dbPath, $jsonPath);
+        $errors = $import->getErrors();
         if (!empty($errors)) {
             foreach ($errors as $file => $error) {
                 $this->addError($file, $error);
             }
         }
+        $messages = $import->getMessages();
+        $message = implode("\n", $messages);
         // Display info
         return $message . '<br />';
     }
@@ -107,15 +113,20 @@ class ImportHandler extends ActionHandler
         $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
         $bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . 'bookids.txt';
         // Open or create the database
-        $import = new BookImport($calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
+        $sourceType = Workflow::LOCAL_BOOKS;
+        $import = new Import($sourceType, $calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
+
         // Add the epub files into the database
         $epubPath = $this->dbConfig['epub_path'];
-        [$message, $errors] = $import->loadFromPath($dbPath, $epubPath);
+        $import->process($dbPath, $epubPath);
+        $errors = $import->getErrors();
         if (!empty($errors)) {
             foreach ($errors as $file => $error) {
                 $this->addError($file, $error);
             }
         }
+        $messages = $import->getMessages();
+        $message = implode("\n", $messages);
         // Display info
         return $message . '<br />';
     }

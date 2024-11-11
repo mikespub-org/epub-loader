@@ -1,14 +1,13 @@
 <?php
 /**
- * ExportTarget class
+ * FileWriter class
  */
 
-namespace Marsender\EPubLoader\Export;
+namespace Marsender\EPubLoader\Workflows\Writers;
 
-use Marsender\EPubLoader\Models\BookInfo;
 use Exception;
 
-abstract class ExportTarget
+abstract class FileWriter extends TargetWriter
 {
     /** @var array<mixed>|null */
     protected $properties = null;
@@ -39,17 +38,6 @@ abstract class ExportTarget
 
         $this->properties = [];
     }
-
-    /**
-     * Add a new book to the export
-     *
-     * @param BookInfo $bookInfo BookInfo object
-     * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
-     * @throws Exception if error
-     *
-     * @return void
-     */
-    abstract public function addBook($bookInfo, $bookId = 0);
 
     /**
      * Summary of clearProperties
@@ -183,6 +171,12 @@ abstract class ExportTarget
                 break;
             case 'csv':
                 $contentType = 'text/csv';
+                if (!empty($codeSet)) {
+                    $contentType .= '; charset=' . $codeSet;
+                }
+                break;
+            case 'json':
+                $contentType = 'application/json';
                 if (!empty($codeSet)) {
                     $contentType .= '; charset=' . $codeSet;
                 }

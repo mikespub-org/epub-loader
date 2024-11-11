@@ -80,4 +80,18 @@ class TestHandler extends ActionHandler
         }
         return null;
     }
+
+    /**
+     * Summary of testCallback
+     * @param mixed $id
+     * @param mixed $info
+     * @return bool
+     */
+    public static function testCallback($id, $info)
+    {
+        $pieces = explode('\\', $info::class);
+        $className = last($pieces);
+        echo "Callback for {$className} {$id}\n";
+        return true;
+    }
 }

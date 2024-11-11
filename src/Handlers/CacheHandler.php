@@ -26,18 +26,8 @@ class CacheHandler extends ActionHandler
         $result['cacheType'] = $this->request->getPath();
         $result['cacheUpdated'] = 'never';
         // cache file counts for 2 hours
-        $cacheFile = $this->cacheDir . '/caches.json';
         $refresh = $this->request->get('refresh');
-        if (empty($refresh) && file_exists($cacheFile) && filemtime($cacheFile) > time() - 2 * 60 * 60) {
-            $content = file_get_contents($cacheFile);
-            $result['caches'] = json_decode($content, true);
-            $result['cacheUpdated'] = (string) intval((time() - filemtime($cacheFile)) / 60);
-            $result['cacheUpdated'] .= ' minutes ago';
-        } else {
-            $result['caches'] = BaseCache::getCacheStats($this->cacheDir);
-            file_put_contents($cacheFile, json_encode($result['caches'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-            $result['cacheUpdated'] = 'now';
-        }
+        $result = array_replace($result, self::getCacheStats($this->cacheDir, $refresh));
         if (empty($result['cacheType'])) {
             return $result;
         }
@@ -62,6 +52,30 @@ class CacheHandler extends ActionHandler
                 $result['paging']['itemId'] = $result['cacheName'] . '/' . $result['cacheType'];
             }
             break;
+        }
+        return $result;
+    }
+
+    /**
+     * Summary of getCacheStats
+     * @param string $cacheDir
+     * @param mixed $refresh
+     * @return array<mixed>
+     */
+    public static function getCacheStats($cacheDir, $refresh = false)
+    {
+        $result = [];
+        // cache file counts for 2 hours
+        $cacheFile = $cacheDir . '/caches.json';
+        if (empty($refresh) && file_exists($cacheFile) && filemtime($cacheFile) > time() - 2 * 60 * 60) {
+            $content = file_get_contents($cacheFile);
+            $result['caches'] = json_decode($content, true);
+            $result['cacheUpdated'] = (string) intval((time() - filemtime($cacheFile)) / 60);
+            $result['cacheUpdated'] .= ' minutes ago';
+        } else {
+            $result['caches'] = BaseCache::getCacheStats($cacheDir);
+            file_put_contents($cacheFile, json_encode($result['caches'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $result['cacheUpdated'] = 'now';
         }
         return $result;
     }

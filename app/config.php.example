@@ -80,6 +80,8 @@ $gConfig['groups']['Import'] = [
 $gConfig['groups']['Export'] = [
     'csv_export' => 'Export CSV records with available epub files',
     'csv_dump' => 'Dump CSV records from Calibre database',
+    // if configured by calling application
+    'callback' => 'Export metadata cache info via callbacks',
 ];
 $gConfig['groups']['Lookup'] = [
     'authors' => 'Authors in database',

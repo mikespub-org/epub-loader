@@ -15,8 +15,8 @@ class DatabaseLoader
      * Calibre database sql file that comes unmodified from Calibre project:
      * https://raw.githubusercontent.com/kovidgoyal/calibre/master/resources/metadata_sqlite.sql
      */
-    protected static string $createDbSql = 'schema/metadata_sqlite.sql';
-    protected static string $notesDbSql = 'schema/notes_sqlite.sql';
+    public const CREATE_DB_SQL = 'schema/metadata_sqlite.sql';
+    public const NOTES_DB_SQL = 'schema/notes_sqlite.sql';
 
     /** @var PDO|null */
     protected $db = null;
@@ -108,7 +108,7 @@ class DatabaseLoader
      */
     protected function createDatabase($dbFileName)
     {
-        $sqlFileName = dirname(__DIR__) . '/' . static::$createDbSql;
+        $sqlFileName = dirname(__DIR__) . '/' . self::CREATE_DB_SQL;
         // Read the sql file
         $content = file_get_contents($sqlFileName);
         if ($content === false) {
@@ -140,7 +140,7 @@ class DatabaseLoader
      *
      * @return void
      */
-    protected function attachDatabase($dbFileName, $attachDatabase, $create = false)
+    public function attachDatabase($dbFileName, $attachDatabase, $create = false)
     {
         // Remove the database file
         if ($create && file_exists($dbFileName) && !unlink($dbFileName)) {
@@ -196,7 +196,7 @@ class DatabaseLoader
      *
      * @return void
      */
-    protected function createDbTables($sqlString, $extraFields = false)
+    public function createDbTables($sqlString, $extraFields = false)
     {
         // Create the database tables
         try {

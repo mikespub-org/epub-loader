@@ -5,7 +5,8 @@
 
 namespace Marsender\EPubLoader\Tests\WikiData;
 
-use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Workflows\Import;
+use Marsender\EPubLoader\Workflows\Workflow;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class WikiDataImportTest extends BaseTestCase
@@ -14,10 +15,13 @@ class WikiDataImportTest extends BaseTestCase
     {
         $dbPath = dirname(__DIR__, 2) . '/cache/wikidata';
         $dbFile = $dbPath . '/metadata.db';
-        $import = new JsonImport($dbFile, true);
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $dbFile, true);
 
         $jsonFile = $dbPath . '/entities/Q223131.en.json';
-        [$message, $errors] = $import->loadFromJsonFile($dbPath, $jsonFile);
+        $import->reader->loadFromJsonFile($dbPath, $jsonFile);
+        $message = implode("\n", $import->getMessages());
+        $errors = $import->getErrors();
 
         $expected = '/cache/wikidata/entities/Q223131.en.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
@@ -28,10 +32,13 @@ class WikiDataImportTest extends BaseTestCase
     {
         $dbPath = dirname(__DIR__, 2) . '/cache/wikidata';
         $dbFile = $dbPath . '/metadata.db';
-        $import = new JsonImport($dbFile, true);
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $dbFile, true);
 
         $jsonPath = 'entities';
-        [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
+        $import->process($dbPath, $jsonPath);
+        $message = implode("\n", $import->getMessages());
+        $errors = $import->getErrors();
 
         $expected = '/cache/wikidata/entities/Q223131.en.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);

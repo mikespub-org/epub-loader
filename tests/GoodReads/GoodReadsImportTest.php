@@ -5,7 +5,8 @@
 
 namespace Marsender\EPubLoader\Tests\GoodReads;
 
-use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Workflows\Import;
+use Marsender\EPubLoader\Workflows\Workflow;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class GoodReadsImportTest extends BaseTestCase
@@ -14,10 +15,13 @@ class GoodReadsImportTest extends BaseTestCase
     {
         $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
-        $import = new JsonImport($dbFile, true);
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $dbFile, true);
 
         $jsonFile = $dbPath . '/book/show/7112495.json';
-        [$message, $errors] = $import->loadFromJsonFile($dbPath, $jsonFile);
+        $import->reader->loadFromJsonFile($dbPath, $jsonFile);
+        $message = implode("\n", $import->getMessages());
+        $errors = $import->getErrors();
 
         $expected = '/cache/goodreads/book/show/7112495.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
@@ -28,10 +32,13 @@ class GoodReadsImportTest extends BaseTestCase
     {
         $dbPath = dirname(__DIR__, 2) . '/cache/goodreads';
         $dbFile = $dbPath . '/metadata.db';
-        $import = new JsonImport($dbFile, true);
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $dbFile, true);
 
         $jsonPath = 'book/show';
-        [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
+        $import->process($dbPath, $jsonPath);
+        $message = implode("\n", $import->getMessages());
+        $errors = $import->getErrors();
 
         $expected = '/cache/goodreads/book/show/7112495.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);

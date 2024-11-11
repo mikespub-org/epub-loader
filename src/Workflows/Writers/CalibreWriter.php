@@ -1,9 +1,9 @@
 <?php
 /**
- * ImportCalibre class
+ * CalibreWriter class
  */
 
-namespace Marsender\EPubLoader\Import;
+namespace Marsender\EPubLoader\Workflows\Writers;
 
 use Marsender\EPubLoader\Models\AuthorInfo;
 use Marsender\EPubLoader\Models\BookInfo;
@@ -15,7 +15,7 @@ use Marsender\EPubLoader\Metadata\WikiData\WikiDataMatch;
 use PDO;
 use Exception;
 
-class ImportCalibre extends ImportTarget
+class CalibreWriter extends DatabaseWriter
 {
     /** @var array<int, int> */
     protected $ratingIndex = [];
@@ -25,14 +25,14 @@ class ImportCalibre extends ImportTarget
      *
      * @param BookInfo $bookInfo BookInfo object
      * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
-     * @param string $coverField Add 'calibre_database_field_cover' field for books
      * @param string $sortField Add 'calibre_database_field_sort' field for tags
+     * @param string $coverField Add 'calibre_database_field_cover' field for books
      *
      * @throws Exception if error
      *
      * @return void
      */
-    public function addBook($bookInfo, $bookId, $coverField = 'cover', $sortField = 'sort')
+    public function addBook($bookInfo, $bookId = 0, $sortField = 'sort', $coverField = 'cover')
     {
         $errors = [];
 
@@ -288,9 +288,10 @@ class ImportCalibre extends ImportTarget
     /**
      * Summary of addSeries
      * @param SeriesInfo $seriesInfo
+     * @param mixed $seriesId (not used)
      * @return int
      */
-    public function addSeries($seriesInfo)
+    public function addSeries($seriesInfo, $seriesId = 0)
     {
         // Get the serie id
         $sql = 'select id from series where name=:title';
@@ -377,9 +378,10 @@ class ImportCalibre extends ImportTarget
     /**
      * Summary of addAuthor
      * @param AuthorInfo $authorInfo
+     * @param mixed $authorId (not used)
      * @return int
      */
-    public function addAuthor($authorInfo)
+    public function addAuthor($authorInfo, $authorId = 0)
     {
         // Get the author id
         $sql = 'select id from authors where name=:name';

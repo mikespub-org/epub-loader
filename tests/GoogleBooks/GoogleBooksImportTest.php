@@ -5,7 +5,8 @@
 
 namespace Marsender\EPubLoader\Tests\GoogleBooks;
 
-use Marsender\EPubLoader\Import\JsonImport;
+use Marsender\EPubLoader\Workflows\Import;
+use Marsender\EPubLoader\Workflows\Workflow;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class GoogleBooksImportTest extends BaseTestCase
@@ -14,10 +15,13 @@ class GoogleBooksImportTest extends BaseTestCase
     {
         $dbPath = dirname(__DIR__, 2) . '/cache/google';
         $dbFile = $dbPath . '/metadata.db';
-        $import = new JsonImport($dbFile, true);
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $dbFile, true);
 
         $jsonFile = $dbPath . '/volumes/_ogXogEACAAJ.en.json';
-        [$message, $errors] = $import->loadFromJsonFile($dbPath, $jsonFile);
+        $import->reader->loadFromJsonFile($dbPath, $jsonFile);
+        $message = implode("\n", $import->getMessages());
+        $errors = $import->getErrors();
 
         $expected = '/cache/google/volumes/_ogXogEACAAJ.en.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
@@ -28,10 +32,13 @@ class GoogleBooksImportTest extends BaseTestCase
     {
         $dbPath = dirname(__DIR__, 2) . '/cache/google';
         $dbFile = $dbPath . '/metadata.db';
-        $import = new JsonImport($dbFile, true);
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $dbFile, true);
 
         $jsonFile = $dbPath . '/authors/Arthur Conan Doyle.en.40.json';
-        [$message, $errors] = $import->loadFromJsonFile($dbPath, $jsonFile);
+        $import->reader->loadFromJsonFile($dbPath, $jsonFile);
+        $message = implode("\n", $import->getMessages());
+        $errors = $import->getErrors();
 
         $expected = '/cache/google/authors/Arthur Conan Doyle.en.40.json - 40 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
@@ -42,11 +49,14 @@ class GoogleBooksImportTest extends BaseTestCase
     {
         $dbPath = dirname(__DIR__, 2) . '/cache/google';
         $dbFile = $dbPath . '/metadata.db';
-        $import = new JsonImport($dbFile, true);
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $dbFile, true);
 
         //$jsonPath = 'authors';
         $jsonPath = 'titles';
-        [$message, $errors] = $import->loadFromPath($dbPath, $jsonPath);
+        $import->process($dbPath, $jsonPath);
+        $message = implode("\n", $import->getMessages());
+        $errors = $import->getErrors();
 
         $expected = '/cache/google/titles/Émile Zola.La curée.fr.json - 10 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);

@@ -12,12 +12,20 @@
 </table>
 <p>Stats Updated: {{statsUpdated}}</p>
 <p>
+	<b>Callbacks Defined</b>
+</p>
+<ol>
+	{% for key, info in callbacks %}
+	<li>{{key}}: {{info.0|class_name}}::{{info.1}}()</li>
+	{% endfor %}
+</ol>
+<p>
 	{% if not cacheName %}
-		<b>Cache Statistics</b>
+		<b>Select Cache</b>
 	{% else %}
-		<b><a href="{{endpoint}}/{{action}}/{{dbNum}}">Cache Statistics</a></b>
+		<b><a href="{{endpoint}}/{{action}}/{{dbNum}}">Select Cache</a></b>
 	{% endif %}
-	(for all databases)
+	(for this database)
 </p>
 <ul>
 {% for cache, info in caches %}
@@ -54,19 +62,21 @@
 	{% endif %}
 {% endfor %}
 </ul>
-<p><a href="{{endpoint}}/{{action}}/{{dbNum}}?refresh=1" title="Refresh">Stats Updated</a>: {{cacheUpdated}}</p>
-{% if cacheEntry %}
-<p><b>Cache Entry {{cacheEntry}}</b></p>
-{% if not raw %}
-See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{cacheEntry}}&raw=1">raw</a>
-{% else %}
-See <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{cacheName}}/{{cacheType}}?entry={{cacheEntry}}">parsed</a>
+<p>Stats Updated: {{cacheUpdated}}</p>
+{% if messages %}
+<p>Messages</p>
+<ul>
+	{% for key, message in messages %}
+	<li>{{message}}</li>
+	{% endfor %}
+</ul>
 {% endif %}
-<pre>
-{{entry|raw}}
-</pre>
-{% endif %}
-{% if entries %}
-	{{ include('entries.html') }}
+{% if errors %}
+<p>Errors</p>
+<ul>
+	{% for key, error in errors %}
+	<li>{{key}}: {{error}}</li>
+	{% endfor %}
+</ul>
 {% endif %}
 {% endblock content %}
