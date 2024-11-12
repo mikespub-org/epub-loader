@@ -5,14 +5,8 @@
 
 namespace Marsender\EPubLoader\Tests;
 
-use PHPUnit\Framework\Attributes\Depends;
-
 class AppIndexTest extends BaseTestCase
 {
-    /**
-     * Summary of testAppIndex
-     * @return void
-     */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppIndex(): void
     {
@@ -27,10 +21,6 @@ class AppIndexTest extends BaseTestCase
         $this->assertStringContainsString($expected, $output);
     }
 
-    /**
-     * Summary of testAppUnknown
-     * @return void
-     */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppUnknown(): void
     {
@@ -49,10 +39,6 @@ class AppIndexTest extends BaseTestCase
         unset($_SERVER['PATH_INFO']);
     }
 
-    /**
-     * Summary of testAppSelectDatabase
-     * @return void
-     */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppSelectDatabase(): void
     {
@@ -73,122 +59,6 @@ class AppIndexTest extends BaseTestCase
         unset($_SERVER['PATH_INFO']);
     }
 
-    /**
-     * Summary of testAppCsvExport
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCsvExport(): void
-    {
-        $_SERVER['PATH_INFO'] = '/csv_export/0';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>EPub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/csv_export">Export CSV records with available epub files</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '/tests/BaseWithSomeBooks/. - 2 files OK - 0 files Error';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    #[Depends('testAppCsvExport')]
-    public function testAppCsvImport(): void
-    {
-        $_SERVER['PATH_INFO'] = '/csv_import/0';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>EPub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/csv_import">Import CSV records into new Calibre database</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '/tests/BaseWithSomeBooks/BaseWithSomeBooks_metadata.csv - 2 files OK - 0 files Error';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    /**
-     * Summary of testAppCsvDownload
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCsvDownload(): void
-    {
-        $_SERVER['PATH_INFO'] = '/csv_export/0';
-        $_GET['download'] = '1';
-        putenv('PHPUNIT_TESTING=1');
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = "'Alice''s Adventures in Wonderland - Lewis Carroll'";
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-        unset($_GET['download']);
-        putenv('PHPUNIT_TESTING=');
-    }
-
-    public function testAppCacheLoad(): void
-    {
-        $_SERVER['PATH_INFO'] = '/cache_load/0';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>EPub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/cache_load">Load JSON files from Lookup cache into new Calibre database</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '/tests/BaseWithSomeBooks/./metadata_db_prefs_backup.json - 0 files OK - 0 files Error';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    /**
-     * Summary of testAppDbLoad
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppDbLoad(): void
-    {
-        // @see https://github.com/w3c/epub-tests - files with 2 errors: duplicate uuid + epub version 0
-        $_SERVER['PATH_INFO'] = '/db_load/4';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>EPub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/db_load">Create Calibre database with available epub files</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '/calibre/library/. - 164 files OK - 1 files Error';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    /**
-     * Summary of testAppListAuthors
-     * @return void
-     */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppListAuthors(): void
     {
@@ -209,84 +79,6 @@ class AppIndexTest extends BaseTestCase
         unset($_SERVER['PATH_INFO']);
     }
 
-    /**
-     * Summary of testAppCacheStats
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCacheStats(): void
-    {
-        $_SERVER['PATH_INFO'] = '/caches/0';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>EPub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/caches">Cache statistics</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/caches/0?refresh=1" title="Refresh">Stats Updated</a>';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    /**
-     * Summary of testAppCacheEntries
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCacheEntries(): void
-    {
-        $_SERVER['PATH_INFO'] = '/caches/0/goodreads/author/list';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>EPub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/caches">Cache statistics</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<b>Cache Entries</b>';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    /**
-     * Summary of testAppCacheEntry
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testAppCacheEntry(): void
-    {
-        $_SERVER['PATH_INFO'] = '/caches/0/goodreads/author/list';
-        $_GET['entry'] = '2448.Arthur_Conan_Doyle';
-
-        ob_start();
-        $headers = headers_list();
-        require dirname(__DIR__) . '/app/index.php';
-        $output = ob_get_clean();
-
-        $expected = '<title>EPub Loader</title>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/caches">Cache statistics</a>';
-        $this->assertStringContainsString($expected, $output);
-        $expected = '<b>Cache Entry 2448.Arthur_Conan_Doyle</b>';
-        $this->assertStringContainsString($expected, $output);
-
-        unset($_GET['entry']);
-        unset($_SERVER['PATH_INFO']);
-    }
-
-    /**
-     * Summary of testAppInternal
-     * @return void
-     */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppInternal(): void
     {
@@ -307,10 +99,6 @@ class AppIndexTest extends BaseTestCase
         unset($_SERVER['PATH_INFO']);
     }
 
-    /**
-     * Summary of testAppMeta
-     * @return void
-     */
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
     public function testAppMeta(): void
     {

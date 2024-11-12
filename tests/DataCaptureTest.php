@@ -5,7 +5,7 @@
 
 namespace Marsender\EPubLoader\Tests;
 
-use Marsender\EPubLoader\Workflows\DataCapture;
+use Marsender\EPubLoader\Workflows\Converters\DataCapture;
 
 class DataCaptureTest extends BaseTestCase
 {

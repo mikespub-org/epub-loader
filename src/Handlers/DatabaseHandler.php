@@ -6,9 +6,7 @@
 namespace Marsender\EPubLoader\Handlers;
 
 use Marsender\EPubLoader\ActionHandler;
-use Marsender\EPubLoader\Models\NoteInfo;
 use Marsender\EPubLoader\RequestHandler;
-use Exception;
 
 class DatabaseHandler extends ActionHandler
 {

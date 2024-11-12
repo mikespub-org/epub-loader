@@ -3,9 +3,13 @@
  * DataCapture class
  */
 
-namespace Marsender\EPubLoader\Workflows;
+namespace Marsender\EPubLoader\Workflows\Converters;
 
-class DataCapture
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
+
+class DataCapture extends Converter
 {
     /** @var array<mixed> */
     public array $structure = ['path' => '', 'type' => []];
@@ -25,6 +29,19 @@ class DataCapture
             $pattern = str_replace('~', '\\~', $pattern);
             $this->patterns[$path] = '~' . $pattern . '~';
         }
+    }
+
+    /**
+     * Convert info and/or id
+     *
+     * @param BookInfo|AuthorInfo|SeriesInfo $info object
+     * @param int $id id in the calibre db (or 0 for auto incrementation)
+     * @return array{0: BookInfo|AuthorInfo|SeriesInfo, 1: int}
+     */
+    public function convert($info, $id = 0)
+    {
+        $this->analyze($info);
+        return [$info, $id];
     }
 
     /**

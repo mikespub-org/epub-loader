@@ -5,7 +5,6 @@
 
 namespace Marsender\EPubLoader\Tests;
 
-use Marsender\EPubLoader\CalibreDbLoader;
 use Marsender\EPubLoader\Metadata\BaseCache;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;

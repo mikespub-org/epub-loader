@@ -5,7 +5,6 @@
 
 namespace Marsender\EPubLoader\Tests\OpenLibrary;
 
-use Marsender\EPubLoader\Import\DataCapture;
 use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryCache;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 

@@ -14,6 +14,8 @@ class CallbackWriter extends TargetWriter
     /** @var array<string, callable> */
     protected $callbacks = [];
     protected int $nbBook = 0;
+    protected int $nbAuthor = 0;
+    protected int $nbSeries = 0;
 
     /**
      * Set book, author & series info via callback function
@@ -52,6 +54,8 @@ class CallbackWriter extends TargetWriter
      */
     public function addAuthor($authorInfo, $authorId = 0)
     {
+        $this->nbAuthor++;
+        //$authorId = $authorId ?: $this->nbAuthor;
         $callback = $this->callbacks['setAuthorInfo'] ?? '';
         if (empty($authorId) || empty($callback)) {
             return;
@@ -68,6 +72,8 @@ class CallbackWriter extends TargetWriter
      */
     public function addSeries($seriesInfo, $seriesId = 0)
     {
+        $this->nbSeries++;
+        //$seriesId = $seriesId ?: $this->nbSeries;
         $callback = $this->callbacks['setSeriesInfo'] ?? '';
         if (empty($seriesId) || empty($callback)) {
             return;

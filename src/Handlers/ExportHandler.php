@@ -9,8 +9,6 @@ use Marsender\EPubLoader\ActionHandler;
 use Marsender\EPubLoader\Workflows\Export;
 use Marsender\EPubLoader\Workflows\Workflow;
 use Marsender\EPubLoader\RequestHandler;
-use Marsender\EPubLoader\Metadata\BaseCache;
-use Exception;
 
 class ExportHandler extends ActionHandler
 {

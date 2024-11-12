@@ -5,7 +5,6 @@
 
 namespace Marsender\EPubLoader\Tests\WikiData;
 
-use Marsender\EPubLoader\Import\DataCapture;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataCache;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 

@@ -89,6 +89,7 @@ class Workflow
      */
     public function convert($info, $id)
     {
+        // can be empty
         foreach ($this->converters as $converter) {
             [$info, $id] = $converter->convert($info, $id);
         }
@@ -104,6 +105,10 @@ class Workflow
      */
     public function addInfo($info, $id)
     {
+        // can be empty
+        if (empty($this->writer)) {
+            return;
+        }
         switch ($info::class) {
             case BookInfo::class:
                 $this->writer->addBook($info, $id);
@@ -126,7 +131,7 @@ class Workflow
      */
     public function getMessages()
     {
-        return $this->reader->messages + $this->writer->messages;
+        return ($this->reader?->messages ?? []) + ($this->writer?->messages ?? []);
     }
 
     /**
@@ -135,7 +140,7 @@ class Workflow
      */
     public function getErrors()
     {
-        return $this->reader->errors + $this->writer->errors;
+        return ($this->reader?->errors ?? []) + ($this->writer?->errors ?? []);
     }
 
     /**

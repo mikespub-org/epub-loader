@@ -107,7 +107,7 @@ class BaseInfo
     }
 
     /**
-     * Convert from JSON record to BookInfo
+     * Convert from JSON record to BookInfo etc.
      * @param array<mixed> $data
      * @return BookInfo|AuthorInfo|SeriesInfo
      */
