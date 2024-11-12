@@ -30,6 +30,10 @@ class ImportHandler extends ActionHandler
                 $createDb = $this->dbConfig['create_db'];
                 $result = $this->json_import($createDb);
                 break;
+            case 'cache_load':
+                $createDb = $this->dbConfig['create_db'];
+                $result = $this->cache_load($createDb);
+                break;
             case 'db_load':
                 $createDb = $this->dbConfig['create_db'];
                 $result = $this->db_load($createDb);
@@ -66,7 +70,7 @@ class ImportHandler extends ActionHandler
             }
         }
         $messages = $import->getMessages();
-        $message = implode("\n", $messages);
+        $message = implode("<br />\n", $messages);
         // Display info
         return $message . '<br />';
     }
@@ -77,6 +81,38 @@ class ImportHandler extends ActionHandler
      * @return string
      */
     public function json_import($createDb = false)
+    {
+        // Init database file
+        $dbPath = $this->dbConfig['db_path'];
+        $calibreFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.db';
+        //$bookIdsFileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_bookids.txt';
+        $bookIdsFileName = '';
+        // Open or create the database
+        $sourceType = Workflow::JSON_FILES;
+        $import = new Import($sourceType, $calibreFileName, $createDb, $bookIdsFileName, $this->cacheDir);
+
+        // Init json path
+        $jsonPath = '.';
+        // Add the epub files from the import file(s)
+        $import->process($dbPath, $jsonPath);
+        $errors = $import->getErrors();
+        if (!empty($errors)) {
+            foreach ($errors as $file => $error) {
+                $this->addError($file, $error);
+            }
+        }
+        $messages = $import->getMessages();
+        $message = implode("<br />\n", $messages);
+        // Display info
+        return $message . '<br />';
+    }
+
+    /**
+     * Summary of cache_load - @todo fix calibreFileName avoiding overlap with existing metadata.db
+     * @param bool $createDb
+     * @return string
+     */
+    public function cache_load($createDb = false)
     {
         // Init database file
         $dbPath = $this->dbConfig['db_path'];
@@ -96,7 +132,7 @@ class ImportHandler extends ActionHandler
             }
         }
         $messages = $import->getMessages();
-        $message = implode("\n", $messages);
+        $message = implode("<br />\n", $messages);
         // Display info
         return $message . '<br />';
     }
@@ -126,7 +162,7 @@ class ImportHandler extends ActionHandler
             }
         }
         $messages = $import->getMessages();
-        $message = implode("\n", $messages);
+        $message = implode("<br />\n", $messages);
         // Display info
         return $message . '<br />';
     }

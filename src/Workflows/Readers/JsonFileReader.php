@@ -14,32 +14,58 @@ use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryCache;
 use Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryImport;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataCache;
 use Marsender\EPubLoader\Metadata\WikiData\WikiDataImport;
-use Marsender\EPubLoader\Workflows\Workflow;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Exception;
 
 class JsonFileReader extends SourceReader
 {
+    public const PATTERN = '*.json';
+
+    public string $pattern = self::PATTERN;
     protected string $cacheDir = '';
     /** @var array<mixed> */
     protected array $caches = [];
+    protected int $nbOk = 0;
+    protected int $nbError = 0;
 
     /**
      * Cache directory with JSON files
      *
-     * @param ?Workflow $workflow
      * @param string|null $cacheDir
+     * @param string|null $pattern
      */
-    public function __construct($workflow, $cacheDir = null)
+    public function __construct($cacheDir = null, $pattern = null)
     {
         $this->cacheDir = $cacheDir ?? dirname(__DIR__, 3) . '/cache';
-        $this->setWorkflow($workflow);
+        $this->pattern = $pattern ?? static::PATTERN;
+    }
+
+    /**
+     * Run loadFromJsonFile() generator and get results
+     * @param string $basePath base directory
+     * @param string $fileName
+     * @return array<mixed>
+     */
+    public function getFromJsonFile($basePath, $fileName)
+    {
+        $result = [];
+        $count = 0;
+        $generator = $this->loadFromJsonFile($basePath, $fileName);
+        foreach ($generator as $id => $info) {
+            $count++;
+            $id = $id ?: $count;
+            $result[$id] = $info;
+        }
+        return $result;
     }
 
     /**
      * Load books from JSON file
      * @param string $basePath base directory
      * @param string $fileName
-     * @return void
+     * @return \Generator<int, BookInfo|AuthorInfo|SeriesInfo>
      */
     public function loadFromJsonFile($basePath, $fileName)
     {
@@ -59,7 +85,8 @@ class JsonFileReader extends SourceReader
                     // Load the book infos
                     $bookInfo = GoogleBooksImport::load($basePath, $volume, $this->caches['googlebooks']);
                     // Add the book
-                    $this->workflow->addBook($bookInfo, 0);
+                    yield 0 => $bookInfo;
+                    //$this->workflow->addBook($bookInfo, 0);
                     $nbOk++;
                 } catch (Exception $e) {
                     $id = $volume->getId() ?? spl_object_hash($volume);
@@ -75,7 +102,8 @@ class JsonFileReader extends SourceReader
                 // Load the book infos
                 $bookInfo = GoogleBooksImport::load($basePath, $volume, $this->caches['googlebooks']);
                 // Add the book
-                $this->workflow->addBook($bookInfo, 0);
+                yield 0 => $bookInfo;
+                //$this->workflow->addBook($bookInfo, 0);
                 $nbOk++;
             } catch (Exception $e) {
                 $id = basename($fileName);
@@ -90,7 +118,8 @@ class JsonFileReader extends SourceReader
                 // Load the book infos
                 $bookInfo = GoodReadsImport::load($basePath, $bookResult, $this->caches['goodreads']);
                 // Add the book
-                $this->workflow->addBook($bookInfo, 0);
+                yield 0 => $bookInfo;
+                //$this->workflow->addBook($bookInfo, 0);
                 $nbOk++;
             } catch (Exception $e) {
                 $id = basename($fileName);
@@ -105,7 +134,8 @@ class JsonFileReader extends SourceReader
                 // Load the book infos
                 $bookInfo = OpenLibraryImport::load($basePath, $work, $this->caches['openlibrary']);
                 // Add the book
-                $this->workflow->addBook($bookInfo, 0);
+                yield 0 => $bookInfo;
+                //$this->workflow->addBook($bookInfo, 0);
                 $nbOk++;
             } catch (Exception $e) {
                 $id = basename($fileName);
@@ -124,7 +154,7 @@ class JsonFileReader extends SourceReader
                 $this->addError($id, $e->getMessage());
                 $nbError++;
             }
-        } elseif (!empty($data["id"]) && !empty($data["properties"]) && array_key_exists("wiki_url", $data)) {
+        } elseif (!empty($data["id"]) && isset($data["properties"]) && array_key_exists("wiki_url", $data)) {
             $this->caches['wikidata'] ??= new WikiDataCache($this->cacheDir);
             try {
                 // Parse the JSON data
@@ -133,7 +163,8 @@ class JsonFileReader extends SourceReader
                     // Load the book infos
                     $bookInfo = WikiDataImport::load($basePath, $entity, $this->caches['wikidata']);
                     // Add the book
-                    $this->workflow->addBook($bookInfo, 0);
+                    yield 0 => $bookInfo;
+                    //$this->workflow->addBook($bookInfo, 0);
                     $nbOk++;
                 } else {
                     // not imported separately
@@ -143,10 +174,32 @@ class JsonFileReader extends SourceReader
                 $this->addError($id, $e->getMessage());
                 $nbError++;
             }
+        } elseif (!empty($data["field_metadata"])) {
+            // skip metadata_db_prefs_backup.json
+        } elseif (!empty($data) && is_numeric(array_key_first($data))) {
+            // assume export of JSON records here
+            foreach ($data as $id => $info) {
+                if (is_array($info) && !empty($info["source"])) {
+                    $bookInfo = BookInfo::fromJson($info);
+                    yield $id => $bookInfo;
+                    $nbOk++;
+                    // @todo
+                } else {
+                    $id = basename($fileName);
+                    $this->addError($id, 'Unknown data format');
+                    $nbError++;
+                    break;
+                }
+            }
         } else {
             // @todo add more formats to support
+            $id = basename($fileName);
+            $this->addError($id, 'Unknown JSON format');
+            $nbError++;
         }
-        $message = sprintf('Import ebooks from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError);
+        $this->nbOk += $nbOk;
+        $this->nbError += $nbError;
+        $message = sprintf('Load JSON from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError);
         $this->addMessage($fileName, $message);
     }
 
@@ -156,13 +209,16 @@ class JsonFileReader extends SourceReader
      * @param string $basePath base directory
      * @param string $jsonPath relative to $basePath
      *
-     * @return void
+     * @return \Generator<int, BookInfo|AuthorInfo|SeriesInfo>
      */
-    public function process($basePath, $jsonPath)
+    public function iterate($basePath, $jsonPath)
     {
-        $fileList = BaseCache::getFiles($basePath . DIRECTORY_SEPARATOR . $jsonPath, '*.json');
+        $fileList = BaseCache::getFiles($basePath . DIRECTORY_SEPARATOR . $jsonPath, $this->pattern);
         foreach ($fileList as $file) {
-            $this->loadFromJsonFile($basePath, $file);
+            yield from $this->loadFromJsonFile($basePath, $file);
         }
+        $dirName = basename($basePath) . DIRECTORY_SEPARATOR . $jsonPath;
+        $message = sprintf('Total read from %s - %d files OK - %d files Error', $dirName, $this->nbOk, $this->nbError);
+        $this->addMessage($dirName, $message);
     }
 }

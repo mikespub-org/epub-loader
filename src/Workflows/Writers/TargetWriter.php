@@ -17,6 +17,11 @@ use Exception;
 
 abstract class TargetWriter
 {
+    /** @var array<mixed> */
+    public array $messages = [];
+    /** @var array<mixed> */
+    public array $errors = [];
+
     /**
      * Add a new book to the target (must be implemented)
      *
@@ -54,5 +59,27 @@ abstract class TargetWriter
     public function addSeries($seriesInfo, $seriesId = 0)
     {
         return;
+    }
+
+    /**
+     * Summary of addMessage
+     * @param string $source
+     * @param mixed $message
+     * @return void
+     */
+    public function addMessage($source, $message)
+    {
+        $this->messages[$source] = $message;
+    }
+
+    /**
+     * Summary of addError
+     * @param string $source
+     * @param mixed $error
+     * @return void
+     */
+    public function addError($source, $error)
+    {
+        $this->errors[$source] = $error;
     }
 }

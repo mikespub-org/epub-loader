@@ -10,7 +10,7 @@ namespace Marsender\EPubLoader\Models;
  */
 trait HasPropertiesTrait
 {
-    /** @var array<mixed> */
+    /** @var array<mixed>|null */
     public $properties = [];
 
     /**

@@ -5,6 +5,7 @@
 
 namespace Marsender\EPubLoader\Workflows\Readers;
 
+use Marsender\EPubLoader\Models\AuthorInfo;
 use Marsender\EPubLoader\Models\BookInfo;
 use Marsender\EPubLoader\Models\SeriesInfo;
 use Exception;
@@ -18,27 +19,32 @@ class CsvFileReader extends SourceReader
      * Load books from CSV export/import file
      * @param string $basePath base directory
      * @param string $fileName
-     * @return void
+     * @return \Generator<int, BookInfo|AuthorInfo|SeriesInfo>
      */
-    public function process($basePath, $fileName)
+    public function iterate($basePath, $fileName)
     {
         $handle = fopen($fileName, 'r');
-        $headers = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE);
         $nbOk = 0;
         $nbError = 0;
-        while (($data = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE)) !== false) {
-            try {
-                // Load the book infos
-                $bookInfo = self::loadFromArray($basePath, $data);
-                // Add the book
-                $this->workflow->addBook($bookInfo, 0);
-                $nbOk++;
-            } catch (Exception $e) {
-                $this->addError($data[1], $e->getMessage());
-                $nbError++;
+        try {
+            $headers = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE);
+            while (($data = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE)) !== false) {
+                try {
+                    // Load the book infos
+                    $bookInfo = self::loadFromArray($basePath, $data);
+                    // Add the book
+                    yield 0 => $bookInfo;
+                    //$this->workflow->addBook($bookInfo, 0);
+                    $nbOk++;
+                } catch (Exception $e) {
+                    $this->addError($data[1], $e->getMessage());
+                    $nbError++;
+                }
             }
+        } finally {
+            fclose($handle);
         }
-        $message = sprintf('Import ebooks from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError);
+        $message = sprintf('Load CSV from %s - %d files OK - %d files Error', $fileName, $nbOk, $nbError);
         $this->addMessage($fileName, $message);
     }
 

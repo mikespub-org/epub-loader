@@ -6,7 +6,9 @@
 namespace Marsender\EPubLoader\Workflows\Readers;
 
 use Marsender\EPubLoader\DatabaseLoader;
-use Marsender\EPubLoader\Workflows\Workflow;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 
 abstract class DatabaseReader extends SourceReader
 {
@@ -17,28 +19,27 @@ abstract class DatabaseReader extends SourceReader
     /**
      * Open a database file
      *
-     * @param ?Workflow $workflow
      * @param string $dbFileName database file name
      */
-    public function __construct($workflow, $dbFileName)
+    public function __construct($dbFileName)
     {
         $this->dbFileName = $dbFileName;
         $this->dbLoader = new DatabaseLoader($dbFileName);
-        $this->setWorkflow($workflow);
     }
 
     /**
      * Load books from <something> in path
      *
      * @param string $basePath base directory
-     * @param string $localPath relative to $basePath
+     * @param string $tableName item type to return
      *
-     * @return void
+     * @return \Generator<int, BookInfo|AuthorInfo|SeriesInfo>
      */
-    public function process($basePath, $localPath)
+    public function iterate($basePath, $tableName)
     {
+        yield 0 => new BookInfo();
         // @todo loop over database to load BookInfo and add books
         $message = 'TODO';
-        $this->addMessage($localPath, $message);
+        $this->addMessage($tableName, $message);
     }
 }

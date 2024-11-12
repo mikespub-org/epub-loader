@@ -84,6 +84,9 @@ class CsvFileWriter extends FileWriter
         $this->setProperty($i++, implode(' - ', $bookInfo->getAuthorSorts()));
         $this->setProperty($i++, $bookInfo->language);
         $this->setProperty($i++, $bookInfo->description);
+        if (empty($bookInfo->subjects)) {
+            $bookInfo->subjects = [];
+        }
         $this->setProperty($i++, implode(' - ', $bookInfo->subjects));
         $this->setProperty($i++, $bookInfo->cover);
         $this->setProperty($i++, $bookInfo->isbn);

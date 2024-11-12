@@ -50,21 +50,53 @@ class CalibreWriter extends DatabaseWriter
             throw new Exception($error);
         }
         // Add the book data (formats)
-        $this->addBookData($bookInfo, $idBook);
+        try {
+            $this->addBookData($bookInfo, $idBook);
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
         // Add the book comments
-        $this->addBookComments($bookInfo, $idBook);
+        try {
+            $this->addBookComments($bookInfo, $idBook);
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
         // Add the book identifiers
-        $this->addBookIdentifiers($bookInfo, $idBook);
+        try {
+            $this->addBookIdentifiers($bookInfo, $idBook);
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
         // Add the book serie
-        $this->addBookSeries($bookInfo, $idBook);
+        try {
+            $this->addBookSeries($bookInfo, $idBook);
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
         // Add the book authors
-        $this->addBookAuthors($bookInfo, $idBook);
+        try {
+            $this->addBookAuthors($bookInfo, $idBook);
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
         // Add the book language
-        $this->addBookLanguage($bookInfo, $idBook);
+        try {
+            $this->addBookLanguage($bookInfo, $idBook);
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
         // Add the book tags (subjects)
-        $this->addBookTags($bookInfo, $idBook, $sortField);
+        try {
+            $this->addBookTags($bookInfo, $idBook, $sortField);
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
         // Add the book rating (if any)
-        $this->addBookRating($bookInfo, $idBook);
+        try {
+            $this->addBookRating($bookInfo, $idBook);
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
         // Send warnings
         if (count($errors)) {
             $error = implode(' - ', $errors);
@@ -179,6 +211,10 @@ class CalibreWriter extends DatabaseWriter
         if (str_contains($bookInfo->path, '://')) {
             return;
         }
+        // When importing JSON records from previous json_dump
+        if ($bookInfo->source == 'database' || is_numeric($bookInfo->id)) {
+            return;
+        }
         // When using LocalBooksImport():
         //   $bookInfo->path = pathinfo($fileName, PATHINFO_DIRNAME);
         //   $bookInfo->id = pathinfo($fileName, PATHINFO_FILENAME);
@@ -237,7 +273,13 @@ class CalibreWriter extends DatabaseWriter
         $identifiers['url'] = $bookInfo->uri;
         $identifiers['isbn'] = $bookInfo->isbn;
         if (!empty($bookInfo->identifiers)) {
-            $identifiers = array_merge($identifiers, $bookInfo->identifiers);
+            foreach ($bookInfo->identifiers as $type => $identifier) {
+                if (is_array($identifier)) {
+                    $identifiers[$type] ??= $identifier['value'];
+                } else {
+                    $identifiers[$type] ??= $identifier;
+                }
+            }
         }
         foreach ($identifiers as $key => $value) {
             if (empty($value)) {

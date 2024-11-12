@@ -5,7 +5,9 @@
 
 namespace Marsender\EPubLoader\Workflows;
 
+use Marsender\EPubLoader\Models\AuthorInfo;
 use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Exception;
 
 class Workflow
@@ -14,50 +16,40 @@ class Workflow
     public const LOCAL_BOOKS = 2;
     public const CSV_FILES = 3;
     public const JSON_FILES = 4;
-    public const CALLBACK = 5;
+    public const CACHE_TYPE = 5;
+    public const CALLBACK = 6;
 
     /** @var Readers\SourceReader|null */
     public $reader = null;
     /** @var Writers\TargetWriter|null */
     public $writer = null;
-    /** @var Converters\Converter|null */
-    public $converter = null;
+    /** @var array<Converters\Converter> */
+    public $converters = [];
+    protected int $nbOk = 0;
+    protected int $nbError = 0;
 
     /**
      * Create an import/export workflow
      *
-     * @param mixed $reader
-     * @param mixed $writer
-     * @param mixed $converter
+     * @param Readers\SourceReader|null $reader
+     * @param Writers\TargetWriter|null $writer
+     * @param array<Converters\Converter>|null $converters
      * @param string $bookIdsFileName File name containing a map of file names to calibre book ids
      * @throws Exception if error
      */
-    public function __construct($reader = null, $writer = null, $converter = null, $bookIdsFileName = '')
+    public function __construct($reader = null, $writer = null, $converters = null, $bookIdsFileName = '')
     {
         $this->reader = $reader;
         $this->writer = $writer;
-        if (!empty($bookIdsFileName) && empty($converter)) {
-            $converter = new Converters\IdMapper($bookIdsFileName);
+        $converters ??= [];
+        if (!empty($bookIdsFileName)) {
+            $converters[] = new Converters\IdMapper($bookIdsFileName);
         }
-        $this->converter = $converter;
+        $this->converters = $converters;
     }
 
     /**
-     * Summary of getBookId
-     * @param string $bookFileName
-     * @return int
-     */
-    public function getBookId($bookFileName)
-    {
-        $bookId = 0;
-        if ($this->converter instanceof Converters\IdMapper) {
-            $bookId = $this->converter->getBookId($bookFileName);
-        }
-        return $bookId;
-    }
-
-    /**
-     * Load books from <something> in path
+     * Load info from <reader> in path and add to <writer>
      *
      * @param string $basePath base directory
      * @param string $localPath relative to $basePath
@@ -66,21 +58,66 @@ class Workflow
      */
     public function process($basePath, $localPath)
     {
-        $this->reader->process($basePath, $localPath);
+        $generator = $this->reader->iterate($basePath, $localPath);
+        foreach ($generator as $id => $info) {
+            try {
+                [$info, $id] = $this->convert($info, $id);
+            } catch (Exception $e) {
+                $this->writer->addError("Convert item " . (string) $id, $e->getMessage());
+                $this->nbError++;
+                // @todo do not stop processing here?
+            }
+            try {
+                $this->addInfo($info, $id);
+                $this->nbOk++;
+            } catch (Exception $e) {
+                $this->writer->addError("Add item " . (string) $id, $e->getMessage());
+                $this->nbError++;
+            }
+        }
+        $dirName = $basePath . DIRECTORY_SEPARATOR . $localPath;
+        $message = sprintf('Total write to %s - %d files OK - %d files Error', $dirName, $this->nbOk, $this->nbError);
+        $this->writer->addMessage($dirName, $message);
     }
 
     /**
-     * Add a new book to the target
+     * Convert info and/or id
      *
-     * @param BookInfo $bookInfo BookInfo object
-     * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
-     * @throws Exception if error
+     * @param BookInfo|AuthorInfo|SeriesInfo $info object
+     * @param int $id id in the calibre db (or 0 for auto incrementation)
+     * @return array{0: BookInfo|AuthorInfo|SeriesInfo, 1: int}
+     */
+    public function convert($info, $id)
+    {
+        foreach ($this->converters as $converter) {
+            [$info, $id] = $converter->convert($info, $id);
+        }
+        return [$info, $id];
+    }
+
+    /**
+     * Add new info to the target
      *
+     * @param BookInfo|AuthorInfo|SeriesInfo $info object
+     * @param int $id id in the calibre db (or 0 for auto incrementation)
      * @return void
      */
-    public function addBook($bookInfo, $bookId = 0)
+    public function addInfo($info, $id)
     {
-        $this->writer->addBook($bookInfo, $bookId);
+        switch ($info::class) {
+            case BookInfo::class:
+                $this->writer->addBook($info, $id);
+                break;
+            case AuthorInfo::class:
+                $this->writer->addAuthor($info, $id);
+                break;
+            case SeriesInfo::class:
+                $this->writer->addSeries($info, $id);
+                break;
+            default:
+                $error = sprintf('Incorrect info type: %s', $info::class);
+                throw new Exception($error);
+        }
     }
 
     /**
@@ -89,7 +126,7 @@ class Workflow
      */
     public function getMessages()
     {
-        return $this->reader->messages;
+        return $this->reader->messages + $this->writer->messages;
     }
 
     /**
@@ -98,29 +135,30 @@ class Workflow
      */
     public function getErrors()
     {
-        return $this->reader->errors;
+        return $this->reader->errors + $this->writer->errors;
     }
 
     /**
      * Get reader instance
      *
-     * @param ?Workflow $workflow
-     * @param int       $type Reader type
-     * @param string    $path Reader path
+     * @param int    $type Reader type
+     * @param string $path Reader path
      * @throws Exception if error
      * @return Readers\SourceReader
      */
-    public static function getReader($workflow, $type, $path = '')
+    public static function getReader($type, $path = '')
     {
         switch ($type) {
             case self::CALIBRE_DB:
-                return new Readers\CalibreReader($workflow, $path);
+                return new Readers\CalibreReader($path);
             case self::LOCAL_BOOKS:
-                return new Readers\BookReader($workflow);
+                return new Readers\BookReader();
             case self::CSV_FILES:
-                return new Readers\CsvFileReader($workflow);
+                return new Readers\CsvFileReader();
             case self::JSON_FILES:
-                return new Readers\JsonFileReader($workflow, $path);
+                return new Readers\JsonFileReader($path);
+            case self::CACHE_TYPE:
+                return new Readers\CacheReader($path);
             case self::CALLBACK:
             default:
                 $error = sprintf('Incorrect reader type: %d', $type);
@@ -131,14 +169,13 @@ class Workflow
     /**
      * Get writer instance
      *
-     * @param ?Workflow $workflow
-     * @param int       $type Writer type
-     * @param string|mixed    $path Writer path or callbacks
-     * @param bool      $create Force creation
+     * @param int   $type Writer type
+     * @param mixed $path Writer path or callbacks
+     * @param bool  $create Force creation
      * @throws Exception if error
      * @return Writers\TargetWriter
      */
-    public static function getWriter($workflow, $type, $path = '', $create = false)
+    public static function getWriter($type, $path = '', $create = false)
     {
         switch ($type) {
             case self::CSV_FILES:
@@ -150,6 +187,7 @@ class Workflow
             case self::CALLBACK:
                 return new Writers\CallbackWriter($path);
             case self::LOCAL_BOOKS:
+            case self::CACHE_TYPE:
             default:
                 $error = sprintf('Incorrect writer type: %d', $type);
                 throw new Exception($error);
@@ -167,10 +205,9 @@ class Workflow
      */
     public static function getWorkflow($sourceType, $sourcePath, $targetType, $targetPath, $create = false)
     {
-        $workflow = new self();
         // @todo handle bookIdsFileName & converter?
-        $workflow->reader = self::getReader($workflow, $sourceType, $sourcePath);
-        $workflow->writer = self::getWriter($workflow, $targetType, $targetPath, $create);
-        return $workflow;
+        $reader = self::getReader($sourceType, $sourcePath);
+        $writer = self::getWriter($targetType, $targetPath, $create);
+        return new self($reader, $writer);
     }
 }

@@ -19,10 +19,11 @@ class GoogleBooksImportTest extends BaseTestCase
         $import = new Import($sourceType, $dbFile, true);
 
         $jsonFile = $dbPath . '/volumes/_ogXogEACAAJ.en.json';
-        $import->reader->loadFromJsonFile($dbPath, $jsonFile);
+        $result = $import->reader->getFromJsonFile($dbPath, $jsonFile);
         $message = implode("\n", $import->getMessages());
         $errors = $import->getErrors();
 
+        $this->assertCount(1, $result);
         $expected = '/cache/google/volumes/_ogXogEACAAJ.en.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
         $this->assertCount(0, $errors);
@@ -36,10 +37,11 @@ class GoogleBooksImportTest extends BaseTestCase
         $import = new Import($sourceType, $dbFile, true);
 
         $jsonFile = $dbPath . '/authors/Arthur Conan Doyle.en.40.json';
-        $import->reader->loadFromJsonFile($dbPath, $jsonFile);
+        $result = $import->reader->getFromJsonFile($dbPath, $jsonFile);
         $message = implode("\n", $import->getMessages());
         $errors = $import->getErrors();
 
+        $this->assertCount(40, $result);
         $expected = '/cache/google/authors/Arthur Conan Doyle.en.40.json - 40 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
         $this->assertCount(0, $errors);

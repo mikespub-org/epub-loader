@@ -19,10 +19,11 @@ class WikiDataImportTest extends BaseTestCase
         $import = new Import($sourceType, $dbFile, true);
 
         $jsonFile = $dbPath . '/entities/Q223131.en.json';
-        $import->reader->loadFromJsonFile($dbPath, $jsonFile);
+        $result = $import->reader->getFromJsonFile($dbPath, $jsonFile);
         $message = implode("\n", $import->getMessages());
         $errors = $import->getErrors();
 
+        $this->assertCount(1, $result);
         $expected = '/cache/wikidata/entities/Q223131.en.json - 1 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $message);
         $this->assertCount(0, $errors);

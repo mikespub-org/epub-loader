@@ -25,8 +25,8 @@ class Export extends Workflow
      */
     public function __construct($sourceType, $sourcePath, $targetType, $targetPath, $create = false)
     {
-        $this->reader = Workflow::getReader($this, $sourceType, $sourcePath);
-        $this->writer = Workflow::getWriter($this, $targetType, $targetPath, $create);
+        $this->reader = Workflow::getReader($sourceType, $sourcePath);
+        $this->writer = Workflow::getWriter($targetType, $targetPath, $create);
         $this->fileName = $targetPath;
     }
 

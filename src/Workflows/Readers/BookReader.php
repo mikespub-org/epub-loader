@@ -7,6 +7,9 @@ namespace Marsender\EPubLoader\Workflows\Readers;
 
 use Marsender\EPubLoader\Metadata\BaseCache;
 use Marsender\EPubLoader\Metadata\LocalBooks\LocalBooksImport;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Exception;
 
 class BookReader extends SourceReader
@@ -17,9 +20,9 @@ class BookReader extends SourceReader
      * @param string $basePath base directory
      * @param string $epubPath relative to $basePath
      *
-     * @return void
+     * @return \Generator<int, BookInfo|AuthorInfo|SeriesInfo>
      */
-    public function process($basePath, $epubPath)
+    public function iterate($basePath, $epubPath)
     {
         $nbOk = 0;
         $nbError = 0;
@@ -31,8 +34,9 @@ class BookReader extends SourceReader
                     // Load the book infos
                     $bookInfo = LocalBooksImport::load($basePath, $filePath);
                     // Add the book
-                    $bookId = $this->workflow->getBookId($filePath);
-                    $this->workflow->addBook($bookInfo, $bookId);
+                    yield 0 => $bookInfo;
+                    //$bookId = $this->workflow->getId('books', $filePath);
+                    //$this->workflow->addBook($bookInfo, $bookId);
                     $nbOk++;
                 } catch (Exception $e) {
                     $this->addError($file, $e->getMessage());
@@ -40,7 +44,7 @@ class BookReader extends SourceReader
                 }
             }
         }
-        $message = sprintf('%s - %d files OK - %d files Error', $basePath . DIRECTORY_SEPARATOR . $epubPath, $nbOk, $nbError);
+        $message = sprintf('Load EPUB from %s - %d files OK - %d files Error', $basePath . DIRECTORY_SEPARATOR . $epubPath, $nbOk, $nbError);
         $this->addMessage($basePath, $message);
     }
 }

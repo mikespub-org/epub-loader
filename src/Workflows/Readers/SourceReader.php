@@ -5,42 +5,23 @@
  * |-> CalibreReader (CALIBRE_DB)
  * |-> CsvFileReader (CSV_FILES)
  * |-> JsonFileReader (JSON_FILES)
+ * |-> CacheReader (CACHE_TYPE)
  * |-> ...
- * implement process()
+ * implement iterate()
  */
 
 namespace Marsender\EPubLoader\Workflows\Readers;
 
-use Marsender\EPubLoader\Workflows\Workflow;
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 
 abstract class SourceReader
 {
-    /** @var ?Workflow */
-    protected $workflow = null;
     /** @var array<mixed> */
     public array $messages = [];
     /** @var array<mixed> */
     public array $errors = [];
-
-    /**
-     * Initialize reader
-     *
-     * @param ?Workflow $workflow
-     */
-    public function __construct($workflow = null)
-    {
-        $this->setWorkflow($workflow);
-    }
-
-    /**
-     * Set current workflow
-     * @param ?Workflow $workflow
-     * @return void
-     */
-    public function setWorkflow($workflow)
-    {
-        $this->workflow = $workflow;
-    }
 
     /**
      * Load books from <something> in path
@@ -48,9 +29,28 @@ abstract class SourceReader
      * @param string $basePath base directory
      * @param string $localPath relative to $basePath
      *
-     * @return void
+     * @return \Generator<int, BookInfo|AuthorInfo|SeriesInfo>
      */
-    abstract public function process($basePath, $localPath);
+    abstract public function iterate($basePath, $localPath);
+
+    /**
+     * Run iterate() generator and get results (without workflow)
+     * @param mixed $basePath
+     * @param mixed $localPath
+     * @return array<mixed>
+     */
+    public function process($basePath, $localPath)
+    {
+        $result = [];
+        $count = 0;
+        $generator = $this->iterate($basePath, $localPath);
+        foreach ($generator as $id => $info) {
+            $count++;
+            $id = $id ?: $count;
+            $result[$id] = $info;
+        }
+        return $result;
+    }
 
     /**
      * Summary of addMessage

@@ -27,7 +27,7 @@ class LocalBooksImport
      */
     public static function load($basePath, $fileName, $cache = null)
     {
-        $fullFileName = sprintf('%s%s%s', $basePath, DIRECTORY_SEPARATOR, $fileName);
+        $fullFileName = $basePath . DIRECTORY_SEPARATOR . $fileName;
         // Check file access
         if (!is_readable($fullFileName)) {
             throw new Exception('Cannot read file');

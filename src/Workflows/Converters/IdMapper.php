@@ -5,6 +5,9 @@
 
 namespace Marsender\EPubLoader\Workflows\Converters;
 
+use Marsender\EPubLoader\Models\AuthorInfo;
+use Marsender\EPubLoader\Models\BookInfo;
+use Marsender\EPubLoader\Models\SeriesInfo;
 use Exception;
 
 /**
@@ -83,14 +86,15 @@ class IdMapper extends Converter
     }
 
     /**
-     * Summary of getBookId
-     * @param string $bookFileName
-     * @return int
+     * Get id from name
+     * @param string $type only 'books' supported for now
+     * @param string $name
+     * @return int id
      */
-    public function getBookId($bookFileName)
+    public function getId($type, $name)
     {
-        if (isset($this->bookId[$bookFileName])) {
-            return (int) $this->bookId[$bookFileName];
+        if (isset($this->bookId[$name])) {
+            return (int) $this->bookId[$name];
         }
         // Get max book id
         $res = 0;
@@ -100,8 +104,25 @@ class IdMapper extends Converter
             }
         }
         $res++;
-        $this->bookId[$bookFileName] = $res;
+        $this->bookId[$name] = $res;
 
         return $res;
+    }
+
+    /**
+     * Convert info and/or id
+     *
+     * @param BookInfo|AuthorInfo|SeriesInfo $info object
+     * @param int $id id in the calibre db (or 0 for auto incrementation)
+     * @return array{0: BookInfo|AuthorInfo|SeriesInfo, 1: int}
+     */
+    public function convert($info, $id = 0)
+    {
+        if (empty($id) && $info instanceof BookInfo) {
+            // @see LocalBooksImport::load()
+            $fileName = $info->path . DIRECTORY_SEPARATOR . $info->id;
+            $id = $this->getId('books', $fileName);
+        }
+        return [$info, $id];
     }
 }

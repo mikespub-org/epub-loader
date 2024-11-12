@@ -105,4 +105,50 @@ class BaseInfo
         }
         return $baseInfo;
     }
+
+    /**
+     * Convert from JSON record to BookInfo
+     * @param array<mixed> $data
+     * @return BookInfo|AuthorInfo|SeriesInfo
+     */
+    public static function fromJson($data)
+    {
+        $info = new static();
+        foreach ($data as $key => $value) {
+            $info->{$key} = static::getValue($key, $value);
+        }
+        return $info;
+    }
+
+    /**
+     * Get value for property
+     * @param string $key
+     * @param mixed $value
+     * @return mixed
+     */
+    public static function getValue($key, $value)
+    {
+        switch ($key) {
+            case 'authors':
+                $infos = [];
+                foreach ($value as $id => $item) {
+                    $infos[$id] = AuthorInfo::fromJson($item);
+                }
+                return $infos;
+            case 'series':
+                $infos = [];
+                foreach ($value as $id => $item) {
+                    $infos[$id] = SeriesInfo::fromJson($item);
+                }
+                return $infos;
+            case 'books':
+                $infos = [];
+                foreach ($value as $id => $item) {
+                    $infos[$id] = BookInfo::fromJson($item);
+                }
+                return $infos;
+            default:
+                return $value;
+        }
+    }
 }

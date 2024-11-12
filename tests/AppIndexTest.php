@@ -141,9 +141,9 @@ class AppIndexTest extends BaseTestCase
         putenv('PHPUNIT_TESTING=');
     }
 
-    public function testAppJsonImport(): void
+    public function testAppCacheLoad(): void
     {
-        $_SERVER['PATH_INFO'] = '/json_import/0';
+        $_SERVER['PATH_INFO'] = '/cache_load/0';
 
         ob_start();
         $headers = headers_list();
@@ -152,7 +152,7 @@ class AppIndexTest extends BaseTestCase
 
         $expected = '<title>EPub Loader</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="/phpunit/json_import">Import JSON files from Lookup into new Calibre database</a>';
+        $expected = '<a href="/phpunit/cache_load">Load JSON files from Lookup cache into new Calibre database</a>';
         $this->assertStringContainsString($expected, $output);
         $expected = '/tests/BaseWithSomeBooks/./metadata_db_prefs_backup.json - 0 files OK - 0 files Error';
         $this->assertStringContainsString($expected, $output);
@@ -179,7 +179,7 @@ class AppIndexTest extends BaseTestCase
         $this->assertStringContainsString($expected, $output);
         $expected = '<a href="/phpunit/db_load">Create Calibre database with available epub files</a>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '/calibre/library/. - 164 files OK - 2 files Error';
+        $expected = '/calibre/library/. - 164 files OK - 1 files Error';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);

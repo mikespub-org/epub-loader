@@ -30,6 +30,12 @@ class ExportHandler extends ActionHandler
             case 'csv_dump':
                 $result = $this->csv_dump();
                 break;
+            case 'json_export':
+                $result = $this->json_export();
+                break;
+            case 'json_dump':
+                $result = $this->json_dump();
+                break;
             case 'callback':
                 // use last part of /action/dbNum/authorId here
                 $cacheName = $this->request->get('authorId');
@@ -47,7 +53,7 @@ class ExportHandler extends ActionHandler
      */
     public function csv_export()
     {
-        return $this->doExport(Workflow::LOCAL_BOOKS);
+        return $this->doExport(Workflow::LOCAL_BOOKS, Workflow::CSV_FILES);
     }
 
     /**
@@ -56,7 +62,25 @@ class ExportHandler extends ActionHandler
      */
     public function csv_dump()
     {
-        return $this->doExport(Workflow::CALIBRE_DB);
+        return $this->doExport(Workflow::CALIBRE_DB, Workflow::CSV_FILES);
+    }
+
+    /**
+     * Summary of json_export
+     * @return string|null
+     */
+    public function json_export()
+    {
+        return $this->doExport(Workflow::LOCAL_BOOKS, Workflow::JSON_FILES);
+    }
+
+    /**
+     * Summary of json_dump
+     * @return string|null
+     */
+    public function json_dump()
+    {
+        return $this->doExport(Workflow::CALIBRE_DB, Workflow::JSON_FILES);
     }
 
     /**
@@ -88,24 +112,13 @@ class ExportHandler extends ActionHandler
         if (empty($result['cacheType'])) {
             return $result;
         }
-        $sourceType = Workflow::JSON_FILES;
+        $sourceType = Workflow::CACHE_TYPE;
         $sourcePath = $this->cacheDir;
         $targetType = Workflow::CALLBACK;
         $targetPath = $result['callbacks'];
         $workflow = Workflow::getWorkflow($sourceType, $sourcePath, $targetType, $targetPath);
-        if ($cacheName == 'googlebooks') {
-            $cachePath = 'google';
-            $jsonPath = $cachePath . '/' . $result['cacheType'];
-        } elseif ($cacheName == 'openlibrary' && str_starts_with($result['cacheType'], 'entities/')) {
-            $cachePath = $cacheName;
-            $cacheType = 'entities';
-            $jsonPath = $cachePath . '/' . $cacheType;
-        } else {
-            $cachePath = $cacheName;
-            $jsonPath = $cachePath . '/' . $result['cacheType'];
-        }
         // @todo get bookId etc. from somewhere
-        $workflow->process($sourcePath, $jsonPath);
+        $workflow->process($result['cacheName'], $result['cacheType']);
         $result['messages'] = $workflow->getMessages();
         $result['errors'] = $workflow->getErrors();
         return $result;
@@ -114,20 +127,32 @@ class ExportHandler extends ActionHandler
     /**
      * Summary of do_export
      * @param int $sourceType Source type
+     * @param int $targetType Target type
      * @return string|null
      */
-    protected function doExport($sourceType)
+    protected function doExport($sourceType, $targetType)
     {
         // Init csv file
         $dbPath = $this->dbConfig['db_path'];
-        $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
+        if ($sourceType == Workflow::CALIBRE_DB) {
+            $sourcePath = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
+            // Add the calibre books into the export file
+            $localPath = 'books';
+        } else {
+            $sourcePath = $dbPath;
+            // Add the epub files into the export file
+            $localPath = $this->dbConfig['epub_path'];
+        }
+        if ($targetType == Workflow::JSON_FILES) {
+            $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.json';
+        } else {
+            $fileName = $dbPath . DIRECTORY_SEPARATOR . basename((string) $dbPath) . '_metadata.csv';
+        }
         // Open or create the export file
-        $targetType = Workflow::CSV_FILES;
-        $export = new Export($sourceType, $dbPath, $targetType, $fileName, true);
+        $export = new Export($sourceType, $sourcePath, $targetType, $fileName, true);
 
-        // Add the epub files into the export file
-        $epubPath = $this->dbConfig['epub_path'];
-        $export->process($dbPath, $epubPath);
+        // Add the items into the export file
+        $export->process($dbPath, $localPath);
         $errors = $export->getErrors();
         if (!empty($errors)) {
             foreach ($errors as $file => $error) {
@@ -140,9 +165,9 @@ class ExportHandler extends ActionHandler
             return null;
         }
         // Save export
-        $export->SaveToFile();
+        $export->saveToFile();
         $messages = $export->getMessages();
-        $message = implode("\n", $messages);
+        $message = implode("<br />\n", $messages);
         // Display info
         return $message . '<br />';
     }

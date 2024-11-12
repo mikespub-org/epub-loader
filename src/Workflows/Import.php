@@ -28,10 +28,10 @@ class Import extends Workflow
     {
         $this->fileName = $dbFileName;
         $this->cacheDir = $cacheDir ?? dirname(__DIR__, 2) . '/cache';
-        $reader = Workflow::getReader($this, $sourceType, $this->cacheDir);
+        $reader = Workflow::getReader($sourceType, $this->cacheDir);
         // @todo support other import targets beside Calibre?
         $targetType = Workflow::CALIBRE_DB;
-        $writer = Workflow::getWriter($this, $targetType, $dbFileName, $create);
+        $writer = Workflow::getWriter($targetType, $dbFileName, $create);
         parent::__construct($reader, $writer, null, $bookIdsFileName);
     }
 }
