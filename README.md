@@ -23,18 +23,23 @@ Main features are:
 
 - Import:
   - create Calibre database with available ebooks
-  - import CSV records into new Calibre database
-  - import JSON files from Lookup into new Calibre database
+  - import CSV/JSON records into new Calibre database
+  - load JSON files from Lookup cache into new Calibre database
 - Export:
-  - export CSV records with available ebooks
-  - dump CSV records from Calibre database
+  - export CSV/JSON records with available ebooks
+  - dump CSV/JSON records from Calibre database
+  - export metadata cache via callbacks to your own application
 - Lookup:
   - match ebooks and authors with WikiData
   - match ebooks and authors with Google Books
   - match ebooks and authors with OpenLibrary
   - match ebooks and authors with GoodReads
+  - explore content of metadata cache
 - Extra:
-  - run extra actions defined in the app directory
+  - check book links by identifier type
+  - get existing notes from Calibre notes.db
+  - update ebook metadata with mikespub/php-epub-meta
+  - run extra actions defined in your own application
 
 ## Installation (stand-alone)
 

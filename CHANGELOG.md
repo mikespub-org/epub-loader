@@ -4,6 +4,8 @@
   * ...
 
 3.x.x - 2024xxxx
+  * Add checking book links by identifier type
+  * Add JSON records import/export for epub files and database
   * Turn import/export into workflows with readers & writers
   * Load left-over properties into Info (gr & gb)
   * Load author image & book rating count for callbacks

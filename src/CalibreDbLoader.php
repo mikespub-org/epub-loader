@@ -604,18 +604,43 @@ class CalibreDbLoader extends DatabaseLoader
     }
 
     /**
+     * Summary of getIdentifiersCountByType
+     * @param string|null $type
+     * @return array<mixed>
+     */
+    public function getIdentifiersCountByType($type = null)
+    {
+        $sql = 'select type, count(id) as numitems from identifiers';
+        $params = [];
+        if (!empty($type)) {
+            $sql .= ' where type = ?';
+            $params[] = $type;
+        }
+        $sql .= ' group by type';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $count = [];
+        while ($post = $stmt->fetchObject()) {
+            $count[$post->type] = $post->numitems;
+        }
+        return $count;
+    }
+
+    /**
      * Summary of checkBookLinks
      * @param string $type
      * @param int|null $authorId
      * @param int|null $seriesId
      * @param array<int>|null $bookIdList
      * @param array<mixed>|null $valueIdList
+     * @param string|null $sort
+     * @param int|null $offset
      * @return array<mixed>
      */
-    public function checkBookLinks($type, $authorId = null, $seriesId = null, $bookIdList = null, $valueIdList = null)
+    public function checkBookLinks($type, $authorId = null, $seriesId = null, $bookIdList = null, $valueIdList = null, $sort = null, $offset = null)
     {
         // get books with author, series and identifier value for type
-        $sql = 'select identifiers.book as book, identifiers.val as value, author, series
+        $sql = 'select identifiers.book as book, books.title as title, books.series_index as series_index, identifiers.val as value, author, series
         from identifiers left join books on books.id = identifiers.book
         left join books_authors_link on books.id = books_authors_link.book
         left join books_series_link on books.id = books_series_link.book
@@ -638,7 +663,15 @@ class CalibreDbLoader extends DatabaseLoader
             $sql .= ' and value IN (' . str_repeat('?,', count($valueIdList) - 1) . '?)';
             $params = array_merge($params, $valueIdList);
         }
-        $sql .= ' order by book';
+        if (!empty($sort) && in_array($sort, ['book', 'title', 'value', 'author', 'series'])) {
+            $sql .= ' order by ' . $sort;
+        } else {
+            $sql .= ' order by book';
+        }
+        $sql .= ' limit ' . $this->limit;
+        if (!empty($offset) && is_int($offset)) {
+            $sql .= ' offset ' . (string) $offset;
+        }
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         $links = [];
@@ -682,6 +715,9 @@ class CalibreDbLoader extends DatabaseLoader
             }
             if (!empty($link['series']) && !empty($series[$link['series']])) {
                 $links[$id]['series_link'] = $series[$link['series']];
+            }
+            if (!empty($link['value'])) {
+                $links[$id]['value_link'] = $this->getIdentifierUrl($type, $link['value']);
             }
         }
         return $links;

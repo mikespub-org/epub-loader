@@ -6,6 +6,7 @@
 namespace Marsender\EPubLoader\Handlers;
 
 use Marsender\EPubLoader\ActionHandler;
+use Marsender\EPubLoader\CalibreDbLoader;
 use Marsender\EPubLoader\Models\AuthorInfo;
 use Marsender\EPubLoader\Models\BookInfo;
 use Marsender\EPubLoader\Models\SeriesInfo;
@@ -44,6 +45,11 @@ class MetadataHandler extends ActionHandler
                 $seriesId = $this->request->getId('seriesId');
                 $bookId = $this->request->getId('bookId');
                 $result = $this->books($authorId, $seriesId, $bookId, $sort, $offset);
+                break;
+            case 'booklinks':
+                // re-use last part of path for identifier type (string)
+                $type = $this->request->get('authorId');
+                $result = $this->booklinks($type, $sort, $offset);
                 break;
             default:
                 $result = $this->$action();
@@ -251,6 +257,41 @@ class MetadataHandler extends ActionHandler
             'authors' => $authorList,
             'paging' => $paging,
             'callback' => $callback,
+        ];
+    }
+
+    /**
+     * Summary of booklinks
+     * @param string|null $type
+     * @param string|null $sort
+     * @param int|null $offset
+     * @return array<mixed>|null
+     */
+    public function booklinks($type, $sort = null, $offset = null)
+    {
+        $identifiers = $this->db->getIdentifiersCountByType();
+        $authorList = $this->getAuthorList();
+        $seriesList = $this->getSeriesList();
+
+        $links = [];
+        $paging = null;
+        if (!empty($type) && array_key_exists($type, $identifiers)) {
+            $links = $this->db->checkBookLinks($type, null, null, null, null, $sort, $offset);
+            $count = $identifiers[$type];
+            $paging = CalibreDbLoader::getCountPaging($count, $sort, $offset, $this->db->limit);
+            if (!empty($paging)) {
+                $paging['itemId'] = $type;
+            }
+        }
+
+        // Return info
+        return [
+            'identifiers' => $identifiers,
+            'typeName' => $type,
+            'authors' => $authorList,
+            'series' => $seriesList,
+            'links' => $links,
+            'paging' => $paging,
         ];
     }
 

@@ -1,0 +1,82 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="title">
+	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
+	{% block findlinks %}
+	{% endblock findlinks %}
+</div>
+<table width="100%">
+	{{ include('db_header.html') }}
+	{{ include('db_entry.html') }}
+</table>
+<p>Stats Updated: {{statsUpdated}}</p>
+<p>
+	{% if not typeName %}
+		<b>Identifier Type</b>
+	{% else %}
+		<b><a href="{{endpoint}}/{{action}}/{{dbNum}}">Identifier Type</a></b>
+	{% endif %}
+</p>
+<ul>
+{% for type, numitems in identifiers %}
+	{% if not typeName %}
+	<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{type}}">{{type}}</a>: {{numitems}}</li>
+	{% elseif typeName == type %}
+	<li><b>{{type}}</b>: {{numitems}}</li>
+	{% endif %}
+{% endfor %}
+</ul>
+{% if typeName and links %}
+<p><b>Book Links</b></p>
+{% if paging %}
+<table>
+	<tr>
+		{{ include('paging.html') }}
+	</tr>
+</table>
+{% endif %}
+<table>
+	<tr>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{typeName}}">Id</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{typeName}}?sort=title">Title</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{typeName}}?sort=value">Identifier</a></th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{typeName}}?sort=author">Author</a></th>
+		<th>Author Link</th>
+		<th><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{typeName}}?sort=series">Series</a></th>
+		<th>Series Link</th>
+	</tr>
+	{% for book in links %}
+	<tr>
+		<td><a href="{{endpoint}}/books/{{dbNum}}/{{book.author}}?bookId={{book.book}}">{{book.book}}</a></td>
+		<td>{{book.title}}</td>
+		<td><a href="{{book.value_link}}">{{book.value}}</a></td>
+		<td><a href="{{endpoint}}/authors/{{dbNum}}/{{book.author}}">{{authors[book.author]}}</a></td>
+		<td>
+			{% if book.author_link %}
+			<a href="{{book.author_link}}">{{book.author_link|split('/')|last}}</a>
+			{% endif %}
+		</td>
+		<td>
+			{% if book.series %}
+			<a href="{{endpoint}}/series/{{dbNum}}/{{book.author}}?seriesId={{book.series}}&bookIt={{book.book}}">{{series[book.series]}}</a>
+			#{{book.series_index}}
+			{% endif %}
+		</td>
+		<td>
+			{% if book.series_link %}
+				<a href="{{book.series_link}}">{{book.series_link|split('/')|last}}</a>
+			{% endif %}
+		</td>
+	</tr>
+	{% endfor %}
+</table>
+{% if paging %}
+<table>
+	<tr>
+		{{ include('paging.html') }}
+	</tr>
+</table>
+{% endif %}
+{% endif %}
+{% endblock content %}

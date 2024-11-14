@@ -2,19 +2,19 @@
 	<td>{{dbNum}}</td>
 	<td>{{dbConfig.name}}</td>
 	<td>
-		{{dbConfig.authors}}
+		<a href="{{endpoint}}/authors/{{dbNum}}" title="Database Authors">{{dbConfig.authors}}</a>
 		{% if actions.wd_author %}
-			<a href="{{endpoint}}/wd_author/{{dbNum}}/{{itemId}}" title="WikiData Author">WD</a>
+			<a href="{{endpoint}}/wd_author/{{dbNum}}/{{itemId}}" title="WikiData Authors">WD</a>
 		{% endif %}
 		{% if actions.ol_author %}
-			<a href="{{endpoint}}/ol_author/{{dbNum}}/{{itemId}}" title="OpenLibrary Author">OL</a>
+			<a href="{{endpoint}}/ol_author/{{dbNum}}/{{itemId}}" title="OpenLibrary Authors">OL</a>
 		{% endif %}
 		{% if actions.gr_author %}
-			<a href="{{endpoint}}/gr_author/{{dbNum}}/{{itemId}}" title="GoodReads Author">GR</a>
+			<a href="{{endpoint}}/gr_author/{{dbNum}}/{{itemId}}" title="GoodReads Authors">GR</a>
 		{% endif %}
 	</td>
 	<td>
-		{{dbConfig.books}}
+		<a href="{{endpoint}}/books/{{dbNum}}" title="Database Books">{{dbConfig.books}}</a>
 		{% if actions.wd_books %}
 			<a href="{{endpoint}}/wd_books/{{dbNum}}/{{itemId}}" title="WikiData Books">WD</a>
 		{% endif %}
@@ -29,7 +29,7 @@
 		{% endif %}
 	</td>
 	<td>
-		{{dbConfig.series}}
+		<a href="{{endpoint}}/series/{{dbNum}}" title="Database Series">{{dbConfig.series}}</a>
 		{% if actions.wd_series %}
 			<a href="{{endpoint}}/wd_series/{{dbNum}}/{{itemId}}" title="WikiData Series">WD</a>
 		{% endif %}
@@ -37,7 +37,9 @@
 			<a href="{{endpoint}}/gr_series/{{dbNum}}/{{itemId}}" title="GoodReads Series">GR</a>
 		{% endif %}
 	</td>
-	<td>{{dbConfig['notes_db.notes']}}</td>
+	<td>
+		<a href="{{endpoint}}/notes/{{dbNum}}" title="Database Notes">{{dbConfig['notes_db.notes']}}</a>
+	</td>
 	<td>{{actionTitle}}</td>
 	<td>{{dbConfig.db_path}}</td>
 	<td>{{dbConfig.epub_path}}</td>

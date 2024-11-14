@@ -307,7 +307,7 @@ class RequestHandler
             $result = ['result' => $result];
         }
         $result['databases'] = $this->gConfig['databases'];
-        if (in_array($action, ['caches', 'callback'])) {
+        if (in_array($action, ['caches', 'callback', 'booklinks'])) {
             $result = $this->getDatabaseStats($action, $result);
         }
         $result['action'] = $action;

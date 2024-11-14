@@ -110,6 +110,7 @@ $gConfig['groups']['Internal'] = [
     'resource' => 'Get Calibre Resource',
 ];
 $gConfig['groups']['Extra'] = [
+    'booklinks' => 'Book links by identifier',
     'notes' => 'Get Calibre Notes',
     // update metadata in epub files
     //'meta' => 'EPub Metadata App',
