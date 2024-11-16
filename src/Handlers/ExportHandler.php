@@ -6,6 +6,7 @@
 namespace Marsender\EPubLoader\Handlers;
 
 use Marsender\EPubLoader\ActionHandler;
+use Marsender\EPubLoader\Workflows\Converters\CalibreIdMapper;
 use Marsender\EPubLoader\Workflows\Export;
 use Marsender\EPubLoader\Workflows\Workflow;
 use Marsender\EPubLoader\RequestHandler;
@@ -116,9 +117,20 @@ class ExportHandler extends ActionHandler
         $targetPath = $result['callbacks'];
         $workflow = Workflow::getWorkflow($sourceType, $sourcePath, $targetType, $targetPath);
         // @todo get bookId etc. from somewhere
+        $dbPath = $this->dbConfig['db_path'];
+        $dbFileName = $dbPath . DIRECTORY_SEPARATOR . 'metadata.db';
+        $typeName = match ($cacheName) {
+            'goodreads' => 'goodreads',
+            'googlebooks' => 'google',
+            'openlibrary' => 'olid',
+            'wikidata' => 'wd',
+        };
+        $converter = new CalibreIdMapper($dbFileName, $typeName);
+        $workflow->converters[] = $converter;
         $workflow->process($result['cacheName'], $result['cacheType']);
         $result['messages'] = $workflow->getMessages();
         $result['errors'] = $workflow->getErrors();
+        $result['counters'] = $converter->getStats();
         return $result;
     }
 

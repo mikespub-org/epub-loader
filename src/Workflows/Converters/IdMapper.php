@@ -16,97 +16,83 @@ use Exception;
 class IdMapper extends Converter
 {
     /** @var array<mixed> */
-    protected $bookId = null;
-    protected string $bookIdFileName = '';
+    protected $authors = [];
+    /** @var array<mixed> */
+    protected $books = [];
+    /** @var array<mixed> */
+    protected $series = [];
+    /** @var array<mixed> */
+    protected $stats = [];
+    protected bool $override = false;
 
     /**
-     * Load mapper file if available
+     * Initialize mapper if needed
      *
-     * @param string $bookIdsFileName File name containing a map of file names to calibre book ids
-     * @throws Exception if error
+     * @param mixed $input
+     * @param bool $override
      */
-    public function __construct($bookIdsFileName = '')
+    public function __construct($input = null, $override = false)
     {
-        if (!empty($bookIdsFileName)) {
-            $this->loadBookIds($bookIdsFileName);
-        }
+        $this->override = $override;
+        $this->stats['hit'] ??= 0;
+        $this->stats['miss'] ??= 0;
     }
 
     /**
-     * Destructor
-     */
-    public function __destruct()
-    {
-        $this->saveBookIds();
-    }
-
-    /**
-     * Load the book ids map in order to reuse calibe book id when recreating database
-     *
-     * @param string $bookIdsFileName File name containing a map of file names to calibre book ids
-     *
-     * @return void
-     */
-    protected function loadBookIds($bookIdsFileName)
-    {
-        $this->bookId = [];
-        $this->bookIdFileName = $bookIdsFileName;
-
-        if (empty($this->bookIdFileName) || !file_exists($this->bookIdFileName)) {
-            return;
-        }
-
-        // Load the book ids file
-        $lines = file($this->bookIdFileName);
-        foreach ($lines as $line) {
-            $tab = explode("\t", trim($line));
-            if (count($tab) != 2) {
-                continue;
-            }
-            $this->bookId[$tab[0]] = (int) $tab[1];
-        }
-    }
-
-    /**
-     * Save the book ids file
-     * @return void
-     */
-    protected function saveBookIds()
-    {
-        if (empty($this->bookIdFileName)) {
-            return;
-        }
-
-        $tab = [];
-        foreach ($this->bookId as $key => $value) {
-            $tab[] = sprintf('%s%s%d', $key, "\t", $value);
-        }
-
-        file_put_contents($this->bookIdFileName, implode("\n", $tab) . "\n");
-    }
-
-    /**
-     * Get id from name
-     * @param string $type only 'books' supported for now
-     * @param string $name
+     * Get id from info for books
+     * @param BookInfo $info
      * @return int id
      */
-    public function getId($type, $name)
+    public function getBookId($info)
     {
-        if (isset($this->bookId[$name])) {
-            return (int) $this->bookId[$name];
+        if (!empty($info->id) && array_key_exists($info->id, $this->books)) {
+            $this->stats['hit'] += 1;
+            // @todo set calibreid + go through authors & series here?
+            return $this->books[$info->id];
         }
-        // Get max book id
-        $res = 0;
-        foreach ($this->bookId as $key => $value) {
-            if ($value > $res) {
-                $res = $value;
-            }
-        }
-        $res++;
-        $this->bookId[$name] = $res;
+        $this->stats['miss'] += 1;
+        return 0;
+    }
 
-        return $res;
+    /**
+     * Get id from info for authors
+     * @param AuthorInfo $info
+     * @return int id
+     */
+    public function getAuthorId($info)
+    {
+        if (!empty($info->id) && array_key_exists($info->id, $this->authors)) {
+            $this->stats['hit'] += 1;
+            // @todo set calibreid + go through books & series here?
+            return $this->authors[$info->id];
+        }
+        $this->stats['miss'] += 1;
+        return 0;
+    }
+
+    /**
+     * Get id from info for series
+     * @param SeriesInfo $info
+     * @return int id
+     */
+    public function getSeriesId($info)
+    {
+        if (!empty($info->id) && array_key_exists($info->id, $this->series)) {
+            $this->stats['hit'] += 1;
+            // @todo set calibreid + go through authors & books here?
+            return $this->series[$info->id];
+        }
+        $this->stats['miss'] += 1;
+        return 0;
+    }
+
+    /**
+     * Summary of getStats
+     * @return array<mixed>
+     */
+    public function getStats()
+    {
+        return $this->stats;
     }
 
     /**
@@ -114,14 +100,27 @@ class IdMapper extends Converter
      *
      * @param BookInfo|AuthorInfo|SeriesInfo $info object
      * @param int $id id in the calibre db (or 0 for auto incrementation)
+     * @throws Exception if error
      * @return array{0: BookInfo|AuthorInfo|SeriesInfo, 1: int}
      */
     public function convert($info, $id = 0)
     {
-        if (empty($id) && $info instanceof BookInfo) {
-            // @see LocalBooksImport::load()
-            $fileName = $info->path . DIRECTORY_SEPARATOR . $info->id;
-            $id = $this->getId('books', $fileName);
+        if (!empty($id) && !$this->override) {
+            return [$info, $id];
+        }
+        switch ($info::class) {
+            case BookInfo::class:
+                $id = $this->getBookId($info);
+                break;
+            case AuthorInfo::class:
+                $id = $this->getAuthorId($info);
+                break;
+            case SeriesInfo::class:
+                $id = $this->getSeriesId($info);
+                break;
+            default:
+                $error = sprintf('Incorrect info type: %s', $info::class);
+                throw new Exception($error);
         }
         return [$info, $id];
     }

@@ -40,7 +40,10 @@ class GoodReadsCheck extends BaseCheck
     public function checkBookLinks($type = 'goodreads')
     {
         $this->errors = [];
+        $limit = $this->db->limit;
+        $this->db->limit = -1;
         $links = $this->db->checkBookLinks($type);
+        $this->db->limit = $limit;
 
         $cacheFile = $this->cacheDir . $this->prefix . '/links.json';
         file_put_contents($cacheFile, json_encode($links, JSON_PRETTY_PRINT));

@@ -43,7 +43,7 @@ class Workflow
         $this->writer = $writer;
         $converters ??= [];
         if (!empty($bookIdsFileName)) {
-            $converters[] = new Converters\IdMapper($bookIdsFileName);
+            $converters[] = new Converters\BookIdFileMapper($bookIdsFileName);
         }
         $this->converters = $converters;
     }

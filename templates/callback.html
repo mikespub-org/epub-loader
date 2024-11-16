@@ -79,4 +79,12 @@
 	{% endfor %}
 </ul>
 {% endif %}
+{% if counters %}
+<p>Counters</p>
+<ul>
+	{% for key, number in counters %}
+	<li>{{key}}: {{number}}</li>
+	{% endfor %}
+</ul>
+{% endif %}
 {% endblock content %}

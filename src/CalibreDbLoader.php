@@ -668,9 +668,11 @@ class CalibreDbLoader extends DatabaseLoader
         } else {
             $sql .= ' order by book';
         }
-        $sql .= ' limit ' . $this->limit;
-        if (!empty($offset) && is_int($offset)) {
-            $sql .= ' offset ' . (string) $offset;
+        if ($this->limit > 0) {
+            $sql .= ' limit ' . $this->limit;
+            if (!empty($offset) && is_int($offset)) {
+                $sql .= ' offset ' . (string) $offset;
+            }
         }
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);

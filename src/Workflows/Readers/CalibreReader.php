@@ -13,7 +13,7 @@ use Marsender\EPubLoader\Models\SeriesInfo;
 class CalibreReader extends DatabaseReader
 {
     /** @var CalibreDbLoader */
-    protected $dbLoader;
+    protected $db;
 
     /**
      * Open a Calibre database file
@@ -23,8 +23,8 @@ class CalibreReader extends DatabaseReader
     public function __construct($dbFileName)
     {
         $this->dbFileName = $dbFileName;
-        $this->dbLoader = new CalibreDbLoader($dbFileName);
-        $this->dbLoader->getNotesDb();
+        $this->db = new CalibreDbLoader($dbFileName);
+        $this->db->getNotesDb();
     }
 
     /**
@@ -37,8 +37,8 @@ class CalibreReader extends DatabaseReader
      */
     public function iterate($basePath, $tableName)
     {
-        foreach ($this->dbLoader->getBooks() as $bookId => $data) {
-            $bookInfo = BookInfo::load($basePath, $data, $this->dbLoader);
+        foreach ($this->db->getBooks() as $bookId => $data) {
+            $bookInfo = BookInfo::load($basePath, $data, $this->db);
             yield $bookId => $bookInfo;
         }
         // @todo loop over database to load BookInfo and add books

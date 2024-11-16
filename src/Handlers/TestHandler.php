@@ -91,7 +91,7 @@ class TestHandler extends ActionHandler
     {
         $pieces = explode('\\', $info::class);
         $className = last($pieces);
-        echo "Callback for {$className} {$id}\n";
+        //echo "Callback for {$className} {$id}\n";
         return true;
     }
 }
