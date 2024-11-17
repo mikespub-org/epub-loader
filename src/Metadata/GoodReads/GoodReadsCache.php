@@ -197,7 +197,7 @@ class GoodReadsCache extends BaseCache
             }
             try {
                 $bookResult = self::parseBook($data);
-                $books[$bookId] = GoodReadsImport::load($basePath, $bookResult);
+                $books[$bookId] = GoodReadsImport::load($basePath, $bookResult, $this);
             } catch (Exception) {
                 $books[$bookId] = null;
             }
@@ -348,7 +348,7 @@ class GoodReadsCache extends BaseCache
             return $entry;
         }
         $result = self::parseBook($entry);
-        $bookInfo = GoodReadsImport::load($this->cacheDir . '/goodreads', $result);
+        $bookInfo = GoodReadsImport::load($this->cacheDir . '/goodreads', $result, $this);
         $bookInfo = $this->formatBookInfo($bookInfo, $urlPrefix);
         return (array) $bookInfo;
     }

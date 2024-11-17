@@ -267,7 +267,7 @@ class GoodReadsHandler extends MetadataHandler
         $found = $match->getBook($matchId);
         $dbPath = $this->dbConfig['db_path'];
         $bookResult = GoodReadsCache::parseBook($found);
-        $info = GoodReadsImport::load($dbPath, $bookResult);
+        $info = GoodReadsImport::load($dbPath, $bookResult, $match->getCache());
         $seriesInfo = $info->getSeriesInfo();
         $matched[] = [
             'id' => GoodReadsMatch::entity($info->uri),

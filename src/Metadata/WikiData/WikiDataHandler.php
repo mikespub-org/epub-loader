@@ -314,6 +314,7 @@ class WikiDataHandler extends MetadataHandler
     {
         $entity = [];
         // Get entity on Wikidata
+        $wikimatch = new WikiDataMatch($this->cacheDir);
         if (!empty($seriesId) && empty($entityId)) {
             $series = $this->db->getSeries($seriesId, $authorId);
             // series can have multiple authors
@@ -325,18 +326,15 @@ class WikiDataHandler extends MetadataHandler
                 $entityId = WikiDataMatch::entity($first['link']);
             } else {
                 $query = $first['name'];
-                $wikimatch = new WikiDataMatch($this->cacheDir);
                 //$matched = $wikimatch->findSeriesByName($query);
             }
         }
         if (!empty($authorId) && empty($entityId)) {
             $authors = $this->db->getAuthors($authorId);
             $authorInfo = $authors[$authorId];
-            $wikimatch = new WikiDataMatch($this->cacheDir);
             $entityId = $wikimatch->findAuthorId($authorInfo);
         }
         if (!empty($entityId)) {
-            $wikimatch = new WikiDataMatch($this->cacheDir);
             $entity = $wikimatch->getEntity($entityId);
         }
         $authorList = $this->getAuthorList();
@@ -344,7 +342,7 @@ class WikiDataHandler extends MetadataHandler
 
         $callback = false;
         if (!empty($entityId) && !empty($entity)) {
-            $callback = $this->check_callback($entity);
+            $callback = $this->check_callback($entity, $wikimatch);
         }
 
         // Return info
@@ -362,18 +360,19 @@ class WikiDataHandler extends MetadataHandler
     /**
      * Summary of check_callback
      * @param mixed $entity
+     * @param WikiDataMatch $match
      * @return mixed
      */
-    public function check_callback($entity)
+    public function check_callback($entity, $match)
     {
         $parsed = WikiDataCache::parseEntity($entity);
         if (empty($parsed)) {
             return false;
         }
         return match ($parsed['type']) {
-            'author' => $this->callSetAuthorInfo($parsed),
-            'book' => $this->callSetBookInfo($parsed),
-            'series' => $this->callSetSeriesInfo($parsed),
+            'author' => $this->callSetAuthorInfo($parsed, $match),
+            'book' => $this->callSetBookInfo($parsed, $match),
+            'series' => $this->callSetSeriesInfo($parsed, $match),
             default => false,
         };
     }
@@ -381,9 +380,10 @@ class WikiDataHandler extends MetadataHandler
     /**
      * Summary of callSetAuthorInfo
      * @param mixed $parsed
+     * @param WikiDataMatch $match
      * @return mixed
      */
-    public function callSetAuthorInfo($parsed)
+    public function callSetAuthorInfo($parsed, $match)
     {
         // check if we have a callback + the calibre id for it
         $authorId = $this->request->get('authorId');
@@ -393,7 +393,7 @@ class WikiDataHandler extends MetadataHandler
             return false;
         }
         $basePath = $this->cacheDir . '/wikidata';
-        $authorInfo = WikiDataImport::loadAuthor($basePath, $parsed);
+        $authorInfo = WikiDataImport::loadAuthor($basePath, $parsed, $match->getCache());
         if (empty($authorInfo)) {
             return false;
         }
@@ -404,9 +404,10 @@ class WikiDataHandler extends MetadataHandler
     /**
      * Summary of callSetBookInfo
      * @param mixed $parsed
+     * @param WikiDataMatch $match
      * @return mixed
      */
-    public function callSetBookInfo($parsed)
+    public function callSetBookInfo($parsed, $match)
     {
         // check if we have a callback + the calibre id for it
         $bookId = $this->request->get('bookId');
@@ -416,7 +417,7 @@ class WikiDataHandler extends MetadataHandler
             return false;
         }
         $basePath = $this->cacheDir . '/wikidata';
-        $bookInfo = WikiDataImport::load($basePath, $parsed);
+        $bookInfo = WikiDataImport::load($basePath, $parsed, $match->getCache());
         if (empty($bookInfo)) {
             return false;
         }
@@ -427,9 +428,10 @@ class WikiDataHandler extends MetadataHandler
     /**
      * Summary of callSetSeriesInfo
      * @param mixed $parsed
+     * @param WikiDataMatch $match
      * @return mixed
      */
-    public function callSetSeriesInfo($parsed)
+    public function callSetSeriesInfo($parsed, $match)
     {
         // check if we have a callback + the calibre id for it
         $seriesId = $this->request->get('seriesId');
@@ -439,7 +441,7 @@ class WikiDataHandler extends MetadataHandler
             return false;
         }
         $basePath = $this->cacheDir . '/wikidata';
-        $seriesInfo = WikiDataImport::loadSeries($basePath, $parsed);
+        $seriesInfo = WikiDataImport::loadSeries($basePath, $parsed, $match->getCache());
         if (empty($seriesInfo)) {
             return false;
         }

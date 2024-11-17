@@ -235,7 +235,7 @@ class GoodReadsCheck extends BaseCheck
         }
         try {
             $bookResult = $this->cache::parseBook($data);
-            $bookInfo = GoodReadsImport::load($this->dbPath, $bookResult);
+            $bookInfo = GoodReadsImport::load($this->dbPath, $bookResult, $this->cache);
         } catch (Exception $e) {
             $this->addError($bookId, $e->getMessage());
             return null;

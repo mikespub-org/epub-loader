@@ -17,10 +17,10 @@ class CalibreDbTest extends BaseTestCase
         $stats = $db->getStats();
 
         $expected = [
-            'authors' => 28,
-            'books' => 116,
-            'series' => 27,
-            'notes_db.notes' => 41,
+            'authors' => 34,
+            'books' => 118,
+            'series' => 29,
+            'notes_db.notes' => 45,
         ];
         $this->assertEquals($expected, $stats);
     }
@@ -42,7 +42,7 @@ class CalibreDbTest extends BaseTestCase
             'first' => '',
             'prev' => '',
             'next' => 'offset=2',
-            'last' => 'offset=26',
+            'last' => 'offset=32',
         ];
         $this->assertEquals($expected, $paging);
     }
@@ -64,7 +64,7 @@ class CalibreDbTest extends BaseTestCase
             'first' => 'sort=name&offset=0',
             'prev' => 'sort=name&offset=0',
             'next' => 'sort=name&offset=4',
-            'last' => 'sort=name&offset=134',
+            'last' => 'sort=name&offset=140',
         ];
         $this->assertEquals($expected, $paging);
     }
@@ -86,7 +86,7 @@ class CalibreDbTest extends BaseTestCase
             'first' => '',
             'prev' => '',
             'next' => 'sort=name&offset=1',
-            'last' => 'sort=name&offset=33',
+            'last' => 'sort=name&offset=39',
         ];
         $this->assertEquals($expected, $paging);
     }
@@ -109,7 +109,7 @@ class CalibreDbTest extends BaseTestCase
         $db = new CalibreDbLoader($dbFile);
 
         $books = $db->checkBookLinks('goodreads');
-        $expected = 135;
+        $expected = 141;
         $this->assertCount($expected, $books);
 
         $cacheFile = $dbPath . '/expected.json';

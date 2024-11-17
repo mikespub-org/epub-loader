@@ -251,7 +251,7 @@ class GoogleBooksCache extends BaseCache
         }
         $result = self::parseSearch($entry);
         foreach ($result->getItems() as $id => $volume) {
-            $result->items[$id] = GoogleBooksImport::load($this->cacheDir . '/google', $volume);
+            $result->items[$id] = GoogleBooksImport::load($this->cacheDir . '/google', $volume, $this);
             $volumeId = $result->items[$id]->id;
             // @todo language taken from search result here!?
             $lang = $result->items[$id]->language ?? 'en';
@@ -279,7 +279,7 @@ class GoogleBooksCache extends BaseCache
         }
         $lang ??= 'en';
         $volume = self::parseVolume($entry);
-        $bookInfo = GoogleBooksImport::load($this->cacheDir . '/google', $volume);
+        $bookInfo = GoogleBooksImport::load($this->cacheDir . '/google', $volume, $this);
         return (array) $bookInfo;
     }
 
