@@ -44,7 +44,7 @@ class CalibreWriter extends DatabaseWriter
             $bookInfo->createUuid();
         }
         // Add the book
-        $idBook = $this->addBookEntry($bookInfo, $bookId);
+        $idBook = $this->addBookEntry($bookInfo, $bookId, $coverField);
         if ($bookId && $idBook != $bookId) {
             $error = sprintf('Incorrect book id=%d vs %d for uuid: %s', $idBook, $bookId, $bookInfo->uuid);
             throw new Exception($error);
@@ -133,16 +133,22 @@ class CalibreWriter extends DatabaseWriter
     public function addBookEntry($bookInfo, $bookId, $coverField = 'cover')
     {
         // Add the book
-        $sql = 'insert into books(';
+        $fields = ['title', 'sort', 'timestamp', 'pubdate', 'last_modified', 'series_index', 'uuid', 'path', 'has_cover', 'isbn'];
+        $params = [':title', ':sort', ':timestamp', ':pubdate', ':lastmodified', ':serieindex', ':uuid', ':path', ':hascover', ':isbn'];
         if ($bookId) {
-            $sql .= 'id, ';
+            array_unshift($fields, 'id');
+            array_unshift($params, ':id');
         }
         // Add 'calibre_database_field_cover' field for books
-        $sql .= 'title, sort, timestamp, pubdate, last_modified, series_index, uuid, path, has_cover, ' . $coverField . ', isbn) values(';
-        if ($bookId) {
-            $sql .= ':id, ';
+        if (!empty($coverField)) {
+            array_push($fields, $coverField);
+            array_push($params, ':cover');
         }
-        $sql .= ':title, :sort, :timestamp, :pubdate, :lastmodified, :serieindex, :uuid, :path, :hascover, :cover, :isbn)';
+        $sql = 'insert into books(';
+        $sql .= implode(', ', $fields);
+        $sql .= ') values(';
+        $sql .= implode(', ', $params);
+        $sql .= ')';
         $timestamp = BookInfo::getSqlDate($bookInfo->timestamp);
         $pubDate = BookInfo::getSqlDate(empty($bookInfo->creationDate) ? '2000-01-01 00:00:00' : $bookInfo->creationDate);
         $lastModified = BookInfo::getSqlDate(empty($bookInfo->modificationDate) ? '2000-01-01 00:00:00' : $bookInfo->modificationDate);
@@ -172,8 +178,10 @@ class CalibreWriter extends DatabaseWriter
         $stmt->bindParam(':uuid', $bookInfo->uuid);
         $stmt->bindParam(':path', $bookInfo->path);
         $stmt->bindParam(':hascover', $hasCover, PDO::PARAM_INT);
-        $stmt->bindParam(':cover', $cover);
         $stmt->bindParam(':isbn', $bookInfo->isbn);
+        if (!empty($coverField)) {
+            $stmt->bindParam(':cover', $cover);
+        }
         $stmt->execute();
         // Get the book id
         $sql = 'select id from books where uuid=:uuid';
@@ -189,6 +197,26 @@ class CalibreWriter extends DatabaseWriter
             $error = sprintf('Cannot find book id for uuid: %s', $bookInfo->uuid);
             throw new Exception($error);
         }
+        return $idBook;
+    }
+
+    /**
+     * Update image for existing book
+     * @param BookInfo $bookInfo BookInfo object
+     * @param int $idBook Book id in the calibre db
+     * @param string $coverField Add 'calibre_database_field_cover' field for books
+     * @return int
+     */
+    public function setBookCover($bookInfo, $idBook, $coverField = 'cover')
+    {
+        if (empty($coverField)) {
+            return $idBook;
+        }
+        $sql = 'update books set ' . $coverField . '=:cover where id=:id)';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':cover', $bookInfo->cover);
+        $stmt->bindParam(':id', $idBook, PDO::PARAM_INT);
+        $stmt->execute();
         return $idBook;
     }
 
@@ -294,6 +322,27 @@ class CalibreWriter extends DatabaseWriter
     }
 
     /**
+     * Update link for existing book
+     * @param BookInfo $bookInfo BookInfo object
+     * @param int $idBook Book id in the calibre db
+     * @param string $type Identifier type used for book link
+     * @return int
+     */
+    public function setBookUri($bookInfo, $idBook, $type = 'url')
+    {
+        if (empty($type)) {
+            return $idBook;
+        }
+        $sql = 'replace into identifiers(book, type, val) values(:idBook, :type, :value)';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':idBook', $idBook, PDO::PARAM_INT);
+        $stmt->bindParam(':type', $type);
+        $stmt->bindParam(':value', $bookInfo->uri);
+        $stmt->execute();
+        return $idBook;
+    }
+
+    /**
      * Summary of addBookSeries
      * @param BookInfo $bookInfo BookInfo object
      * @param int $idBook Book id in the calibre db
@@ -336,7 +385,7 @@ class CalibreWriter extends DatabaseWriter
     public function addSeries($seriesInfo, $seriesId = 0)
     {
         // Get the serie id
-        $sql = 'select id from series where name=:title';
+        $sql = 'select id, link from series where name=:title';
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':title', $seriesInfo->title);
         $stmt->execute();
@@ -347,6 +396,14 @@ class CalibreWriter extends DatabaseWriter
                 // Add series note
                 $seriesInfo->note->item = $idSerie;
                 $this->addNote($seriesInfo->note);
+            }
+            if (!empty($seriesInfo->image)) {
+                // @todo Update image for existing series
+                $this->setSeriesImage($seriesInfo, $idSerie);
+            }
+            if (!empty($seriesInfo->link) && $seriesInfo->link != $post->link) {
+                // Update link for existing series
+                $this->setSeriesLink($seriesInfo, $idSerie);
             }
             return $idSerie;
         }
@@ -381,6 +438,40 @@ class CalibreWriter extends DatabaseWriter
             $seriesInfo->note->item = $idSerie;
             $this->addNote($seriesInfo->note);
         }
+        if (!empty($seriesInfo->image)) {
+            // @todo Update image for existing series
+            $this->setSeriesImage($seriesInfo, $idSerie);
+        }
+        return $idSerie;
+    }
+
+    /**
+     * Update image for existing series
+     * @param SeriesInfo $seriesInfo
+     * @param int $idSerie Series id in the calibre db
+     * @return int
+     */
+    public function setSeriesImage($seriesInfo, $idSerie)
+    {
+        // @todo add image field in series table?
+        return $idSerie;
+    }
+
+    /**
+     * Update link for existing series
+     * @param SeriesInfo $seriesInfo
+     * @param int $idSerie Series id in the calibre db
+     * @return int
+     */
+    public function setSeriesLink($seriesInfo, $idSerie)
+    {
+        // @todo deal with 'after update' trigger with title_sort() - see DatabaseLoader::addSqliteFunctions()
+        //$sql = $this->db->wrapTrigger($sql, 'series', 'AFTER UPDATE ON');
+        $sql = 'update series set link=:link where id=:id)';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':link', $seriesInfo->link);
+        $stmt->bindParam(':id', $idSerie, PDO::PARAM_INT);
+        $stmt->execute();
         return $idSerie;
     }
 
@@ -426,7 +517,7 @@ class CalibreWriter extends DatabaseWriter
     public function addAuthor($authorInfo, $authorId = 0)
     {
         // Get the author id
-        $sql = 'select id from authors where name=:name';
+        $sql = 'select id, link from authors where name=:name';
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':name', $authorInfo->name);
         $stmt->execute();
@@ -437,6 +528,14 @@ class CalibreWriter extends DatabaseWriter
                 // Add author note
                 $authorInfo->note->item = $idAuthor;
                 $this->addNote($authorInfo->note);
+            }
+            if (!empty($authorInfo->image)) {
+                // @todo Update image for existing author
+                $this->setAuthorImage($authorInfo, $idAuthor);
+            }
+            if (!empty($authorInfo->link) && $authorInfo->link != $post->link) {
+                // Update link for existing author
+                $this->setAuthorLink($authorInfo, $idAuthor);
             }
             return $idAuthor;
         }
@@ -471,6 +570,38 @@ class CalibreWriter extends DatabaseWriter
             $authorInfo->note->item = $idAuthor;
             $this->addNote($authorInfo->note);
         }
+        if (!empty($authorInfo->image)) {
+            // @todo Update image for existing author
+            $this->setAuthorImage($authorInfo, $idAuthor);
+        }
+        return $idAuthor;
+    }
+
+    /**
+     * Update image for existing author
+     * @param AuthorInfo $authorInfo
+     * @param int $idAuthor Author id in the calibre db
+     * @return int
+     */
+    public function setAuthorImage($authorInfo, $idAuthor)
+    {
+        // @todo add image field in authors table?
+        return $idAuthor;
+    }
+
+    /**
+     * Update link for existing author
+     * @param AuthorInfo $authorInfo
+     * @param int $idAuthor Author id in the calibre db
+     * @return int
+     */
+    public function setAuthorLink($authorInfo, $idAuthor)
+    {
+        $sql = 'update authors set link=:link where id=:id)';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':link', $authorInfo->link);
+        $stmt->bindParam(':id', $idAuthor, PDO::PARAM_INT);
+        $stmt->execute();
         return $idAuthor;
     }
 

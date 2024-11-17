@@ -28,10 +28,9 @@ class IdMapper extends Converter
     /**
      * Initialize mapper if needed
      *
-     * @param mixed $input
      * @param bool $override
      */
-    public function __construct($input = null, $override = false)
+    public function __construct($override = false)
     {
         $this->override = $override;
         $this->stats['hit'] ??= 0;

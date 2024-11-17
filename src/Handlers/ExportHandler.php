@@ -10,6 +10,7 @@ use Marsender\EPubLoader\Workflows\Converters\CalibreIdMapper;
 use Marsender\EPubLoader\Workflows\Export;
 use Marsender\EPubLoader\Workflows\Workflow;
 use Marsender\EPubLoader\RequestHandler;
+use Exception;
 
 class ExportHandler extends ActionHandler
 {
@@ -124,6 +125,7 @@ class ExportHandler extends ActionHandler
             'googlebooks' => 'google',
             'openlibrary' => 'olid',
             'wikidata' => 'wd',
+            default => throw new Exception('Invalid cache name'),
         };
         $converter = new CalibreIdMapper($dbFileName, $typeName);
         $workflow->converters[] = $converter;
