@@ -31,6 +31,9 @@ abstract class DatabaseWriter extends TargetWriter
             $this->createDatabases($dbFileName);
         } else {
             $this->dbLoader = new DatabaseLoader($dbFileName, false);
+            if ($this->dbLoader->readOnly) {
+                throw new Exception('Invalid database as target writer (read-only)');
+            }
             $notesFileName = dirname($dbFileName) . '/.calnotes/notes.db';
             if (file_exists($notesFileName)) {
                 $this->dbLoader->attachDatabase($notesFileName, 'notes_db');

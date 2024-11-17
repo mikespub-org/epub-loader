@@ -212,8 +212,12 @@ class CalibreWriter extends DatabaseWriter
         if (empty($coverField)) {
             return $idBook;
         }
-        $sql = 'update books set ' . $coverField . '=:cover where id=:id)';
-        $stmt = $this->db->prepare($sql);
+        $sql = 'update books set ' . $coverField . '=:cover where id=:id';
+        try {
+            $stmt = $this->db->prepare($sql);
+        } catch (Exception $e) {
+            return $idBook;
+        }
         $stmt->bindParam(':cover', $bookInfo->cover);
         $stmt->bindParam(':id', $idBook, PDO::PARAM_INT);
         $stmt->execute();
@@ -449,11 +453,26 @@ class CalibreWriter extends DatabaseWriter
      * Update image for existing series
      * @param SeriesInfo $seriesInfo
      * @param int $idSerie Series id in the calibre db
+     * @param string $imageField Add 'calibre_database_field_image' field for series
      * @return int
      */
-    public function setSeriesImage($seriesInfo, $idSerie)
+    public function setSeriesImage($seriesInfo, $idSerie, $imageField = 'image')
     {
+        if (empty($imageField)) {
+            return $idSerie;
+        }
         // @todo add image field in series table?
+        // @todo deal with 'after update' trigger with title_sort() - see DatabaseLoader::addSqliteFunctions()
+        //$sql = $this->db->wrapTrigger($sql, 'series', 'AFTER UPDATE ON');
+        $sql = 'update series set ' . $imageField . '=:image where id=:id';
+        try {
+            $stmt = $this->db->prepare($sql);
+        } catch (Exception $e) {
+            return $idSerie;
+        }
+        $stmt->bindParam(':image', $seriesInfo->image);
+        $stmt->bindParam(':id', $idSerie, PDO::PARAM_INT);
+        $stmt->execute();
         return $idSerie;
     }
 
@@ -467,7 +486,7 @@ class CalibreWriter extends DatabaseWriter
     {
         // @todo deal with 'after update' trigger with title_sort() - see DatabaseLoader::addSqliteFunctions()
         //$sql = $this->db->wrapTrigger($sql, 'series', 'AFTER UPDATE ON');
-        $sql = 'update series set link=:link where id=:id)';
+        $sql = 'update series set link=:link where id=:id';
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':link', $seriesInfo->link);
         $stmt->bindParam(':id', $idSerie, PDO::PARAM_INT);
@@ -581,11 +600,24 @@ class CalibreWriter extends DatabaseWriter
      * Update image for existing author
      * @param AuthorInfo $authorInfo
      * @param int $idAuthor Author id in the calibre db
+     * @param string $imageField Add 'calibre_database_field_image' field for authors
      * @return int
      */
-    public function setAuthorImage($authorInfo, $idAuthor)
+    public function setAuthorImage($authorInfo, $idAuthor, $imageField = 'image')
     {
+        if (empty($imageField)) {
+            return $idAuthor;
+        }
         // @todo add image field in authors table?
+        $sql = 'update authors set ' . $imageField . '=:image where id=:id';
+        try {
+            $stmt = $this->db->prepare($sql);
+        } catch (Exception $e) {
+            return $idAuthor;
+        }
+        $stmt->bindParam(':image', $authorInfo->image);
+        $stmt->bindParam(':id', $idAuthor, PDO::PARAM_INT);
+        $stmt->execute();
         return $idAuthor;
     }
 
@@ -597,7 +629,7 @@ class CalibreWriter extends DatabaseWriter
      */
     public function setAuthorLink($authorInfo, $idAuthor)
     {
-        $sql = 'update authors set link=:link where id=:id)';
+        $sql = 'update authors set link=:link where id=:id';
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':link', $authorInfo->link);
         $stmt->bindParam(':id', $idAuthor, PDO::PARAM_INT);
