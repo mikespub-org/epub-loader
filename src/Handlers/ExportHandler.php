@@ -131,8 +131,14 @@ class ExportHandler extends ActionHandler
         $workflow->converters[] = $converter;
         $workflow->process($result['cacheName'], $result['cacheType']);
         $result['messages'] = $workflow->getMessages();
-        $result['errors'] = $workflow->getErrors();
         $result['counters'] = $converter->getStats();
+        // add workflow errors to handler
+        $errors = $workflow->getErrors();
+        if (!empty($errors)) {
+            foreach ($errors as $item => $error) {
+                $this->addError($item, $error);
+            }
+        }
         return $result;
     }
 
