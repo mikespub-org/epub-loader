@@ -1,0 +1,59 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="title">
+	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
+	{% block findlinks %}
+	{% endblock findlinks %}
+</div>
+{% if not fileId and not folderId %}
+<p>Files:</p>
+<ul>
+{% for file in files %}
+	<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{file.id}}">{{file.name}}</a></li>
+{% endfor %}
+</ul>
+<p>Folders:</p>
+<ul>
+{% for id, entry in folders %}
+	<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{entry.folder.id}}">{{entry.folder.name}}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+{% if fileId and fileDetails %}
+<p>File: {{ fileDetails.name }}</p>
+<ul>
+{% for key, val in fileDetails %}
+	{% if val is null %}
+	{% elseif key == 'parents' %}
+		<li>{{key}}: {% for parentId in val %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{parentId}}">{{parentId}}</a>{% endfor %}</li>
+	{% else %}
+		<li>{{key}}: {{val}}</li>
+	{% endif %}
+{% endfor %}
+</ul>
+{% endif %}
+{% if folderId and folderDetails %}
+<p>Folder: {{ folderDetails.folder.name }}</p>
+<ul>
+{% for key, val in folderDetails.folder %}
+	{% if val is null %}
+	{% elseif key == 'parents' %}
+		<li>{{key}}: {% for parentId in val %}<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{parentId}}">{{parentId}}</a>{% endfor %}</li>
+	{% else %}
+		<li>{{key}}: {{val}}</li>
+	{% endif %}
+{% endfor %}
+</ul>
+<p>Children:</p>
+<ul>
+{% for child in folderDetails.children %}
+	{% if child.mimeType == 'application/vnd.google-apps.folder' %}
+		<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{child.id}}">{{child.name}}</a></li>
+	{% else %}
+		<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{folderId}}?fileId={{child.id}}">{{child.name}}</a></li>
+	{% endif %}
+{% endfor %}
+</ul>
+{% endif %}
+{% endblock content %}

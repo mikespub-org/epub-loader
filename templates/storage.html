@@ -1,0 +1,14 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="title">
+	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
+	{% block findlinks %}
+	{% endblock findlinks %}
+</div>
+<ul>
+{% for name, label in storage %}
+	<li><a href="{{endpoint}}/{{name}}/{{dbNum}}">{{label}}</a></li>
+{% endfor %}
+</ul>
+{% endblock content %}

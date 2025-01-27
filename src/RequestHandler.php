@@ -164,6 +164,15 @@ class RequestHandler
     }
 
     /**
+     * Summary of getAppName
+     * @return string
+     */
+    public function getAppName()
+    {
+        return $this->gConfig['app_name'];
+    }
+
+    /**
      * Summary of getEndpoint
      * @return string
      */
@@ -372,6 +381,15 @@ class RequestHandler
     public function getCallbacks()
     {
         return $this->gConfig['callbacks'] ?? [];
+    }
+
+    /**
+     * Summary of getAuth
+     * @return array<mixed>
+     */
+    public function getAuth()
+    {
+        return $this->gConfig['auth'] ?? [];
     }
 
     /**

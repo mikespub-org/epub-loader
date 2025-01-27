@@ -139,11 +139,13 @@ class ActionHandler
             \Marsender\EPubLoader\Handlers\ExportHandler::class,
             \Marsender\EPubLoader\Handlers\ImportHandler::class,
             \Marsender\EPubLoader\Handlers\MetadataHandler::class,
+            \Marsender\EPubLoader\Handlers\StorageHandler::class,
             \Marsender\EPubLoader\Handlers\TestHandler::class,
             \Marsender\EPubLoader\Metadata\GoodReads\GoodReadsHandler::class,
             \Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksHandler::class,
             \Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryHandler::class,
             \Marsender\EPubLoader\Metadata\WikiData\WikiDataHandler::class,
+            \Marsender\EPubLoader\Storage\Google\GoogleDriveHandler::class,
         ];
         // add ExtraActions::class or whatever this is if needed
         if (!in_array(static::class, $handlers)) {

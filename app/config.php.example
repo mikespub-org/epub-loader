@@ -108,6 +108,8 @@ $gConfig['groups']['Internal'] = [
     'gb_volume' => 'Google Books volume',
     'ol_work' => 'OpenLibrary work',
     'resource' => 'Get Calibre Resource',
+    'google_callback' => 'Google OAuth2 Callback',
+    'microsoft_callback' => 'Microsoft OAuth2 Callback',
 ];
 $gConfig['groups']['Extra'] = [
     'booklinks' => 'Book links by identifier',
@@ -116,6 +118,25 @@ $gConfig['groups']['Extra'] = [
     //'meta' => 'EPub Metadata App',
     'hello_world' => 'Example: Hello, World - see app/example.php',
     'goodbye' => 'Example: Goodbye - see app/example.php',
+];
+$gConfig['groups']['Storage'] = [
+    //'storage' => 'External Storage Mapping',
+    'google_drive' => 'Google Drive (Personal) Mapping',
+    'google_test' => 'Google Drive (Personal) Test',
+    'microsoft_onedrive' => 'Microsoft OneDrive (Personal) Mapping',
+];
+
+$gConfig['auth'] = [];
+$gConfig['auth']['Google'] = [
+    'Drive' => [
+        'client_secret' => __DIR__ . '/client_secret.json',
+        'root' => null,
+    ],
+];
+$gConfig['auth']['Microsoft'] = [
+    'OneDrive' => [
+        'client_secret' => '',
+    ],
 ];
 
 return $gConfig;
