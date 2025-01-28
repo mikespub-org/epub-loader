@@ -3,7 +3,12 @@
 1.5.x - 2024xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-3.x.x - 2024xxxx
+3.x.x - 2025xxxx
+  * Experiment with Google Drive and Rclone mapping
+
+3.5.12 - 20241208 Use workflows with readers & writers
+  * Expand Calibre writer to update cover and links
+  * Add Calibre id mapper for export workflows
   * Add checking book links by identifier type
   * Add JSON records import/export for epub files and database
   * Turn import/export into workflows with readers & writers
