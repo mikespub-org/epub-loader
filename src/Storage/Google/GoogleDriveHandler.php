@@ -254,11 +254,11 @@ class GoogleDriveHandler extends StorageHandler
         $filesystem = $this->getFilesystem($service);
         try {
             $listing = $filesystem->listContents($path, $recursive);
-        
+
             /** @var \League\Flysystem\StorageAttributes $item */
             foreach ($listing as $item) {
                 $path = $item->path();
-        
+
                 if ($item instanceof \League\Flysystem\FileAttributes) {
                     // handle the file
                     echo 'File: ' . $path . "<br>";

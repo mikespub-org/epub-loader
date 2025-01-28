@@ -145,7 +145,8 @@ class ActionHandler
             \Marsender\EPubLoader\Metadata\GoogleBooks\GoogleBooksHandler::class,
             \Marsender\EPubLoader\Metadata\OpenLibrary\OpenLibraryHandler::class,
             \Marsender\EPubLoader\Metadata\WikiData\WikiDataHandler::class,
-            \Marsender\EPubLoader\Storage\Google\GoogleDriveHandler::class,
+            // \Marsender\EPubLoader\Storage\Google\GoogleDriveHandler::class,
+            \Marsender\EPubLoader\Storage\Rclone\RcloneHandler::class,
         ];
         // add ExtraActions::class or whatever this is if needed
         if (!in_array(static::class, $handlers)) {

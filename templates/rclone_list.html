@@ -1,0 +1,49 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="title">
+	<a href="{{endpoint}}/{{action}}">{{actionTitle}}</a> for <a href="{{endpoint}}/{{action}}/{{dbNum}}">{{dbConfig.name}}</a>
+	{% block findlinks %}
+	{% endblock findlinks %}
+</div>
+{% if not remoteId %}
+<p>Remote:</p>
+<ul>
+{% for remote in remotes %}
+	<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remote}}">{{remote}}</a></li>
+{% endfor %}
+</ul>
+{% else %}
+<p><b>Remote: <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remoteId}}">{{remoteId}}</a></b></p>
+{% endif %}
+{% if folders %}
+<p>Folders:</p>
+<ul>
+{% for folder in folders %}
+	{% if folderId and folderId == folder.ID %}
+		<li><b><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remoteId}}?folderId={{folder.ID}}">{{folder.Path}}</a></b></li>
+	{% else %}
+		<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remoteId}}?folderId={{folder.ID}}">{{folder.Path}}</a></li>
+	{% endif %}
+{% endfor %}
+</ul>
+{% if folderDetails %}
+	<pre>{{folderDetails}}</pre>
+{% endif %}
+{% endif %}
+{% if folderId and files %}
+<p>Files:</p>
+<ul>
+{% for file in files %}
+	{% if fileId and fileId == file.ID %}
+		<li><b><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remoteId}}?folderId={{folderId}}&fileId={{file.ID}}">{{file.Name}}</a></b></li>
+	{% else %}
+		<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remoteId}}?folderId={{folderId}}&fileId={{file.ID}}">{{file.Name}}</a></li>
+	{% endif %}
+{% endfor %}
+</ul>
+{% if fileDetails %}
+	<pre>{{fileDetails}}</pre>
+{% endif %}
+{% endif %}
+{% endblock content %}

@@ -108,8 +108,8 @@ $gConfig['groups']['Internal'] = [
     'gb_volume' => 'Google Books volume',
     'ol_work' => 'OpenLibrary work',
     'resource' => 'Get Calibre Resource',
-    'google_callback' => 'Google OAuth2 Callback',
-    'microsoft_callback' => 'Microsoft OAuth2 Callback',
+    //'google_callback' => 'Google OAuth2 Callback',
+    //'microsoft_callback' => 'Microsoft OAuth2 Callback',
 ];
 $gConfig['groups']['Extra'] = [
     'booklinks' => 'Book links by identifier',
@@ -119,24 +119,47 @@ $gConfig['groups']['Extra'] = [
     'hello_world' => 'Example: Hello, World - see app/example.php',
     'goodbye' => 'Example: Goodbye - see app/example.php',
 ];
+
+/**
+// External storage mapping - not really useful
 $gConfig['groups']['Storage'] = [
     //'storage' => 'External Storage Mapping',
-    'google_drive' => 'Google Drive (Personal) Mapping',
-    'google_test' => 'Google Drive (Personal) Test',
-    'microsoft_onedrive' => 'Microsoft OneDrive (Personal) Mapping',
+    //'google_drive' => 'Google Drive (Personal) Mapping',
+    //'google_test' => 'Google Drive (Personal) Test',
+    //'microsoft_onedrive' => 'Microsoft OneDrive (Personal) Mapping',
+    'rclone_list' => 'Rclone remote list',
+    'rclone_test' => 'Rclone remote test',
 ];
+ */
 
+/**
+// External storage authentication
 $gConfig['auth'] = [];
+$gConfig['auth']['rclone'] = [
+    'gdrive' => [
+        'config' => dirname(__DIR__) . '.config/rclone/rconf.conf',
+        'remote' => 'gdrive',
+        'root' => null,
+    ],
+    'msone' => [
+        'config' => dirname(__DIR__) . '.config/rclone/rconf.conf',
+        'remote' => 'msdrive',
+        'root' => null,
+    ],
+];
+// disabled in actions above
 $gConfig['auth']['Google'] = [
     'Drive' => [
         'client_secret' => __DIR__ . '/client_secret.json',
         'root' => null,
     ],
 ];
+// not implemented
 $gConfig['auth']['Microsoft'] = [
     'OneDrive' => [
         'client_secret' => '',
     ],
 ];
+ */
 
 return $gConfig;
