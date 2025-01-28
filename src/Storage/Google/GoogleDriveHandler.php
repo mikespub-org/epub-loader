@@ -143,6 +143,10 @@ class GoogleDriveHandler extends StorageHandler
         return null;
     }
 
+    /**
+     * Summary of google_test
+     * @return string|null
+     */
     public function google_test()
     {
         if (empty($_SESSION['access_token'])) {

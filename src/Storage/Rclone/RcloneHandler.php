@@ -12,8 +12,8 @@ use Exception;
 
 class RcloneHandler extends StorageHandler
 {
-    /** @var array<string, mixed> */
-    protected $folders = [];
+    /** @var array<mixed> */
+    protected $getfiles = [];
 
     /**
      * Summary of handle
@@ -75,28 +75,28 @@ class RcloneHandler extends StorageHandler
             return $result;
         }
 
-        $getfiles = json_decode(file_get_contents($cacheFile), true);
+        $this->getfiles = json_decode(file_get_contents($cacheFile), true);
         if (empty($folderId)) {
-            $result['folders'] = $this->getTopLevelDirs($getfiles);
+            $result['folders'] = $this->getTopLevelDirs();
             return $result;
         }
 
-        $folder = $this->getFolderById($getfiles, $folderId);
+        $folder = $this->getFolderById($folderId);
         if (empty($folder)) {
-            $result['folders'] = $this->getTopLevelDirs($getfiles);
+            $result['folders'] = $this->getTopLevelDirs();
             return $result;
         }
 
         if (str_contains($folder['Path'], '/')) {
             $parentPath = dirname($folder['Path']);
-            $parent = $this->getFolderByPath($getfiles, $parentPath);
+            $parent = $this->getFolderByPath($parentPath);
             if (!empty($parent)) {
                 $result['folders'][] = $parent;
             }
         }
         $result['folders'][] = $folder;
         $result['folderDetails'] = json_encode($folder, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        foreach ($getfiles as $file) {
+        foreach ($this->getfiles as $file) {
             if (dirname($file['Path']) != $folder['Path']) {
                 continue;
             }
@@ -133,9 +133,14 @@ class RcloneHandler extends StorageHandler
         return $auth['rclone'];
     }
 
-    protected function getFolderById($getfiles, $folderId)
+    /**
+     * Summary of getFolderById
+     * @param string $folderId
+     * @return array<mixed>|null
+     */
+    protected function getFolderById($folderId)
     {
-        $folders = array_filter($getfiles, function ($file) use ($folderId) {
+        $folders = array_filter($this->getfiles, function ($file) use ($folderId) {
             return $file['ID'] == $folderId;
         });
         if (empty($folders)) {
@@ -144,9 +149,14 @@ class RcloneHandler extends StorageHandler
         return reset($folders);
     }
 
-    protected function getFolderByPath($getfiles, $folderPath)
+    /**
+     * Summary of getFolderByPath
+     * @param string $folderPath
+     * @return array<mixed>|null
+     */
+    protected function getFolderByPath($folderPath)
     {
-        $folders = array_filter($getfiles, function ($file) use ($folderPath) {
+        $folders = array_filter($this->getfiles, function ($file) use ($folderPath) {
             return $file['Path'] == $folderPath;
         });
         if (empty($folders)) {
@@ -155,10 +165,14 @@ class RcloneHandler extends StorageHandler
         return reset($folders);
     }
 
-    protected function getTopLevelDirs($getfiles)
+    /**
+     * Summary of getTopLevelDirs
+     * @return array<mixed>
+     */
+    protected function getTopLevelDirs()
     {
         $folders = [];
-        foreach ($getfiles as $file) {
+        foreach ($this->getfiles as $file) {
             if ($file['IsDir'] && $file['Name'] == $file['Path']) {
                 $folders[] = $file;
             }
