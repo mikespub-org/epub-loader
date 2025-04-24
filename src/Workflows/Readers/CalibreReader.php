@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CalibreReader class
  */

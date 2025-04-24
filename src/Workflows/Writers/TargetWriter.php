@@ -1,4 +1,5 @@
 <?php
+
 /**
  * TargetWriter class
  * |-> CalibreWriter (CALIBRE_DB)
@@ -38,7 +39,6 @@ abstract class TargetWriter
      *
      * @param AuthorInfo $authorInfo AuthorInfo object
      * @param mixed $authorId Author id in the calibre db (or 0 for auto incrementation)
-     * @throws Exception if error
      *
      * @return void
      */
@@ -52,7 +52,6 @@ abstract class TargetWriter
      *
      * @param SeriesInfo $seriesInfo SeriesInfo object
      * @param mixed $seriesId Series id in the calibre db (or 0 for auto incrementation)
-     * @throws Exception if error
      *
      * @return void
      */

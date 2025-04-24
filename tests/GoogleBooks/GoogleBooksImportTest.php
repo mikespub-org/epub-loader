@@ -7,6 +7,7 @@ namespace Marsender\EPubLoader\Tests\GoogleBooks;
 
 use Marsender\EPubLoader\Workflows\Import;
 use Marsender\EPubLoader\Workflows\Workflow;
+use Marsender\EPubLoader\Workflows\Readers\JsonFileReader;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class GoogleBooksImportTest extends BaseTestCase
@@ -17,6 +18,8 @@ class GoogleBooksImportTest extends BaseTestCase
         $dbFile = $dbPath . '/metadata.db';
         $sourceType = Workflow::JSON_FILES;
         $import = new Import($sourceType, $dbFile, true);
+        $expected = JsonFileReader::class;
+        $this->assertInstanceOf($expected, $import->reader);
 
         $jsonFile = $dbPath . '/volumes/_ogXogEACAAJ.en.json';
         $result = $import->reader->getFromJsonFile($dbPath, $jsonFile);
@@ -35,6 +38,8 @@ class GoogleBooksImportTest extends BaseTestCase
         $dbFile = $dbPath . '/metadata.db';
         $sourceType = Workflow::JSON_FILES;
         $import = new Import($sourceType, $dbFile, true);
+        $expected = JsonFileReader::class;
+        $this->assertInstanceOf($expected, $import->reader);
 
         $jsonFile = $dbPath . '/authors/Arthur Conan Doyle.en.40.json';
         $result = $import->reader->getFromJsonFile($dbPath, $jsonFile);

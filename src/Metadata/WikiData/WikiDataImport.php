@@ -1,4 +1,5 @@
 <?php
+
 /**
  * WikiDataImport class
  */

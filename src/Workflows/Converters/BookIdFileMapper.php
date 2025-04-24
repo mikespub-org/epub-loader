@@ -1,4 +1,5 @@
 <?php
+
 /**
  * BookIdFileMapper class
  */

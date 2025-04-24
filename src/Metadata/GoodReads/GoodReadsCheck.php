@@ -1,4 +1,5 @@
 <?php
+
 /**
  * GoodReadsCheck class
  */

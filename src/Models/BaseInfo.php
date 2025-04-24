@@ -1,4 +1,5 @@
 <?php
+
 /**
  * BaseInfo class
  */

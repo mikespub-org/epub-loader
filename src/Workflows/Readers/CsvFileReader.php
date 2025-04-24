@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CsvFileReader class
  */

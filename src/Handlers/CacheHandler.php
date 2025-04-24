@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CacheHandler class
  */

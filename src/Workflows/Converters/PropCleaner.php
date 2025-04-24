@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PropCleaner class
  */
@@ -22,7 +23,6 @@ class PropCleaner extends Converter
      * Specify properties to clean
      *
      * @param array<string> $clean
-     * @throws Exception if error
      */
     public function __construct($clean = ['properties'])
     {

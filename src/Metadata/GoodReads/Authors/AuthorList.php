@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Same format as SearchResult, but only 1 AuthorEntry in properties
  */

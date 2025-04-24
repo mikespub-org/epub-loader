@@ -7,6 +7,7 @@ namespace Marsender\EPubLoader\Tests\OpenLibrary;
 
 use Marsender\EPubLoader\Workflows\Import;
 use Marsender\EPubLoader\Workflows\Workflow;
+use Marsender\EPubLoader\Workflows\Readers\JsonFileReader;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class OpenLibraryImportTest extends BaseTestCase
@@ -17,6 +18,8 @@ class OpenLibraryImportTest extends BaseTestCase
         $dbFile = $dbPath . '/metadata.db';
         $sourceType = Workflow::JSON_FILES;
         $import = new Import($sourceType, $dbFile, true);
+        $expected = JsonFileReader::class;
+        $this->assertInstanceOf($expected, $import->reader);
 
         $jsonFile = $dbPath . '/entities/OL118974W.en.json';
         $result = $import->reader->getFromJsonFile($dbPath, $jsonFile);

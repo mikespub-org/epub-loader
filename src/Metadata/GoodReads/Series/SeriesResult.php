@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Load info from series JSON file (row format)
  */

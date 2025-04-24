@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Adapted to include seriesHeader from SeriesList
  */

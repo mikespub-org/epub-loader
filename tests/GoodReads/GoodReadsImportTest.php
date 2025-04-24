@@ -7,6 +7,7 @@ namespace Marsender\EPubLoader\Tests\GoodReads;
 
 use Marsender\EPubLoader\Workflows\Import;
 use Marsender\EPubLoader\Workflows\Workflow;
+use Marsender\EPubLoader\Workflows\Readers\JsonFileReader;
 use Marsender\EPubLoader\Tests\BaseTestCase;
 
 class GoodReadsImportTest extends BaseTestCase
@@ -17,6 +18,8 @@ class GoodReadsImportTest extends BaseTestCase
         $dbFile = $dbPath . '/metadata.db';
         $sourceType = Workflow::JSON_FILES;
         $import = new Import($sourceType, $dbFile, true);
+        $expected = JsonFileReader::class;
+        $this->assertInstanceOf($expected, $import->reader);
 
         $jsonFile = $dbPath . '/book/show/7112495.json';
         $result = $import->reader->getFromJsonFile($dbPath, $jsonFile);

@@ -7,8 +7,11 @@ parameters:
     level: 6
     paths:
         - .
+    treatPhpDocTypesAsCertain: false
     bootstrapFiles:
         - vendor/autoload.php
     excludePaths:
         - vendor/*
         - cache/*
+        - rector.php
+        - src/Storage/Google/GoogleDriveHandler.php

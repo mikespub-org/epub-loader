@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Based on https://jacobdekeizer.github.io/json-to-php-generator/
  */

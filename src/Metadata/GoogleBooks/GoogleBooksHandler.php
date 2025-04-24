@@ -1,4 +1,5 @@
 <?php
+
 /**
  * GoogleBooksHandler class
  */

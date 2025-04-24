@@ -1,4 +1,5 @@
 <?php
+
 /**
  * JsonFileReader class
  */

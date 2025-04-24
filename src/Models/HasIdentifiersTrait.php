@@ -1,4 +1,5 @@
 <?php
+
 /**
  * HasIdentifiersTrait trait
  */

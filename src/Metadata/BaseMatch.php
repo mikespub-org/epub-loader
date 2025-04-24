@@ -1,4 +1,5 @@
 <?php
+
 /**
  * BaseMatch class
  */

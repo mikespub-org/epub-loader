@@ -1,4 +1,5 @@
 <?php
+
 /**
  * JsonFileWriter class
  */
@@ -34,7 +35,6 @@ class JsonFileWriter extends FileWriter
      *
      * @param BookInfo $bookInfo BookInfo object
      * @param int $bookId Book id in the calibre db (or 0 for auto incrementation)
-     * @throws Exception if error
      *
      * @return void
      */

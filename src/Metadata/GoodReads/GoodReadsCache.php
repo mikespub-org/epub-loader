@@ -1,4 +1,5 @@
 <?php
+
 /**
  * GoodReadsCache class
  */

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Based on https://jacobdekeizer.github.io/json-to-php-generator/
  * adapted for patternProperties in ApolloState and RootQuery - see JSON schema

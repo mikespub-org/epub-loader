@@ -1,4 +1,5 @@
 <?php
+
 /**
  * WikiDataCache class
  */
