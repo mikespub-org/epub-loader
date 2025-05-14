@@ -9,12 +9,22 @@
 {% if not remoteId %}
 <p>Remote:</p>
 <ul>
-{% for remote in remotes %}
-	<li><a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remote}}">{{remote}}</a></li>
+{% for remote, info in remotes %}
+	<li>
+		<a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remote}}">{{remote}}</a>
+		{% if info.root %}
+			{{info.root}}
+		{% endif %}
+	</li>
 {% endfor %}
 </ul>
 {% else %}
-<p><b>Remote: <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remoteId}}">{{remoteId}}</a></b></p>
+<p>
+	<b>Remote: <a href="{{endpoint}}/{{action}}/{{dbNum}}/{{remoteId}}">{{remoteId}}</a></b>
+	{% if remotes[remoteId].root %}
+		{{remotes[remoteId].root}}
+	{% endif %}
+</p>
 {% endif %}
 {% if folders %}
 <p>Folders:</p>

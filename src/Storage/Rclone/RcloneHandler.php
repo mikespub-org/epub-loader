@@ -54,8 +54,7 @@ class RcloneHandler extends StorageHandler
         $folderId = $this->request->get('folderId');
         $fileId = $this->request->get('fileId');
 
-        $config = $this->getConfig();
-        $remotes = array_keys($config);
+        $remotes = $this->getConfig();
 
         $result = [
             'remotes' => $remotes,
@@ -71,7 +70,7 @@ class RcloneHandler extends StorageHandler
 
         $cacheFile = $this->cacheDir . '/rclone/' . $remoteId . '/getfiles.json';
         if (!file_exists($cacheFile)) {
-            // @todo run rcone lsjson -R --fast-list remote:"My Library/Books"
+            // @todo run rclone lsjson -R --fast-list remote:"My Library/Books"
             return $result;
         }
 
@@ -118,9 +117,13 @@ class RcloneHandler extends StorageHandler
      */
     public function rclone_test()
     {
-        $config = $this->getConfig();
-        $remotes = array_keys($config);
-        return ['remotes' => $remotes];
+        $remotes = $this->getConfig();
+        $remoteId = $this->request->get('authorId');
+        // ...update getfiles.json
+        return [
+            'remotes' => $remotes,
+            'remoteId' => $remoteId,
+        ];
     }
 
     /**
