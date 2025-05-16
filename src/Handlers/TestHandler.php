@@ -48,6 +48,7 @@ class TestHandler extends ActionHandler
         if (!empty($this->cacheDir)) {
             $cachedir = $this->cacheDir . '/google/titles/';
         }
+        $parent = ['title' => 'EPub Loader', 'link' => './'];
 
         // @todo let RequestHandler know we handled this
         putenv('PHPUNIT_TESTING=1');
@@ -60,6 +61,7 @@ class TestHandler extends ActionHandler
             'rename' => $rename,
             'templatedir' => $templatedir,
             'cachedir' => $cachedir,
+            'parent' => $parent,
         ];
         // 2. instantiate the app handler with the config array
         $handler = new MetaAppHandler($config);

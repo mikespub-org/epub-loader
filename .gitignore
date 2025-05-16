@@ -5,3 +5,5 @@ clover.xml
 coverage/
 rector.php
 composer.lock
+.env*
+!.env.sample
