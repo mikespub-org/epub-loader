@@ -1,9 +1,11 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
 	<title>{{app_name}}</title>
 	<meta name="author" content="atoll-digital-library.org" />
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="{{static}}/css/styles.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="{{static}}/css/styles.css">
 </head>
 <body>
 	<!-- Header begin -->
@@ -26,12 +28,12 @@
 	{% if errors|length %}
 	<!-- Error begin -->
 	<div class="error">
-		<table width="100%">
+		<table>
 			<tr>
 				<th colspan="2">Errors ({{ errors|length }})</th>
 			</tr>
 			{% for fileName, error in errors %}
-			<!-- Diplay error -->
+			<!-- Display error -->
 			<tr>
 				<td class="col_1">{{fileName}}</td>
 				<td class="col_2">{{error}}</td>
