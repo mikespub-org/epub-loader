@@ -78,7 +78,7 @@ ul, li {
 	border-bottom: solid var(--border-color) 1px;
 	margin-bottom: var(--content-margin);
 	max-width: var(--action-max-width);
-	margin: 0 auto var(--content-margin);
+    /** margin: 0 auto var(--content-margin);*/
 }
 
 .header a {
@@ -108,7 +108,7 @@ ul, li {
 	padding-bottom: 5px;
 	font-weight: bold;
 	max-width: var(--action-max-width);
-	margin: var(--action-margin);
+	/** margin: var(--action-margin); */
 }
 
 .small {
