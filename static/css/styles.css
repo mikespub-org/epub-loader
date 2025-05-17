@@ -1,230 +1,363 @@
 /* Base variables for easy customization */
 :root {
-  /* Original color scheme */
-  --text-color: #333333;
-  --bg-color: #ffffff;
-  --link-color: #096DD1;
-  --link-hover: #DF7800;
-  --link-focus: #6E749F;
-  --border-color: #2F4769;
-  --header-color: #6E749F;
-  --error-color: #750000;
-  
-  /* Original table colors preserved exactly */
-  --authors-bg: lightsalmon;
-  --books-bg: lightgreen;
-  --series-bg: lightskyblue;
-  --identifiers-bg: mediumseagreen;
-  --resources-bg: lightgrey;
-  
-  /* Spacing */
-  --body-margin: 20px;
-  --header-padding: 10px;
-  --content-margin: 15px;
-  --cell-padding: 5px;
+	/* Typography */
+	--body-font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+	--heading-font: var(--body-font);
+	--line-height: 1.5;
+	--border-radius: 4px;
+	--base-font-size: 16px;
+
+	/* Colors - softened but maintaining character */
+	--text-color: #2c3e50;
+	--bg-color: #f8fafc;
+	--link-color: #2563eb;
+	--link-hover: #f97316;
+	--link-focus: #6366f1;
+	--border-color: #e2e8f0;
+	--header-color: #4f46e5;
+	--error-color: #dc2626;
+
+	/* Table colors - with opacity for softer look */
+	--authors-bg: rgb(255, 160, 122, 0.2);
+	--books-bg: rgb(144, 238, 144, 0.2);
+	--series-bg: rgb(135, 206, 235, 0.2);
+	--identifiers-bg: rgb(60, 179, 113, 0.2);
+	--resources-bg: rgb(211, 211, 211, 0.2);
+
+	/* Spacing */
+	--body-margin: 2rem;
+	--header-padding: 1rem;
+	--content-margin: 1.5rem;
+	--cell-padding: 0.5rem;
+	--action-margin: 0 auto;      /* Center actions with max-width */
+	--action-max-width: 1200px;   /* Maximum width for action content */
 }
 
 /* Base styles */
 body {
-  font-family: Arial, Times, serif;
-  font-size: 80%;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  margin: var(--body-margin);
+	font-family: var(--body-font);
+	font-size: var(--base-font-size);
+	line-height: var(--line-height);
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	margin: 0;
+	padding: var(--body-margin) 0;
 }
 
 /* Links */
 a {
-  color: var(--link-color);
-  text-decoration: none;
+	color: var(--link-color);
+	text-decoration: underline;
+	text-decoration-thickness: 0.1em;
+	text-underline-offset: 0.2em;
+	transition: all 0.2s ease;
 }
 
 a:hover {
-  color: var(--link-hover);
+	color: var(--link-hover);
+	text-decoration-thickness: 0.2em;
 }
 
 a:focus {
-  color: var(--link-focus) !important;
+	color: var(--link-focus) !important;
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
 }
 
 /* Lists */
 ul, li {
-  margin: 0;
+	margin: 0;
 }
 
 /* Header */
 .header {
-  color: var(--header-color);
-  font-style: bold;
-  font-size: 120%;
-  padding-bottom: var(--header-padding);
-  border-bottom: solid var(--border-color) 1px;
-  margin-bottom: var(--content-margin);
+	color: var(--header-color);
+	font-weight: 600;
+	font-size: 1.75rem;
+	padding: var(--header-padding) 1rem;
+	border-bottom: solid var(--border-color) 1px;
+	margin-bottom: var(--content-margin);
+	max-width: var(--action-max-width);
+	margin: 0 auto var(--content-margin);
+}
+
+.header a {
+	text-decoration: none;
+	color: var(--header-color);
 }
 
 /* Content sections */
+.content {
+	padding: 0 1rem;
+}
+
+/* Action content - centered with max-width */
+.content > div > p {
+	max-width: var(--action-max-width);
+	margin: var(--action-margin);
+	padding-bottom: var(--content-margin);
+}
+
 .part {
-  border-top: solid var(--border-color) 1px;
-  padding: var(--header-padding);
+	border-top: solid var(--border-color) 1px;
+	padding: var(--header-padding);
+	border-radius: var(--border-radius);
 }
 
 .title {
-  padding-bottom: 5px;
-  font-weight: bold;
+	padding-bottom: 5px;
+	font-weight: bold;
+	max-width: var(--action-max-width);
+	margin: var(--action-margin);
 }
 
 .small {
-  font-size: 80%;
+	font-size: 0.875rem;
 }
 
 /* Tables - Base styles */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  border-color: #ccc;
+	width: 100%;
+	border-collapse: collapse;
+	border-color: var(--border-color);
+	margin: 0;
 }
 
 table th {
-  text-align: left;
+	text-align: left;
+	background-color: rgba(0, 0, 0, 0.03);
 }
 
 table td, table th {
-  padding-left: var(--cell-padding);
-  padding-right: var(--cell-padding);
+	padding: var(--cell-padding);
+	line-height: 1.4;
+	white-space: nowrap;
+}
+
+td.col_2 {
+	white-space: normal;
+}
+
+tr:hover {
+	background-color: rgba(0, 0, 0, 0.02);
+	transition: background-color 0.2s ease;
 }
 
 /* Table column widths */
 td.col_1, th.col_1 {
-  width: 50%;
+	width: 50%;
 }
 
 td.col_2, th.col_2 {
-  width: 50%;
+	width: 50%;
 }
 
 th.left, td.left {
-  width: 10%;
+	width: 10%;
 }
 
 /* Authors table */
 table.authors {
-  width: 100%;
-  border-collapse: separate;
+	width: 100%;
+	border-collapse: separate;
 }
 
 tr.authors {
-  background-color: var(--authors-bg);
+	background-color: var(--authors-bg);
 }
 
 th.authors {
-  vertical-align: top;
+	vertical-align: top;
 }
 
 /* Books table */
 table.books {
-  width: 100%;
-  border-collapse: separate;
+	width: 100%;
+	border-collapse: separate;
 }
 
 tr.books {
-  background-color: var(--books-bg);
+	background-color: var(--books-bg);
 }
 
 th.books {
-  vertical-align: top;
+	vertical-align: top;
 }
 
 /* Series table */
 table.series {
-  width: 100%;
-  border-collapse: separate;
+	width: 100%;
+	border-collapse: separate;
 }
 
 tr.series {
-  background-color: var(--series-bg);
+	background-color: var(--series-bg);
 }
 
 th.series {
-  vertical-align: top;
+	vertical-align: top;
 }
 
 /* Identifiers table */
 table.identifiers {
-  width: 100%;
-  border-collapse: separate;
+	width: 100%;
+	border-collapse: separate;
 }
 
 tr.identifiers {
-  background-color: var(--identifiers-bg);
+	background-color: var(--identifiers-bg);
 }
 
 th.identifiers {
-  vertical-align: top;
+	vertical-align: top;
 }
 
 /* Resources table */
 table.resources {
-  width: 100%;
-  border-collapse: separate;
+	width: 100%;
+	border-collapse: separate;
 }
 
 tr.resources {
-  background-color: var(--resources-bg);
+	background-color: var(--resources-bg);
 }
 
 th.resources {
-  vertical-align: top;
+	vertical-align: top;
 }
 
 /* Error section */
 .error {
-  color: var(--error-color);
-  margin-top: var(--content-margin);
+	color: var(--error-color);
+	margin-top: var(--content-margin);
+	max-width: var(--action-max-width);
+	margin: var(--content-margin) auto;
+	padding: 0 1rem;
+}
+
+.error table {
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Footer */
 .footer {
-  border-top: solid var(--border-color) 1px;
-  margin-top: var(--content-margin);
-  padding-top: var(--header-padding);
-  font-size: 80%;
-  font-style: italic;
+	border-top: solid var(--border-color) 1px;
+	margin-top: var(--content-margin);
+	padding: var(--header-padding) 1rem;
+	font-size: 0.875rem;
+	font-style: italic;
+	max-width: var(--action-max-width);
+	margin: var(--content-margin) auto 0;
 }
 
 /* User info (for the timestamp and username) */
 .user-info {
-  text-align: right;
-  margin-bottom: var(--content-margin);
-  font-size: 80%;
-  color: var(--text-color);
+	text-align: right;
+	margin-bottom: var(--content-margin);
+	font-size: 0.875rem;
+	color: var(--text-color);
+	max-width: var(--action-max-width);
+	margin: 0 auto var(--content-margin);
+	padding: 0 1rem;
+}
+
+/* Form elements */
+select, input[type="submit"], button {
+	font-family: var(--body-font);
+	font-size: inherit;
+	padding: 0.5rem;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
+	transition: all 0.2s ease;
+}
+
+input[type="submit"], button {
+	background-color: var(--link-color);
+	color: white;
+	cursor: pointer;
+	border: none;
+}
+
+input[type="submit"]:hover, button:hover {
+	background-color: var(--link-hover);
 }
 
 /* Responsive improvements */
 @media (max-width: 768px) {
-  /* Adjust spacing on smaller screens */
-  :root {
-    --body-margin: 10px;
-    --header-padding: 8px;
-    --content-margin: 12px;
-    --cell-padding: 4px;
-  }
-  
-  /* Make tables more readable on mobile */
-  table {
-    font-size: 0.9em;
-  }
-  
-  /* Stack form elements on narrow screens */
-  .title form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  /* Ensure selects and inputs are full width on mobile */
-  select, input[type="submit"] {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 8px;
-  }
+	:root {
+		--body-margin: 1rem;
+		--header-padding: 0.8rem;
+		--content-margin: 1.2rem;
+		--cell-padding: 0.4rem;
+		--base-font-size: 15px;
+	}
+
+	/* Make tables more readable on mobile */
+	table {
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		font-size: 0.9375rem;
+	}
+
+	td.col_1, td.col_2 {
+		min-width: 150px;
+	}
+
+	/* Stack form elements on narrow screens */
+	.title form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	/* Stack table cells in error tables */
+	.error tr {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0.5rem;
+		padding: 0.5rem;
+	}
+
+	.error td {
+		word-break: break-word;
+	}
+
+	/* Ensure selects and inputs are full width on mobile */
+	select, input[type="submit"] {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 8px;
+	}
+
+	/* Adjust header size on mobile */
+	.header {
+		font-size: 1.5rem;
+	}
+}
+
+/* Print styles */
+@media print {
+	body {
+		font-size: 11pt;
+		background: none;
+		color: black;
+	}
+
+	.header, .footer {
+		border-color: black;
+	}
+
+	a {
+		color: black;
+		text-decoration: none;
+	}
+
+	table {
+		page-break-inside: avoid;
+	}
+
+	.user-info {
+		display: none;
+	}
 }
