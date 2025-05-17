@@ -4,6 +4,11 @@
   * ...
 
 3.x.x - 2025xxxx
+  * ...
+
+3.6.4 - 20250517 Experiment with Rclone + styles
+  * Use external stylesheet + adapt based on Claude
+  * Update mikespub/php-epub-meta + add listfiles.sh
   * Experiment with Google Drive and Rclone mapping
 
 3.5.12 - 20241208 Use workflows with readers & writers
