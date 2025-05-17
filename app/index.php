@@ -86,6 +86,9 @@ if (is_array($result)) {
     $data['result'] = $result;
 }
 
+// add static url
+$data['static'] ??= dirname(str_replace('/index.php', '', $gConfig['endpoint'])) . '/static';
+
 // Specify a template directory to override the standard templates
 $templateDir = $gConfig['template_dir'] ?? null;  // $handler->templateDir = dirname(__DIR__) . '/templates';
 $template = null;  // $handler->template;
