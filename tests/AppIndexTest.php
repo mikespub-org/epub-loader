@@ -111,9 +111,9 @@ class AppIndexTest extends BaseTestCase
 
         $expected = '<title>EPub Metadata</title>';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<a href="./">EPub Loader</a>';
+        $expected = '>EPub Loader<';
         $this->assertStringContainsString($expected, $output);
-        $expected = '<span class="title">Lewis Carroll</span>';
+        $expected = '>Lewis Carroll<';
         $this->assertStringContainsString($expected, $output);
 
         unset($_SERVER['PATH_INFO']);

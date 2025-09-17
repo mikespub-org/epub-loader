@@ -195,7 +195,7 @@ class BookInfo extends BaseInfo
         $bookInfo->id = $data['id'] ?? '';
         if (!empty($loader) && !empty($bookInfo->id)) {
             $details = new BookDetails($loader->getDbConnection());
-            $data = array_replace($data, $details->getBookDetails($bookInfo->id));
+            $data = array_replace($data, $details->getBookDetails((int) $bookInfo->id));
             $bookInfo->loaded = true;
         } else {
             // From CalibreDbLoader::getBooks():

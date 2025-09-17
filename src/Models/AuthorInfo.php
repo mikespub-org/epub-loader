@@ -113,14 +113,14 @@ class AuthorInfo extends BaseInfo
         }
         // From CalibreDbLoader::getBooksByAuthor():
         // id, title, sort, series_index, author, series, identifiers
-        $books = $loader->getBooksByAuthor($authorInfo->id);
+        $books = $loader->getBooksByAuthor((int) $authorInfo->id);
         foreach ($books as $id => $info) {
             $authorInfo->addBook($id, $info);
         }
         // From CalibreDbLoader::getSeriesByAuthor():
         // distinct series.id as id, series.name as name, series.sort as sort, series.link as link, author
         // series can have multiple authors
-        $series = $loader->getSeriesByAuthor($authorInfo->id);
+        $series = $loader->getSeriesByAuthor((int) $authorInfo->id);
         foreach ($series as $id => $info) {
             $seriesId = $info['id'];
             if (!empty($authorInfo->series[$seriesId])) {
