@@ -23,10 +23,12 @@
         "ext-xml": "*",
         "ext-zip": "*",
         "ext-zlib": "*",
-        "mikespub/survos-wikidata": "^5.3",
+        "mikespub/survos-wikidata": "^5.4",
         "mikespub/php-epub-meta": "^3.5",
         "twig/twig": "^3.21"
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "classmap": ["src/", "app/"]
     },
