@@ -15,6 +15,7 @@ class CsvFileReader extends SourceReader
 {
     public const CSV_SEPARATOR = "\t";
     public const CSV_ENCLOSURE = "'";
+    public const CSV_ESCAPE = "\\";
 
     /**
      * Load books from CSV export/import file
@@ -28,8 +29,8 @@ class CsvFileReader extends SourceReader
         $nbOk = 0;
         $nbError = 0;
         try {
-            $headers = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE);
-            while (($data = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE)) !== false) {
+            $headers = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE, self::CSV_ESCAPE);
+            while (($data = fgetcsv($handle, null, self::CSV_SEPARATOR, self::CSV_ENCLOSURE, self::CSV_ESCAPE)) !== false) {
                 try {
                     // Load the book infos
                     $bookInfo = self::loadFromArray($basePath, $data);
