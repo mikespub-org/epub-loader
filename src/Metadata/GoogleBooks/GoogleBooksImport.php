@@ -47,20 +47,23 @@ class GoogleBooksImport
         }
         $bookInfo->uuid = 'google:' . $bookInfo->id;
         $bookInfo->title = (string) $volumeInfo->getTitle();
-        foreach ($volumeInfo->getAuthors() as $authorName) {
-            $authorName = self::fixAuthorName($authorName);
-            $authorSort = AuthorInfo::getNameSort($authorName);
-            $authorId = $authorName;
-            $info = [
-                'id' => '',
-                'name' => $authorName,
-                'sort' => $authorSort,
-                'link' => '',
-                'image' => '',
-                'description' => '',
-                'source' => self::SOURCE,
-            ];
-            $bookInfo->addAuthor($authorId, $info);
+        $authors = $volumeInfo->getAuthors();
+        if (!empty($authors)) {
+            foreach ($authors as $authorName) {
+                $authorName = self::fixAuthorName($authorName);
+                $authorSort = AuthorInfo::getNameSort($authorName);
+                $authorId = $authorName;
+                $info = [
+                    'id' => '',
+                    'name' => $authorName,
+                    'sort' => $authorSort,
+                    'link' => '',
+                    'image' => '',
+                    'description' => '',
+                    'source' => self::SOURCE,
+                ];
+                $bookInfo->addAuthor($authorId, $info);
+            }
         }
         $bookInfo->language = (string) $volumeInfo->getLanguage();
         $bookInfo->description = (string) $volumeInfo->getDescription();
