@@ -56,9 +56,9 @@ trait HasAuthorsTrait
     public function setAuthorNames($authorList)
     {
         foreach ($this->authors as $id => $author) {
-            if (empty($author->id) ||
-                $author->id != $author->name ||
-                empty($authorList[$author->id])) {
+            if (empty($author->id)
+                || $author->id != $author->name
+                || empty($authorList[$author->id])) {
                 continue;
             }
             $author->name = $authorList[$author->id];

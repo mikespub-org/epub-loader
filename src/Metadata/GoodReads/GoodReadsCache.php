@@ -321,7 +321,7 @@ class GoodReadsCache extends BaseCache
      * @param string $seriesId
      * @return array<mixed>|null
      */
-    public function formatSeries($entry, $urlPrefix, $seriesId): array|null
+    public function formatSeries($entry, $urlPrefix, $seriesId): ?array
     {
         if (is_null($entry) || is_null($urlPrefix)) {
             return $entry;

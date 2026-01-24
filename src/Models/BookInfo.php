@@ -65,7 +65,7 @@ class BookInfo extends BaseInfo
 
     public float|int|null $rating = null;
 
-    public int|null $count = null;
+    public ?int $count = null;
 
     /**
      * Format an date from a date

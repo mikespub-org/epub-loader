@@ -6,3 +6,4 @@ tests/         export-ignore
 app/index.php  export-ignore
 .env.sample    export-ignore
 bin/           export-ignore
+.php-cs-fixer.dist.php export-ignore

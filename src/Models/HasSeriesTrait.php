@@ -51,9 +51,9 @@ trait HasSeriesTrait
     public function setSeriesTitles($seriesList)
     {
         foreach ($this->series as $id => $series) {
-            if (empty($series->id) ||
-                $series->id != $series->title ||
-                empty($seriesList[$series->id])) {
+            if (empty($series->id)
+                || $series->id != $series->title
+                || empty($seriesList[$series->id])) {
                 continue;
             }
             $series->title = $seriesList[$series->id];

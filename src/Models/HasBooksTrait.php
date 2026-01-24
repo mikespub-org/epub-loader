@@ -38,9 +38,9 @@ trait HasBooksTrait
     public function setBookTitles($bookList)
     {
         foreach ($this->books as $id => $book) {
-            if (empty($book->id) ||
-                $book->id != $book->title ||
-                empty($bookList[$book->id])) {
+            if (empty($book->id)
+                || $book->id != $book->title
+                || empty($bookList[$book->id])) {
                 continue;
             }
             $book->title = $bookList[$book->id];
