@@ -8,6 +8,7 @@ namespace Marsender\EPubLoader;
 
 use Marsender\EPubLoader\Models\BaseInfo;
 use PDO;
+use Pdo\Sqlite;
 use Exception;
 
 class DatabaseLoader
@@ -19,7 +20,7 @@ class DatabaseLoader
     public const CREATE_DB_SQL = 'schema/metadata_sqlite.sql';
     public const NOTES_DB_SQL = 'schema/notes_sqlite.sql';
 
-    /** @var PDO|null */
+    /** @var Sqlite|null */
     protected $db = null;
     /** @var string|null */
     protected $dbFileName = null;
@@ -58,7 +59,7 @@ class DatabaseLoader
             // Init the Data Source Name
             $dsn = 'sqlite:' . $dbFileName;
             // Open the database
-            $this->db = new PDO($dsn); // Send an exception if error
+            $this->db = new Sqlite($dsn); // Send an exception if error
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->db->exec('pragma synchronous = off');
             $this->addSqliteFunctions();
@@ -76,7 +77,7 @@ class DatabaseLoader
     protected function addSqliteFunctions()
     {
         // Add title_sort() function for books and series
-        $this->db->sqliteCreateFunction('title_sort', function ($s) {
+        $this->db->createFunction('title_sort', function ($s) {
             return BaseInfo::getTitleSort($s);
         }, 1);
         // Check if we need to add unixepoch() for notes_db.notes
@@ -90,7 +91,7 @@ class DatabaseLoader
         }
         // @todo no support for actual datetime conversion here
         // mtime REAL DEFAULT (unixepoch('subsec')),
-        $this->db->sqliteCreateFunction('unixepoch', function ($s) {
+        $this->db->createFunction('unixepoch', function ($s) {
             if (!empty($s) && $s == 'subsec') {
                 return microtime(true);
             }
@@ -180,7 +181,7 @@ class DatabaseLoader
 
     /**
      * Summary of getDbConnection
-     * @return PDO|null
+     * @return Sqlite|null
      */
     public function getDbConnection()
     {

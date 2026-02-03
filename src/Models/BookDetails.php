@@ -6,20 +6,20 @@
 
 namespace Marsender\EPubLoader\Models;
 
-use PDO;
+use Pdo\Sqlite;
 
 /**
  * BookDetails class gets all book details from the database
  */
 class BookDetails
 {
-    /** @var PDO|null */
+    /** @var Sqlite|null */
     protected $db = null;
 
     /**
      * Set database connection
      *
-     * @param PDO $db
+     * @param Sqlite $db
      */
     public function __construct($db)
     {
@@ -59,8 +59,8 @@ class BookDetails
      */
     public function getBookFields($bookId)
     {
-        // Get books fields
-        // id, title, sort, timestamp, pubdate, series_index, author_sort, isbn, lccn, path, flags, uuid, has_cover, last_modified
+        // Get books fields - flags, isbn and lccn removed from books table in Calibre 9.0+
+        // id, title, sort, timestamp, pubdate, series_index, author_sort, path, uuid, has_cover, last_modified
         // with optional extra 'cover' field for databases created here
         $sql = 'select * from books where id = ?';
         $params = [];

@@ -8,7 +8,7 @@ namespace Marsender\EPubLoader\Workflows\Writers;
 
 use Marsender\EPubLoader\DatabaseLoader;
 use Marsender\EPubLoader\Models\BookInfo;
-use PDO;
+use Pdo\Sqlite;
 use Exception;
 
 abstract class DatabaseWriter extends TargetWriter
@@ -16,7 +16,7 @@ abstract class DatabaseWriter extends TargetWriter
     /** @var DatabaseLoader */
     protected $dbLoader;
     protected string $dbFileName;
-    /** @var PDO|null */
+    /** @var Sqlite|null */
     protected $db = null;
 
     /**

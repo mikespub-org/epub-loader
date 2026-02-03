@@ -125,6 +125,7 @@ class BookInfo extends BaseInfo
      */
     public function fixIdentifiers()
     {
+        // field removed from books table in Calibre 9.0+
         $type = 'isbn';
         if (empty($this->isbn) && !empty($this->identifiers[$type])) {
             $this->isbn = $this->identifiers[$type]['value'];
@@ -132,6 +133,7 @@ class BookInfo extends BaseInfo
             $this->setIdentifier($type, $this->isbn);
         }
 
+        // field removed from books table in Calibre 9.0+
         $type = 'lccn';
         if (empty($this->lccn) && !empty($this->identifiers[$type])) {
             $this->lccn = $this->identifiers[$type]['value'];

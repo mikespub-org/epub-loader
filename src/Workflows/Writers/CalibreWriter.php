@@ -133,9 +133,9 @@ class CalibreWriter extends DatabaseWriter
      */
     public function addBookEntry($bookInfo, $bookId, $coverField = 'cover')
     {
-        // Add the book
-        $fields = ['title', 'sort', 'timestamp', 'pubdate', 'last_modified', 'series_index', 'uuid', 'path', 'has_cover', 'isbn'];
-        $params = [':title', ':sort', ':timestamp', ':pubdate', ':lastmodified', ':serieindex', ':uuid', ':path', ':hascover', ':isbn'];
+        // Add the book - field isbn removed from books table in Calibre 9.0+
+        $fields = ['title', 'sort', 'timestamp', 'pubdate', 'last_modified', 'series_index', 'uuid', 'path', 'has_cover'];
+        $params = [':title', ':sort', ':timestamp', ':pubdate', ':lastmodified', ':serieindex', ':uuid', ':path', ':hascover'];
         if ($bookId) {
             array_unshift($fields, 'id');
             array_unshift($params, ':id');
@@ -179,7 +179,6 @@ class CalibreWriter extends DatabaseWriter
         $stmt->bindParam(':uuid', $bookInfo->uuid);
         $stmt->bindParam(':path', $bookInfo->path);
         $stmt->bindParam(':hascover', $hasCover, PDO::PARAM_INT);
-        $stmt->bindParam(':isbn', $bookInfo->isbn);
         if (!empty($coverField)) {
             $stmt->bindParam(':cover', $cover);
         }
