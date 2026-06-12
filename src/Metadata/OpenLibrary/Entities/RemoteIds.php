@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Entities;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 /**
  * Use patternProperties here for any remote ids
  */
@@ -24,7 +26,7 @@ class RemoteIds
 
     //public function getWikidata(): ?string
     //{
-    //	return $this->wikidata;
+    //    return $this->wikidata;
     //}
 
     /**

@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Details
 {
     public ?string $typename;
@@ -166,7 +168,7 @@ class Details
             $data['publisher'] ?? null,
             $data['isbn'] ?? null,
             $data['isbn13'] ?? null,
-            ($data['language'] ?? null) !== null ? Language::fromJson($data['language']) : null
+            Mapper::getItem($data, 'language', Language::fromJson(...))
         );
     }
 }

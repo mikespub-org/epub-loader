@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Series;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class SeriesHeader
 {
     public ?string $title;
@@ -45,7 +47,7 @@ class SeriesHeader
         return new self(
             $data['title'] ?? null,
             $data['subtitle'] ?? null,
-            ($data['description'] ?? null) !== null ? Description::fromJson($data['description']) : null
+            Mapper::getItem($data, 'description', Description::fromJson(...))
         );
     }
 }

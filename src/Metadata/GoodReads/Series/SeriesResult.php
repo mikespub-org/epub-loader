@@ -6,6 +6,7 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Series;
 
+use Marsender\EPubLoader\Metadata\Mapper;
 use Exception;
 
 class SeriesResult

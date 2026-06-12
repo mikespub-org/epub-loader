@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class GetReviews
 {
     public ?string $typename;
@@ -56,8 +58,8 @@ class GetReviews
         return new self(
             $data['__typename'] ?? null,
             $data['totalCount'] ?? null,
-            ($data['edges'] ?? null) !== null ? array_map(Edges::fromJson(...), $data['edges']) : null,
-            ($data['pageInfo'] ?? null) !== null ? PageInfo::fromJson($data['pageInfo']) : null
+            Mapper::getArray($data, 'edges', Edges::fromJson(...)),
+            Mapper::getItem($data, 'pageInfo', PageInfo::fromJson(...))
         );
     }
 }

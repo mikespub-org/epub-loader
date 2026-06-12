@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class WorkMap
 {
     public ?string $id;
@@ -164,18 +166,18 @@ class WorkMap
             $data['id'] ?? null,
             $data['__typename'] ?? null,
             $data['legacyId'] ?? null,
-            ($data['bestBook'] ?? null) !== null ? BestBook::fromJson($data['bestBook']) : null,
+            Mapper::getItem($data, 'bestBook', BestBook::fromJson(...)),
             $data['choiceAwards'] ?? null,
-            ($data['details'] ?? null) !== null ? Details::fromJson($data['details']) : null,
-            ($data['stats'] ?? null) !== null ? Stats::fromJson($data['stats']) : null,
-            ($data[$quotesKey] ?? null) !== null ? Quotes::fromJson($data[$quotesKey]) : null,
-            ($data[$questionsKey] ?? null) !== null ? Questions::fromJson($data[$questionsKey]) : null,
-            ($data[$topicsKey] ?? null) !== null ? Topics::fromJson($data[$topicsKey]) : null,
+            Mapper::getItem($data, 'details', Details::fromJson(...)),
+            Mapper::getItem($data, 'stats', Stats::fromJson(...)),
+            Mapper::getItem($data, $quotesKey, Quotes::fromJson(...)),
+            Mapper::getItem($data, $questionsKey, Questions::fromJson(...)),
+            Mapper::getItem($data, $topicsKey, Topics::fromJson(...)),
             $data['viewerShelvings'] ?? null,
             $data['viewerShelvingsUrl'] ?? null,
-            ($data['featuredKNH'] ?? null) !== null ? FeaturedKnh::fromJson($data['featuredKNH']) : null,
+            Mapper::getItem($data, 'featuredKNH', FeaturedKnh::fromJson(...)),
             $data['giveaways'] ?? null,
-            ($data['editions'] ?? null) !== null ? Editions::fromJson($data['editions']) : null
+            Mapper::getItem($data, 'editions', Editions::fromJson(...))
         );
     }
 }

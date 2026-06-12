@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class AccessInfo
 {
     public ?string $country;
@@ -100,8 +102,8 @@ class AccessInfo
             $data['embeddable'] ?? null,
             $data['publicDomain'] ?? null,
             $data['textToSpeechPermission'] ?? null,
-            ($data['epub'] ?? null) !== null ? Epub::fromJson($data['epub']) : null,
-            ($data['pdf'] ?? null) !== null ? Pdf::fromJson($data['pdf']) : null,
+            Mapper::getItem($data, 'epub', Epub::fromJson(...)),
+            Mapper::getItem($data, 'pdf', Pdf::fromJson(...)),
             $data['webReaderLink'] ?? null,
             $data['accessViewStatus'] ?? null,
             $data['quoteSharingAllowed'] ?? null

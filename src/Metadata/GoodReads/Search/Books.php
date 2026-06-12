@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Search;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Books
 {
     public ?string $id;

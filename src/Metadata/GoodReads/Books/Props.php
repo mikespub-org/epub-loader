@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Props
 {
     public ?PageProps $pageProps;
@@ -29,7 +31,7 @@ class Props
     public static function fromJson(array $data): self
     {
         return new self(
-            ($data['pageProps'] ?? null) !== null ? PageProps::fromJson($data['pageProps']) : null,
+            Mapper::getItem($data, 'pageProps', PageProps::fromJson(...)),
             $data['__N_SSP'] ?? null
         );
     }

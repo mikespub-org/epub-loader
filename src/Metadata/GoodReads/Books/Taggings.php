@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Taggings
 {
     public ?string $typename;
@@ -30,7 +32,7 @@ class Taggings
     {
         return new self(
             $data['__typename'] ?? null,
-            ($data['tag'] ?? null) !== null ? Tag::fromJson($data['tag']) : null
+            Mapper::getItem($data, 'tag', Tag::fromJson(...))
         );
     }
 }

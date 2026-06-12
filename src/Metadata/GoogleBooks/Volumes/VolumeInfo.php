@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class VolumeInfo
 {
     public ?string $title;
@@ -221,16 +223,16 @@ class VolumeInfo
             $data['publisher'] ?? null,
             $data['publishedDate'] ?? null,
             $data['description'] ?? null,
-            ($data['industryIdentifiers'] ?? null) !== null ? array_map(IndustryIdentifiers::fromJson(...), $data['industryIdentifiers']) : null,
-            ($data['readingModes'] ?? null) !== null ? ReadingModes::fromJson($data['readingModes']) : null,
+            Mapper::getArray($data, 'industryIdentifiers', IndustryIdentifiers::fromJson(...)),
+            Mapper::getItem($data, 'readingModes', ReadingModes::fromJson(...)),
             $data['pageCount'] ?? null,
             $data['printType'] ?? null,
             $data['categories'] ?? null,
             $data['maturityRating'] ?? null,
             $data['allowAnonLogging'] ?? null,
             $data['contentVersion'] ?? null,
-            ($data['panelizationSummary'] ?? null) !== null ? PanelizationSummary::fromJson($data['panelizationSummary']) : null,
-            ($data['imageLinks'] ?? null) !== null ? ImageLinks::fromJson($data['imageLinks']) : null,
+            Mapper::getItem($data, 'panelizationSummary', PanelizationSummary::fromJson(...)),
+            Mapper::getItem($data, 'imageLinks', ImageLinks::fromJson(...)),
             $data['language'] ?? null,
             $data['previewLink'] ?? null,
             $data['infoLink'] ?? null,
@@ -238,7 +240,7 @@ class VolumeInfo
             $data['subtitle'] ?? null,
             $data['averageRating'] ?? null,
             $data['ratingsCount'] ?? null,
-            ($data['seriesInfo'] ?? null) !== null ? SeriesInfo::fromJson($data['seriesInfo']) : null
+            Mapper::getItem($data, 'seriesInfo', SeriesInfo::fromJson(...))
         );
     }
 }

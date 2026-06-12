@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Series;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class SeriesList
 {
     /** @var Series[]|null */
@@ -45,7 +47,7 @@ class SeriesList
     public static function fromJson(array $data): self
     {
         return new self(
-            ($data['series'] ?? null) !== null ? array_map(Series::fromJson(...), $data['series']) : null,
+            Mapper::getArray($data, 'series', Series::fromJson(...)),
             $data['seriesHeaders'] ?? null
         );
     }

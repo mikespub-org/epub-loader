@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Shelving
 {
     public ?string $typename;
@@ -55,7 +57,7 @@ class Shelving
     {
         return new self(
             $data['__typename'] ?? null,
-            ($data['shelf'] ?? null) !== null ? Shelf::fromJson($data['shelf']) : null,
+            Mapper::getItem($data, 'shelf', Shelf::fromJson(...)),
             $data['taggings'] ?? null,
             $data['webUrl'] ?? null
         );

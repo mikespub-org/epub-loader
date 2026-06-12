@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Series;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Series
 {
     public ?bool $isLibrarianView;
@@ -30,7 +32,7 @@ class Series
     {
         return new self(
             $data['isLibrarianView'] ?? null,
-            ($data['book'] ?? null) !== null ? Book::fromJson($data['book']) : null
+            Mapper::getItem($data, 'book', Book::fromJson(...))
         );
     }
 }

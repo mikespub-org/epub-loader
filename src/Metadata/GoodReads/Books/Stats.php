@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Stats
 {
     public ?string $typename;
@@ -80,7 +82,7 @@ class Stats
             $data['ratingsCount'] ?? null,
             $data['ratingsCountDist'] ?? null,
             $data['textReviewsCount'] ?? null,
-            ($data['textReviewsLanguageCounts'] ?? null) !== null ? array_map(TextReviewsLanguageCounts::fromJson(...), $data['textReviewsLanguageCounts']) : null
+            Mapper::getArray($data, 'textReviewsLanguageCounts', TextReviewsLanguageCounts::fromJson(...))
         );
     }
 }

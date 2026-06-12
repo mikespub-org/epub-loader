@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Entities;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class AuthorKeys
 {
     public ?Type $type;
@@ -29,7 +31,7 @@ class AuthorKeys
     public static function fromJson(array $data): self
     {
         return new self(
-            ($data['type'] ?? null) !== null ? Type::fromJson($data['type']) : null,
+            Mapper::getItem($data, 'type', Type::fromJson(...)),
             $data['author'] ?? null
         );
     }

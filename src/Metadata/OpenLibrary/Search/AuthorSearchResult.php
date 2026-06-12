@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Search;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class AuthorSearchResult
 {
     public ?int $numFound;
@@ -61,7 +63,7 @@ class AuthorSearchResult
             $data['numFound'] ?? null,
             $data['start'] ?? null,
             $data['numFoundExact'] ?? null,
-            ($data['docs'] ?? null) !== null ? array_map(AuthorDocs::fromJson(...), $data['docs']) : null
+            Mapper::getArray($data, 'docs', AuthorDocs::fromJson(...))
         );
     }
 }

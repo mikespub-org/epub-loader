@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Entities;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Links
 {
     public ?string $url;
@@ -41,7 +43,7 @@ class Links
         return new self(
             $data['url'] ?? null,
             $data['title'] ?? null,
-            ($data['type'] ?? null) !== null ? Type::fromJson($data['type']) : null
+            Mapper::getItem($data, 'type', Type::fromJson(...))
         );
     }
 }

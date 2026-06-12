@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Entities;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Type
 {
     public ?string $key;

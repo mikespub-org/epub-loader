@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Series;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Book
 {
     public ?string $imageUrl;
@@ -213,9 +215,9 @@ class Book
             $data['numPages'] ?? null,
             $data['avgRating'] ?? null,
             $data['ratingsCount'] ?? null,
-            ($data['author'] ?? null) !== null ? Author::fromJson($data['author']) : null,
+            Mapper::getItem($data, 'author', Author::fromJson(...)),
             $data['kcrPreviewUrl'] ?? null,
-            ($data['description'] ?? null) !== null ? Description::fromJson($data['description']) : null,
+            Mapper::getItem($data, 'description', Description::fromJson(...)),
             $data['textReviewsCount'] ?? null,
             $data['publicationDate'] ?? null,
             $data['toBePublished'] ?? null,

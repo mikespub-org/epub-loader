@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class UserMap
 {
     public ?int $id;
@@ -112,7 +114,7 @@ class UserMap
             $data['viewerRelationshipStatus'] ?? null,
             $data['name'] ?? null,
             $data['webUrl'] ?? null,
-            ($data['contributor'] ?? null) !== null ? Contributor::fromJson($data['contributor']) : null,
+            Mapper::getItem($data, 'contributor', Contributor::fromJson(...)),
             $data['followersCount'] ?? null
         );
     }

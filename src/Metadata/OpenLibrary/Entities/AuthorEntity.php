@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Entities;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class AuthorEntity
 {
     public ?string $title;
@@ -257,19 +259,19 @@ class AuthorEntity
             $data['lccn'] ?? null,
             $data['bio'] ?? null,
             $data['alternate_names'] ?? null,
-            ($data['remote_ids'] ?? null) !== null ? RemoteIds::fromJson($data['remote_ids']) : null,
-            ($data['authors'] ?? null) !== null ? array_map(AuthorKeys::fromJson(...), $data['authors']) : null,
+            Mapper::getItem($data, 'remote_ids', RemoteIds::fromJson(...)),
+            Mapper::getArray($data, 'authors', AuthorKeys::fromJson(...)),
             $data['death_date'] ?? null,
-            ($data['links'] ?? null) !== null ? array_map(Links::fromJson(...), $data['links']) : null,
-            ($data['type'] ?? null) !== null ? Type::fromJson($data['type']) : null,
-            ($data['works'] ?? null) !== null ? array_map(WorkKey::fromJson(...), $data['works']) : null,
+            Mapper::getArray($data, 'links', Links::fromJson(...)),
+            Mapper::getItem($data, 'type', Type::fromJson(...)),
+            Mapper::getArray($data, 'works', WorkKey::fromJson(...)),
             $data['key'] ?? null,
             $data['photos'] ?? null,
             $data['name'] ?? null,
             $data['latest_revision'] ?? null,
             $data['revision'] ?? null,
-            ($data['created'] ?? null) !== null ? Created::fromJson($data['created']) : null,
-            ($data['last_modified'] ?? null) !== null ? LastModified::fromJson($data['last_modified']) : null
+            Mapper::getItem($data, 'created', Created::fromJson(...)),
+            Mapper::getItem($data, 'last_modified', LastModified::fromJson(...))
         );
     }
 }

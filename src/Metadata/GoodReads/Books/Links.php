@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Links
 {
     public ?string $typename;
@@ -76,11 +78,11 @@ class Links
     {
         return new self(
             $data['__typename'] ?? null,
-            ($data['primaryAffiliateLink'] ?? null) !== null ? PrimaryAffiliateLink::fromJson($data['primaryAffiliateLink']) : null,
-            ($data['secondaryAffiliateLinks'] ?? null) !== null ? array_map(SecondaryAffiliateLinks::fromJson(...), $data['secondaryAffiliateLinks']) : null,
-            ($data['libraryLinks'] ?? null) !== null ? array_map(LibraryLinks::fromJson(...), $data['libraryLinks']) : null,
+            Mapper::getItem($data, 'primaryAffiliateLink', PrimaryAffiliateLink::fromJson(...)),
+            Mapper::getArray($data, 'secondaryAffiliateLinks', SecondaryAffiliateLinks::fromJson(...)),
+            Mapper::getArray($data, 'libraryLinks', LibraryLinks::fromJson(...)),
             $data['overflowPageUrl'] ?? null,
-            ($data['seriesLink'] ?? null) !== null ? SeriesLink::fromJson($data['seriesLink']) : null
+            Mapper::getItem($data, 'seriesLink', SeriesLink::fromJson(...))
         );
     }
 }

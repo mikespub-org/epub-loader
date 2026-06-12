@@ -7,6 +7,7 @@
 namespace Marsender\EPubLoader\Metadata\GoogleBooks\Search;
 
 use Marsender\EPubLoader\Metadata\GoogleBooks\Volumes\Volume;
+use Marsender\EPubLoader\Metadata\Mapper;
 
 class SearchResult
 {
@@ -54,7 +55,7 @@ class SearchResult
         return new self(
             $data['kind'] ?? null,
             $data['totalItems'] ?? null,
-            ($data['items'] ?? null) !== null ? array_map(Volume::fromJson(...), $data['items']) : null
+            Mapper::getArray($data, 'items', Volume::fromJson(...))
         );
     }
 }

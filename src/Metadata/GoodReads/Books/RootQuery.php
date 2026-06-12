@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class RootQuery
 {
     public ?string $typename;
@@ -83,11 +85,11 @@ class RootQuery
         $getPageBannerKey = reset($getPageBannerKeys);
         return new self(
             $data['__typename'] ?? null,
-            ($data[$getAdsTargetingKey] ?? null) !== null ? GetAdsTargeting::fromJson($data[$getAdsTargetingKey]) : null,
-            ($data['getSiteHeaderBanner'] ?? null) !== null ? GetSiteHeaderBanner::fromJson($data['getSiteHeaderBanner']) : null,
-            ($data[$getBookByLegacyIdKey] ?? null) !== null ? GetBookByLegacyId::fromJson($data[$getBookByLegacyIdKey]) : null,
-            ($data[$getPageBannerKey] ?? null) !== null ? GetPageBanner::fromJson($data[$getPageBannerKey]) : null,
-            ($data['getReviews'] ?? null) !== null ? GetReviews::fromJson($data['getReviews']) : null
+            Mapper::getItem($data, $getAdsTargetingKey, GetAdsTargeting::fromJson(...)),
+            Mapper::getItem($data, 'getSiteHeaderBanner', GetSiteHeaderBanner::fromJson(...)),
+            Mapper::getItem($data, $getBookByLegacyIdKey, GetBookByLegacyId::fromJson(...)),
+            Mapper::getItem($data, $getPageBannerKey, GetPageBanner::fromJson(...)),
+            Mapper::getItem($data, 'getReviews', GetReviews::fromJson(...))
         );
     }
 }

@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Search;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class WorkSearchResult
 {
     public ?int $numFound;
@@ -85,7 +87,7 @@ class WorkSearchResult
             $data['numFound'] ?? null,
             $data['start'] ?? null,
             $data['numFoundExact'] ?? null,
-            ($data['docs'] ?? null) !== null ? array_map(WorkDocs::fromJson(...), $data['docs']) : null,
+            Mapper::getArray($data, 'docs', WorkDocs::fromJson(...)),
             $data['num_found'] ?? null,
             $data['q'] ?? null,
             $data['offset'] ?? null

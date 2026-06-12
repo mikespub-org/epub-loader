@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class ReviewMap
 {
     public ?string $id;
@@ -129,7 +131,7 @@ class ReviewMap
         return new self(
             $data['id'] ?? null,
             $data['__typename'] ?? null,
-            ($data['creator'] ?? null) !== null ? Creator::fromJson($data['creator']) : null,
+            Mapper::getItem($data, 'creator', Creator::fromJson(...)),
             $data['recommendFor'] ?? null,
             $data['updatedAt'] ?? null,
             $data['createdAt'] ?? null,
@@ -137,7 +139,7 @@ class ReviewMap
             $data['lastRevisionAt'] ?? null,
             $data['text'] ?? null,
             $data['rating'] ?? null,
-            ($data['shelving'] ?? null) !== null ? Shelving::fromJson($data['shelving']) : null,
+            Mapper::getItem($data, 'shelving', Shelving::fromJson(...)),
             $data['likeCount'] ?? null,
             $data['viewerHasLiked'] ?? null,
             $data['commentCount'] ?? null

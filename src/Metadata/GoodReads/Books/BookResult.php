@@ -7,6 +7,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class BookResult
 {
     public ?Props $props;
@@ -99,11 +101,11 @@ class BookResult
     public static function fromJson(array $data): self
     {
         return new self(
-            ($data['props'] ?? null) !== null ? Props::fromJson($data['props']) : null,
+            Mapper::getItem($data, 'props', Props::fromJson(...)),
             $data['page'] ?? null,
-            ($data['query'] ?? null) !== null ? Query::fromJson($data['query']) : null,
+            Mapper::getItem($data, 'query', Query::fromJson(...)),
             $data['buildId'] ?? null,
-            ($data['runtimeConfig'] ?? null) !== null ? RuntimeConfig::fromJson($data['runtimeConfig']) : null,
+            Mapper::getItem($data, 'runtimeConfig', RuntimeConfig::fromJson(...)),
             $data['isFallback'] ?? null,
             $data['gssp'] ?? null,
             $data['customServer'] ?? null,

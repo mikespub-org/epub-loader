@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class PageProps
 {
     public ?Params $params;
@@ -71,12 +73,12 @@ class PageProps
     public static function fromJson(array $data): self
     {
         return new self(
-            ($data['params'] ?? null) !== null ? Params::fromJson($data['params']) : null,
+            Mapper::getItem($data, 'params', Params::fromJson(...)),
             $data['jwtToken'] ?? null,
             $data['dataSource'] ?? null,
-            ($data['apolloState'] ?? null) !== null ? ApolloState::fromJson($data['apolloState']) : null,
-            ($data['authContextParams'] ?? null) !== null ? AuthContextParams::fromJson($data['authContextParams']) : null,
-            ($data['userAgentContextParams'] ?? null) !== null ? UserAgentContextParams::fromJson($data['userAgentContextParams']) : null,
+            Mapper::getItem($data, 'apolloState', ApolloState::fromJson(...)),
+            Mapper::getItem($data, 'authContextParams', AuthContextParams::fromJson(...)),
+            Mapper::getItem($data, 'userAgentContextParams', UserAgentContextParams::fromJson(...)),
             $data['userAgent'] ?? null
         );
     }

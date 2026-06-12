@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class BookMap
 {
     public ?string $id;
@@ -192,17 +194,17 @@ class BookMap
             $data['webUrl'] ?? null,
             $data['description'] ?? null,
             $data['description({"stripped":true})'] ?? null,
-            ($data['primaryContributorEdge'] ?? null) !== null ? PrimaryContributorEdge::fromJson($data['primaryContributorEdge']) : null,
+            Mapper::getItem($data, 'primaryContributorEdge', PrimaryContributorEdge::fromJson(...)),
             $data['secondaryContributorEdges'] ?? null,
             $data['imageUrl'] ?? null,
-            ($data['bookSeries'] ?? null) !== null ? array_map(BookSeries::fromJson(...), $data['bookSeries']) : null,
-            ($data['bookGenres'] ?? null) !== null ? array_map(BookGenres::fromJson(...), $data['bookGenres']) : null,
-            ($data['details'] ?? null) !== null ? Details::fromJson($data['details']) : null,
-            ($data['work'] ?? null) !== null ? Work::fromJson($data['work']) : null,
+            Mapper::getArray($data, 'bookSeries', BookSeries::fromJson(...)),
+            Mapper::getArray($data, 'bookGenres', BookGenres::fromJson(...)),
+            Mapper::getItem($data, 'details', Details::fromJson(...)),
+            Mapper::getItem($data, 'work', Work::fromJson(...)),
             $data['reviewEditUrl'] ?? null,
-            ($data['featureFlags'] ?? null) !== null ? FeatureFlags::fromJson($data['featureFlags']) : null,
+            Mapper::getItem($data, 'featureFlags', FeatureFlags::fromJson(...)),
             $data['viewerShelving'] ?? null,
-            ($data['links({})'] ?? null) !== null ? Links::fromJson($data['links({})']) : null
+            Mapper::getItem($data, 'links({})', Links::fromJson(...))
         );
     }
 }

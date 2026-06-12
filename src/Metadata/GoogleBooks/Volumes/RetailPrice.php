@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class RetailPrice
 {
     public ?float $amount;

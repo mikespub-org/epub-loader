@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class SeriesInfo
 {
     public ?string $kind;
@@ -57,7 +59,7 @@ class SeriesInfo
             $data['kind'] ?? null,
             $data['shortSeriesBookTitle'] ?? null,
             $data['bookDisplayNumber'] ?? null,
-            ($data['volumeSeries'] ?? null) !== null ? array_map(VolumeSeries::fromJson(...), $data['volumeSeries']) : null
+            Mapper::getArray($data, 'volumeSeries', VolumeSeries::fromJson(...))
         );
     }
 }

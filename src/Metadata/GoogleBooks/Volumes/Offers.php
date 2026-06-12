@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class Offers
 {
     public ?int $finskyOfferType;
@@ -40,8 +42,8 @@ class Offers
     {
         return new self(
             $data['finskyOfferType'] ?? null,
-            ($data['listPrice'] ?? null) !== null ? OfferListPrice::fromJson($data['listPrice']) : null,
-            ($data['retailPrice'] ?? null) !== null ? OfferRetailPrice::fromJson($data['retailPrice']) : null
+            Mapper::getItem($data, 'listPrice', OfferListPrice::fromJson(...)),
+            Mapper::getItem($data, 'retailPrice', OfferRetailPrice::fromJson(...))
         );
     }
 }

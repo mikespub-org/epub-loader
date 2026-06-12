@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoogleBooks\Volumes;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class SaleInfo
 {
     public ?string $country;
@@ -81,10 +83,10 @@ class SaleInfo
             $data['country'] ?? null,
             $data['saleability'] ?? null,
             $data['isEbook'] ?? null,
-            ($data['listPrice'] ?? null) !== null ? ListPrice::fromJson($data['listPrice']) : null,
-            ($data['retailPrice'] ?? null) !== null ? RetailPrice::fromJson($data['retailPrice']) : null,
+            Mapper::getItem($data, 'listPrice', ListPrice::fromJson(...)),
+            Mapper::getItem($data, 'retailPrice', RetailPrice::fromJson(...)),
             $data['buyLink'] ?? null,
-            ($data['offers'] ?? null) !== null ? array_map(Offers::fromJson(...), $data['offers']) : null
+            Mapper::getArray($data, 'offers', Offers::fromJson(...))
         );
     }
 }

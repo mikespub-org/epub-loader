@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Entities;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class WorkEntity
 {
     /** @todo some entities contain an array with ['type' => ..., 'value' => ...] */
@@ -170,19 +172,19 @@ class WorkEntity
     {
         return new self(
             $data['description'] ?? null,
-            ($data['links'] ?? null) !== null ? array_map(Links::fromJson(...), $data['links']) : null,
+            Mapper::getArray($data, 'links', Links::fromJson(...)),
             $data['title'] ?? null,
             $data['covers'] ?? null,
             $data['subject_places'] ?? null,
             $data['subjects'] ?? null,
             $data['key'] ?? null,
-            ($data['authors'] ?? null) !== null ? array_map(Authors::fromJson(...), $data['authors']) : null,
+            Mapper::getArray($data, 'authors', Authors::fromJson(...)),
             $data['subject_times'] ?? null,
-            ($data['type'] ?? null) !== null ? Type::fromJson($data['type']) : null,
+            Mapper::getItem($data, 'type', Type::fromJson(...)),
             $data['latest_revision'] ?? null,
             $data['revision'] ?? null,
-            ($data['created'] ?? null) !== null ? Created::fromJson($data['created']) : null,
-            ($data['last_modified'] ?? null) !== null ? LastModified::fromJson($data['last_modified']) : null
+            Mapper::getItem($data, 'created', Created::fromJson(...)),
+            Mapper::getItem($data, 'last_modified', LastModified::fromJson(...))
         );
     }
 }

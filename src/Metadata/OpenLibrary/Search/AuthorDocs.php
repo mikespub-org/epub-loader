@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\OpenLibrary\Search;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class AuthorDocs
 {
     public ?string $key;

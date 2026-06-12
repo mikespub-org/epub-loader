@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Series;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class PaginationControls
 {
     public ?int $numWorks;

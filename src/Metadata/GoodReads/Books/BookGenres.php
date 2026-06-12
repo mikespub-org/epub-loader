@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class BookGenres
 {
     public ?string $typename;
@@ -30,7 +32,7 @@ class BookGenres
     {
         return new self(
             $data['__typename'] ?? null,
-            ($data['genre'] ?? null) !== null ? Genre::fromJson($data['genre']) : null
+            Mapper::getItem($data, 'genre', Genre::fromJson(...))
         );
     }
 }

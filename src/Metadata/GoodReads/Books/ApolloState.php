@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class ApolloState
 {
     public ?RootQuery $rootQuery;
@@ -106,35 +108,35 @@ class ApolloState
         $contributorMap = [];
         $contributorMapKeys = preg_grep('/^Contributor:/', array_keys($data)) ?: [];
         foreach ($contributorMapKeys as $key) {
-            $contributorMap[$key] = ($data[$key] ?? null) !== null ? ContributorMap::fromJson($data[$key]) : null;
+            $contributorMap[$key] = Mapper::getItem($data, $key, ContributorMap::fromJson(...));
         }
         $seriesMap = [];
         $seriesMapKeys = preg_grep('/^Series:/', array_keys($data)) ?: [];
         foreach ($seriesMapKeys as $key) {
-            $seriesMap[$key] = ($data[$key] ?? null) !== null ? SeriesMap::fromJson($data[$key]) : null;
+            $seriesMap[$key] = Mapper::getItem($data, $key, SeriesMap::fromJson(...));
         }
         $bookMap = [];
         $bookMapKeys = preg_grep('/^Book:/', array_keys($data)) ?: [];
         foreach ($bookMapKeys as $key) {
-            $bookMap[$key] = ($data[$key] ?? null) !== null ? BookMap::fromJson($data[$key]) : null;
+            $bookMap[$key] = Mapper::getItem($data, $key, BookMap::fromJson(...));
         }
         $workMap = [];
         $workMapKeys = preg_grep('/^Work:/', array_keys($data)) ?: [];
         foreach ($workMapKeys as $key) {
-            $workMap[$key] = ($data[$key] ?? null) !== null ? WorkMap::fromJson($data[$key]) : null;
+            $workMap[$key] = Mapper::getItem($data, $key, WorkMap::fromJson(...));
         }
         $userMap = [];
         $userMapKeys = preg_grep('/^User:/', array_keys($data)) ?: [];
         foreach ($userMapKeys as $key) {
-            $userMap[$key] = ($data[$key] ?? null) !== null ? UserMap::fromJson($data[$key]) : null;
+            $userMap[$key] = Mapper::getItem($data, $key, UserMap::fromJson(...));
         }
         $reviewMap = [];
         $reviewMapKeys = preg_grep('/^Review:/', array_keys($data)) ?: [];
         foreach ($reviewMapKeys as $key) {
-            $reviewMap[$key] = ($data[$key] ?? null) !== null ? ReviewMap::fromJson($data[$key]) : null;
+            $reviewMap[$key] = Mapper::getItem($data, $key, ReviewMap::fromJson(...));
         }
         return new self(
-            ($data['ROOT_QUERY'] ?? null) !== null ? RootQuery::fromJson($data['ROOT_QUERY']) : null,
+            Mapper::getItem($data, 'ROOT_QUERY', RootQuery::fromJson(...)),
             $contributorMap,
             $seriesMap,
             $bookMap,

@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Books;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class PrimaryContributorEdge
 {
     public ?string $typename;
@@ -40,7 +42,7 @@ class PrimaryContributorEdge
     {
         return new self(
             $data['__typename'] ?? null,
-            ($data['node'] ?? null) !== null ? Node::fromJson($data['node']) : null,
+            Mapper::getItem($data, 'node', Node::fromJson(...)),
             $data['role'] ?? null
         );
     }

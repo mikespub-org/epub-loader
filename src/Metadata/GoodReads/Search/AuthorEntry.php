@@ -2,6 +2,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Search;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class AuthorEntry
 {
     public ?string $id;
@@ -48,7 +50,7 @@ class AuthorEntry
         return new self(
             $data['id'] ?? null,
             $data['name'] ?? null,
-            ($data['books'] ?? null) !== null ? array_map(Books::fromJson(...), $data['books']) : null
+            Mapper::getArray($data, 'books', Books::fromJson(...))
         );
     }
 }

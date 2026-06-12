@@ -7,6 +7,8 @@
 
 namespace Marsender\EPubLoader\Metadata\GoodReads\Search;
 
+use Marsender\EPubLoader\Metadata\Mapper;
+
 class SearchResult
 {
     /** @var array<string, AuthorEntry>|null */
@@ -42,7 +44,7 @@ class SearchResult
         $properties = [];
         $propertiesKeys = preg_grep('/^\d+/', array_keys($data)) ?: [];
         foreach ($propertiesKeys as $key) {
-            $properties[$key] = ($data[$key] ?? null) !== null ? AuthorEntry::fromJson($data[$key]) : null;
+            $properties[$key] = Mapper::getItem($data, $key, AuthorEntry::fromJson(...));
         }
         return new self(
             $properties
