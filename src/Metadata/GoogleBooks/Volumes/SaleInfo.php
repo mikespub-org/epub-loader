@@ -84,9 +84,7 @@ class SaleInfo
             ($data['listPrice'] ?? null) !== null ? ListPrice::fromJson($data['listPrice']) : null,
             ($data['retailPrice'] ?? null) !== null ? RetailPrice::fromJson($data['retailPrice']) : null,
             $data['buyLink'] ?? null,
-            ($data['offers'] ?? null) !== null ? array_map(static function ($data) {
-                return Offers::fromJson($data);
-            }, $data['offers']) : null
+            ($data['offers'] ?? null) !== null ? array_map(Offers::fromJson(...), $data['offers']) : null
         );
     }
 }

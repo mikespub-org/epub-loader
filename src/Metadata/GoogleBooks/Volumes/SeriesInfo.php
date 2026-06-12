@@ -57,9 +57,7 @@ class SeriesInfo
             $data['kind'] ?? null,
             $data['shortSeriesBookTitle'] ?? null,
             $data['bookDisplayNumber'] ?? null,
-            ($data['volumeSeries'] ?? null) !== null ? array_map(static function ($data) {
-                return VolumeSeries::fromJson($data);
-            }, $data['volumeSeries']) : null
+            ($data['volumeSeries'] ?? null) !== null ? array_map(VolumeSeries::fromJson(...), $data['volumeSeries']) : null
         );
     }
 }

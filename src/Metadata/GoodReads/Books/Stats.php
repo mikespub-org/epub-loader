@@ -80,9 +80,7 @@ class Stats
             $data['ratingsCount'] ?? null,
             $data['ratingsCountDist'] ?? null,
             $data['textReviewsCount'] ?? null,
-            ($data['textReviewsLanguageCounts'] ?? null) !== null ? array_map(static function ($data) {
-                return TextReviewsLanguageCounts::fromJson($data);
-            }, $data['textReviewsLanguageCounts']) : null
+            ($data['textReviewsLanguageCounts'] ?? null) !== null ? array_map(TextReviewsLanguageCounts::fromJson(...), $data['textReviewsLanguageCounts']) : null
         );
     }
 }

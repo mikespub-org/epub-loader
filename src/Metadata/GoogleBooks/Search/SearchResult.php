@@ -54,9 +54,7 @@ class SearchResult
         return new self(
             $data['kind'] ?? null,
             $data['totalItems'] ?? null,
-            ($data['items'] ?? null) !== null ? array_map(static function ($data) {
-                return Volume::fromJson($data);
-            }, $data['items']) : null
+            ($data['items'] ?? null) !== null ? array_map(Volume::fromJson(...), $data['items']) : null
         );
     }
 }

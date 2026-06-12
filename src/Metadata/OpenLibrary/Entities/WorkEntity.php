@@ -170,17 +170,13 @@ class WorkEntity
     {
         return new self(
             $data['description'] ?? null,
-            ($data['links'] ?? null) !== null ? array_map(static function ($data) {
-                return Links::fromJson($data);
-            }, $data['links']) : null,
+            ($data['links'] ?? null) !== null ? array_map(Links::fromJson(...), $data['links']) : null,
             $data['title'] ?? null,
             $data['covers'] ?? null,
             $data['subject_places'] ?? null,
             $data['subjects'] ?? null,
             $data['key'] ?? null,
-            ($data['authors'] ?? null) !== null ? array_map(static function ($data) {
-                return Authors::fromJson($data);
-            }, $data['authors']) : null,
+            ($data['authors'] ?? null) !== null ? array_map(Authors::fromJson(...), $data['authors']) : null,
             $data['subject_times'] ?? null,
             ($data['type'] ?? null) !== null ? Type::fromJson($data['type']) : null,
             $data['latest_revision'] ?? null,

@@ -195,12 +195,8 @@ class BookMap
             ($data['primaryContributorEdge'] ?? null) !== null ? PrimaryContributorEdge::fromJson($data['primaryContributorEdge']) : null,
             $data['secondaryContributorEdges'] ?? null,
             $data['imageUrl'] ?? null,
-            ($data['bookSeries'] ?? null) !== null ? array_map(static function ($data) {
-                return BookSeries::fromJson($data);
-            }, $data['bookSeries']) : null,
-            ($data['bookGenres'] ?? null) !== null ? array_map(static function ($data) {
-                return BookGenres::fromJson($data);
-            }, $data['bookGenres']) : null,
+            ($data['bookSeries'] ?? null) !== null ? array_map(BookSeries::fromJson(...), $data['bookSeries']) : null,
+            ($data['bookGenres'] ?? null) !== null ? array_map(BookGenres::fromJson(...), $data['bookGenres']) : null,
             ($data['details'] ?? null) !== null ? Details::fromJson($data['details']) : null,
             ($data['work'] ?? null) !== null ? Work::fromJson($data['work']) : null,
             $data['reviewEditUrl'] ?? null,

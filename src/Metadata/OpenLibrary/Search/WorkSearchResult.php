@@ -85,9 +85,7 @@ class WorkSearchResult
             $data['numFound'] ?? null,
             $data['start'] ?? null,
             $data['numFoundExact'] ?? null,
-            ($data['docs'] ?? null) !== null ? array_map(static function ($data) {
-                return WorkDocs::fromJson($data);
-            }, $data['docs']) : null,
+            ($data['docs'] ?? null) !== null ? array_map(WorkDocs::fromJson(...), $data['docs']) : null,
             $data['num_found'] ?? null,
             $data['q'] ?? null,
             $data['offset'] ?? null

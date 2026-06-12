@@ -61,9 +61,7 @@ class AuthorSearchResult
             $data['numFound'] ?? null,
             $data['start'] ?? null,
             $data['numFoundExact'] ?? null,
-            ($data['docs'] ?? null) !== null ? array_map(static function ($data) {
-                return AuthorDocs::fromJson($data);
-            }, $data['docs']) : null
+            ($data['docs'] ?? null) !== null ? array_map(AuthorDocs::fromJson(...), $data['docs']) : null
         );
     }
 }

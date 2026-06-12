@@ -56,9 +56,7 @@ class GetReviews
         return new self(
             $data['__typename'] ?? null,
             $data['totalCount'] ?? null,
-            ($data['edges'] ?? null) !== null ? array_map(static function ($data) {
-                return Edges::fromJson($data);
-            }, $data['edges']) : null,
+            ($data['edges'] ?? null) !== null ? array_map(Edges::fromJson(...), $data['edges']) : null,
             ($data['pageInfo'] ?? null) !== null ? PageInfo::fromJson($data['pageInfo']) : null
         );
     }

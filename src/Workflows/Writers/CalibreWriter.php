@@ -215,7 +215,7 @@ class CalibreWriter extends DatabaseWriter
         $sql = 'update books set ' . $coverField . '=:cover where id=:id';
         try {
             $stmt = $this->db->prepare($sql);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return $idBook;
         }
         $stmt->bindParam(':cover', $bookInfo->cover);
@@ -467,7 +467,7 @@ class CalibreWriter extends DatabaseWriter
         $sql = 'update series set ' . $imageField . '=:image where id=:id';
         try {
             $stmt = $this->db->prepare($sql);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return $idSerie;
         }
         $stmt->bindParam(':image', $seriesInfo->image);
@@ -612,7 +612,7 @@ class CalibreWriter extends DatabaseWriter
         $sql = 'update authors set ' . $imageField . '=:image where id=:id';
         try {
             $stmt = $this->db->prepare($sql);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return $idAuthor;
         }
         $stmt->bindParam(':image', $authorInfo->image);

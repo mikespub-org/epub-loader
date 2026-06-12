@@ -221,9 +221,7 @@ class VolumeInfo
             $data['publisher'] ?? null,
             $data['publishedDate'] ?? null,
             $data['description'] ?? null,
-            ($data['industryIdentifiers'] ?? null) !== null ? array_map(static function ($data) {
-                return IndustryIdentifiers::fromJson($data);
-            }, $data['industryIdentifiers']) : null,
+            ($data['industryIdentifiers'] ?? null) !== null ? array_map(IndustryIdentifiers::fromJson(...), $data['industryIdentifiers']) : null,
             ($data['readingModes'] ?? null) !== null ? ReadingModes::fromJson($data['readingModes']) : null,
             $data['pageCount'] ?? null,
             $data['printType'] ?? null,

@@ -77,12 +77,8 @@ class Links
         return new self(
             $data['__typename'] ?? null,
             ($data['primaryAffiliateLink'] ?? null) !== null ? PrimaryAffiliateLink::fromJson($data['primaryAffiliateLink']) : null,
-            ($data['secondaryAffiliateLinks'] ?? null) !== null ? array_map(static function ($data) {
-                return SecondaryAffiliateLinks::fromJson($data);
-            }, $data['secondaryAffiliateLinks']) : null,
-            ($data['libraryLinks'] ?? null) !== null ? array_map(static function ($data) {
-                return LibraryLinks::fromJson($data);
-            }, $data['libraryLinks']) : null,
+            ($data['secondaryAffiliateLinks'] ?? null) !== null ? array_map(SecondaryAffiliateLinks::fromJson(...), $data['secondaryAffiliateLinks']) : null,
+            ($data['libraryLinks'] ?? null) !== null ? array_map(LibraryLinks::fromJson(...), $data['libraryLinks']) : null,
             $data['overflowPageUrl'] ?? null,
             ($data['seriesLink'] ?? null) !== null ? SeriesLink::fromJson($data['seriesLink']) : null
         );

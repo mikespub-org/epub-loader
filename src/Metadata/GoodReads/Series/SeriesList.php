@@ -45,9 +45,7 @@ class SeriesList
     public static function fromJson(array $data): self
     {
         return new self(
-            ($data['series'] ?? null) !== null ? array_map(static function ($data) {
-                return Series::fromJson($data);
-            }, $data['series']) : null,
+            ($data['series'] ?? null) !== null ? array_map(Series::fromJson(...), $data['series']) : null,
             $data['seriesHeaders'] ?? null
         );
     }

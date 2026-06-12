@@ -16,7 +16,7 @@ class DataCaptureTest extends BaseTestCase
         $capture->analyze($this);
         $report = $capture->report();
 
-        $expected = $this::class;
+        $expected = static::class;
         $this->assertEquals($expected, $report['$comment']);
     }
 

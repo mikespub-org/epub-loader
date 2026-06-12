@@ -48,9 +48,7 @@ class AuthorEntry
         return new self(
             $data['id'] ?? null,
             $data['name'] ?? null,
-            ($data['books'] ?? null) !== null ? array_map(static function ($data) {
-                return Books::fromJson($data);
-            }, $data['books']) : null
+            ($data['books'] ?? null) !== null ? array_map(Books::fromJson(...), $data['books']) : null
         );
     }
 }

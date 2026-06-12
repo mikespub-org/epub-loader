@@ -258,17 +258,11 @@ class AuthorEntity
             $data['bio'] ?? null,
             $data['alternate_names'] ?? null,
             ($data['remote_ids'] ?? null) !== null ? RemoteIds::fromJson($data['remote_ids']) : null,
-            ($data['authors'] ?? null) !== null ? array_map(static function ($data) {
-                return AuthorKeys::fromJson($data);
-            }, $data['authors']) : null,
+            ($data['authors'] ?? null) !== null ? array_map(AuthorKeys::fromJson(...), $data['authors']) : null,
             $data['death_date'] ?? null,
-            ($data['links'] ?? null) !== null ? array_map(static function ($data) {
-                return Links::fromJson($data);
-            }, $data['links']) : null,
+            ($data['links'] ?? null) !== null ? array_map(Links::fromJson(...), $data['links']) : null,
             ($data['type'] ?? null) !== null ? Type::fromJson($data['type']) : null,
-            ($data['works'] ?? null) !== null ? array_map(static function ($data) {
-                return WorkKey::fromJson($data);
-            }, $data['works']) : null,
+            ($data['works'] ?? null) !== null ? array_map(WorkKey::fromJson(...), $data['works']) : null,
             $data['key'] ?? null,
             $data['photos'] ?? null,
             $data['name'] ?? null,
