@@ -3,8 +3,21 @@
 1.5.x - 2024xxxx Maintenance release for 1.x (PHP >= 7.4)
   * ...
 
-3.x.x - 2025xxxx
+4.x.x - 2026xxxx
   * ...
+
+4.0.6 - 20260612 Fix phpstan issues
+  * Update packages + fix phpstan issues
+
+4.0.3 - 20260203 Support Calibre 9.0+ database
+  * Use Pdo\Sqlite for PHP 8.4+
+  * Update Calibre db schema for version 9.0+
+  * Define and apply php-cs-fixer rules
+
+4.0.0 - 20251127 Move to PHP 8.4
+  * Update PHP dependency to version 8.4
+  * Update packages + fix test
+  * Prepare for Symfony 7.4
 
 3.6.4 - 20250517 Experiment with Rclone + styles
   * Use external stylesheet + adapt based on Claude

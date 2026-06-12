@@ -190,7 +190,7 @@ class GoogleBooksCache extends BaseCache
                 'titles' => $this->getTitleQuery($entry, $lang),
                 'series' => $this->getSeriesQuery($entry, $lang),
                 'volumes' => $this->getVolume($entry, $lang),
-                default => throw new Exception('Invalid cache type'),
+                // default => throw new Exception('Invalid cache type'),
             };
             $result[$entry] = [
                 'id' => $entry,
@@ -233,7 +233,7 @@ class GoogleBooksCache extends BaseCache
                 'titles' => $this->formatSearch($entry, $urlPrefix),
                 'series' => $this->formatSearch($entry, $urlPrefix),
                 'volumes' => $this->formatVolume($entry, $urlPrefix),
-                default => $entry,
+                // default => $entry,
             };
         }
         return null;
@@ -255,7 +255,7 @@ class GoogleBooksCache extends BaseCache
             $result->items[$id] = GoogleBooksImport::load($this->cacheDir . '/google', $volume, $this);
             $volumeId = $result->items[$id]->id;
             // @todo language taken from search result here!?
-            $lang = $result->items[$id]->language ?? 'en';
+            $lang = $result->items[$id]->language ?: 'en';
             $cacheFile = $this->getVolume($volumeId, $lang);
             if ($this->hasCache($cacheFile)) {
                 $result->items[$id]->id = "<a href='{$urlPrefix}volumes?entry={$volumeId}.{$lang}'>{$volumeId}</a>";

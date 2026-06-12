@@ -249,7 +249,7 @@ class GoodReadsCache extends BaseCache
                 'series' => $this->getSeries($entry),
                 // we need to urldecode() first here
                 'search' => $this->getSearchQuery(urldecode($entry)),
-                default => throw new Exception('Invalid cache type'),
+                // default => throw new Exception('Invalid cache type'),
             };
             $result[$entry] = [
                 'id' => $entry,
@@ -287,7 +287,7 @@ class GoodReadsCache extends BaseCache
                 // id is not available in JSON data - this must be set by caller
                 'series' => $this->formatSeries($entry, $urlPrefix, $cacheEntry),
                 'search' => $this->formatSearch($entry, $urlPrefix),
-                default => $entry,
+                // default => $entry,
             };
         }
         return null;
@@ -365,7 +365,7 @@ class GoodReadsCache extends BaseCache
         $bookId = $bookInfo->id;
         $entryId = GoodReadsMatch::bookid($bookId);
         $cacheFile = $this->getBook($entryId);
-        $url = $bookInfo->uri ?? $bookId;
+        $url = $bookInfo->uri ?: $bookId;
         if ($this->hasCache($cacheFile)) {
             $bookInfo->uri = "<a href='{$urlPrefix}book/show?entry={$bookId}'>{$url}</a>";
         } else {

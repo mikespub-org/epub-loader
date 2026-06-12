@@ -204,7 +204,7 @@ class OpenLibraryCache extends BaseCache
                 'works/author' => $this->getAuthorWork($entry),
                 'entities/A' => $this->getAuthor($entry),
                 'entities/W' => $this->getWork($entry),
-                default => throw new Exception('Invalid cache type'),
+                // default => throw new Exception('Invalid cache type'),
             };
             $result[$entry] = [
                 'id' => $entry,

@@ -288,7 +288,7 @@ class WikiDataCache extends BaseCache
                 'series/title' => $this->getSeriesQuery($entry),
                 'series/author' => $this->getAuthorSeries($entry),
                 'entities' => $this->getEntity($entry),
-                default => throw new Exception('Invalid cache type'),
+                // default => throw new Exception('Invalid cache type'),
             };
             $result[$entry] = [
                 'id' => $entry,
@@ -331,7 +331,7 @@ class WikiDataCache extends BaseCache
                 'series/title' => $this->formatSearch($entry, $urlPrefix),
                 'series/author' => $this->formatSearch($entry, $urlPrefix),
                 'entities' => $this->formatEntity($entry, $urlPrefix),
-                default => $entry,
+                // default => $entry,
             };
         }
         return null;
