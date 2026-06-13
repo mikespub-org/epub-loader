@@ -40,10 +40,12 @@ class Topics
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['webUrl'] ?? null,
-            $data['totalCount'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'webUrl' => null,
+            'totalCount' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

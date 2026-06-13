@@ -30,9 +30,11 @@ class Edges
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            Mapper::getItem($data, 'node', Node::fromJson(...))
-        );
+        $keys = [
+            '__typename' => null,
+            'node' => Node::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

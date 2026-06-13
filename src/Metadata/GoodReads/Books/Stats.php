@@ -76,13 +76,15 @@ class Stats
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['averageRating'] ?? null,
-            $data['ratingsCount'] ?? null,
-            $data['ratingsCountDist'] ?? null,
-            $data['textReviewsCount'] ?? null,
-            Mapper::getArray($data, 'textReviewsLanguageCounts', TextReviewsLanguageCounts::fromJson(...))
-        );
+        $keys = [
+            '__typename' => null,
+            'averageRating' => null,
+            'ratingsCount' => null,
+            'ratingsCountDist' => null,
+            'textReviewsCount' => null,
+            'textReviewsLanguageCounts' => [ TextReviewsLanguageCounts::fromJson(...) ],
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

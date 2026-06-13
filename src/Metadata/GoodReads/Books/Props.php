@@ -7,12 +7,12 @@ use Marsender\EPubLoader\Metadata\Mapper;
 class Props
 {
     public ?PageProps $pageProps;
-    public ?bool $nSsp;
+    public ?bool $nSSP;
 
-    public function __construct(?PageProps $pageProps, ?bool $nSsp)
+    public function __construct(?PageProps $pageProps, ?bool $nSSP)
     {
         $this->pageProps = $pageProps;
-        $this->nSsp = $nSsp;
+        $this->nSSP = $nSSP;
     }
 
     public function getPageProps(): ?PageProps
@@ -20,9 +20,9 @@ class Props
         return $this->pageProps;
     }
 
-    public function getNSsp(): ?bool
+    public function getNSSP(): ?bool
     {
-        return $this->nSsp;
+        return $this->nSSP;
     }
 
     /**
@@ -30,9 +30,11 @@ class Props
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            Mapper::getItem($data, 'pageProps', PageProps::fromJson(...)),
-            $data['__N_SSP'] ?? null
-        );
+        $keys = [
+            'pageProps' => PageProps::fromJson(...),
+            '__N_SSP' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

@@ -23,8 +23,10 @@ class UserAgentContextParams
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['isWebView'] ?? null
-        );
+        $keys = [
+            'isWebView' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

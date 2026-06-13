@@ -55,11 +55,13 @@ class Shelving
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            Mapper::getItem($data, 'shelf', Shelf::fromJson(...)),
-            $data['taggings'] ?? null,
-            $data['webUrl'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'shelf' => Shelf::fromJson(...),
+            'taggings' => null,
+            'webUrl' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

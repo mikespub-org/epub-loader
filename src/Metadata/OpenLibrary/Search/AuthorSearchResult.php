@@ -59,11 +59,13 @@ class AuthorSearchResult
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['numFound'] ?? null,
-            $data['start'] ?? null,
-            $data['numFoundExact'] ?? null,
-            Mapper::getArray($data, 'docs', AuthorDocs::fromJson(...))
-        );
+        $keys = [
+            'numFound' => null,
+            'start' => null,
+            'numFoundExact' => null,
+            'docs' => [ AuthorDocs::fromJson(...) ],
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

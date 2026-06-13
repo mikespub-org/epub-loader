@@ -23,8 +23,10 @@ class RuntimeConfig
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['env'] ?? null
-        );
+        $keys = [
+            'env' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

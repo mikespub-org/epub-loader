@@ -128,21 +128,23 @@ class ReviewMap
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['id'] ?? null,
-            $data['__typename'] ?? null,
-            Mapper::getItem($data, 'creator', Creator::fromJson(...)),
-            $data['recommendFor'] ?? null,
-            $data['updatedAt'] ?? null,
-            $data['createdAt'] ?? null,
-            $data['spoilerStatus'] ?? null,
-            $data['lastRevisionAt'] ?? null,
-            $data['text'] ?? null,
-            $data['rating'] ?? null,
-            Mapper::getItem($data, 'shelving', Shelving::fromJson(...)),
-            $data['likeCount'] ?? null,
-            $data['viewerHasLiked'] ?? null,
-            $data['commentCount'] ?? null
-        );
+        $keys = [
+            'id' => null,
+            '__typename' => null,
+            'creator' => Creator::fromJson(...),
+            'recommendFor' => null,
+            'updatedAt' => null,
+            'createdAt' => null,
+            'spoilerStatus' => null,
+            'lastRevisionAt' => null,
+            'text' => null,
+            'rating' => null,
+            'shelving' => Shelving::fromJson(...),
+            'likeCount' => null,
+            'viewerHasLiked' => null,
+            'commentCount' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

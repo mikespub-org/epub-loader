@@ -185,52 +185,28 @@ class BookMap
      */
     public static function fromJson(array $data): self
     {
-        /**
         $keys = [
-            'id' => null,
-            '__typename' => null,
-            'title' => null,
-            'titleComplete' => null,
-            'legacyId' => null,
-            'webUrl' => null,
-            'description' => null,
-            'description({"stripped":true})' => null,
-            'primaryContributorEdge' => PrimaryContributorEdge::fromJson(...),
-            'secondaryContributorEdges' => null,
-            'imageUrl' => null,
-            'bookSeries' => [ BookSeries::fromJson(...) ],
-            'bookGenres' => [ BookGenres::fromJson(...) ],
-            'details' => Details::fromJson(...),
-            'work' => Work::fromJson(...),
-            'reviewEditUrl' => null,
-            'featureFlags' => FeatureFlags::fromJson(...),
-            'viewerShelving' => null,
-            'links({})' => Links::fromJson(...)
+            'id'                             => null,
+            '__typename'                     => null, // -> typename
+            'title'                          => null,
+            'titleComplete'                  => null,
+            'legacyId'                       => null,
+            'webUrl'                         => null,
+            'description'                    => null,
+            'description({"stripped":true})' => null, // -> descriptionStrippedTrue
+            'primaryContributorEdge'         => PrimaryContributorEdge::fromJson(...),
+            'secondaryContributorEdges'      => null,
+            'imageUrl'                       => null,
+            'bookSeries'                     => [ BookSeries::fromJson(...) ],
+            'bookGenres'                     => [ BookGenres::fromJson(...) ],
+            'details'                        => Details::fromJson(...),
+            'work'                           => Work::fromJson(...),
+            'reviewEditUrl'                  => null,
+            'featureFlags'                   => FeatureFlags::fromJson(...),
+            'viewerShelving'                 => null,
+            'links({})'                      => Links::fromJson(...), // -> links
         ];
-        $values = Mapper::getValues($data, $keys);
-        // map array key to constructor arg to use named arguments?
-        return new self(...array_values($values));
-         */
-        return new self(
-            $data['id'] ?? null,
-            $data['__typename'] ?? null,
-            $data['title'] ?? null,
-            $data['titleComplete'] ?? null,
-            $data['legacyId'] ?? null,
-            $data['webUrl'] ?? null,
-            $data['description'] ?? null,
-            $data['description({"stripped":true})'] ?? null,
-            Mapper::getItem($data, 'primaryContributorEdge', PrimaryContributorEdge::fromJson(...)),
-            $data['secondaryContributorEdges'] ?? null,
-            $data['imageUrl'] ?? null,
-            Mapper::getArray($data, 'bookSeries', BookSeries::fromJson(...)),
-            Mapper::getArray($data, 'bookGenres', BookGenres::fromJson(...)),
-            Mapper::getItem($data, 'details', Details::fromJson(...)),
-            Mapper::getItem($data, 'work', Work::fromJson(...)),
-            $data['reviewEditUrl'] ?? null,
-            Mapper::getItem($data, 'featureFlags', FeatureFlags::fromJson(...)),
-            $data['viewerShelving'] ?? null,
-            Mapper::getItem($data, 'links({})', Links::fromJson(...))
-        );
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

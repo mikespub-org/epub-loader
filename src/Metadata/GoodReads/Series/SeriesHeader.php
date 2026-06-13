@@ -44,10 +44,12 @@ class SeriesHeader
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['title'] ?? null,
-            $data['subtitle'] ?? null,
-            Mapper::getItem($data, 'description', Description::fromJson(...))
-        );
+        $keys = [
+            'title' => null,
+            'subtitle' => null,
+            'description' => Description::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

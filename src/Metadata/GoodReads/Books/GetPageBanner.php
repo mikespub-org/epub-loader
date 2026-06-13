@@ -40,10 +40,12 @@ class GetPageBanner
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['type'] ?? null,
-            $data['message'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'type' => null,
+            'message' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

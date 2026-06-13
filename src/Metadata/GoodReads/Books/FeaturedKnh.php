@@ -47,10 +47,12 @@ class FeaturedKnh
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['totalCount'] ?? null,
-            $data['edges'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'totalCount' => null,
+            'edges' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

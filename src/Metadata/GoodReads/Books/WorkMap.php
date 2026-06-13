@@ -153,31 +153,50 @@ class WorkMap
     public static function fromJson(array $data): self
     {
         // simulate patternProperties from JSON schema - single key here
-        // quotes({\"pagination\":{\"limit\":1}}) = one per book
-        $quotesKeys = preg_grep('/^quotes\\(/', array_keys($data)) ?: [''];
-        $quotesKey = reset($quotesKeys);
-        // questions({\"pagination\":{\"limit\":1}}) = one per book
-        $questionsKeys = preg_grep('/^questions\\(/', array_keys($data)) ?: [''];
-        $questionsKey = reset($questionsKeys);
-        // topics({\"pagination\":{\"limit\":1}}) = one per book
-        $topicsKeys = preg_grep('/^topics\\(/', array_keys($data)) ?: [''];
-        $topicsKey = reset($topicsKeys);
+        /**
+        $keys = [
+            'id'                => null,
+            '__typename'        => null,
+            'legacyId'          => null,
+            'bestBook'          => BestBook::fromJson(...),
+            'choiceAwards'      => null,
+            'details'           => Details::fromJson(...),
+            'stats'             => Stats::fromJson(...),
+            // quotes({\"pagination\":{\"limit\":1}}) = one per book
+            '/^quotes\(/'       => Quotes::fromJson(...),
+            // questions({\"pagination\":{\"limit\":1}}) = one per book
+            '/^questions\(/'    => Questions::fromJson(...),
+            // topics({\"pagination\":{\"limit\":1}}) = one per book
+            '/^topics\(/'       => Topics::fromJson(...),
+            'viewerShelvings'   => null,
+            'viewerShelvingsUrl' => null,
+            'featuredKNH'       => FeaturedKnh::fromJson(...),
+            'giveaways'         => null,
+            'editions'          => Editions::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
+         */
         return new self(
-            $data['id'] ?? null,
-            $data['__typename'] ?? null,
-            $data['legacyId'] ?? null,
-            Mapper::getItem($data, 'bestBook', BestBook::fromJson(...)),
-            $data['choiceAwards'] ?? null,
-            Mapper::getItem($data, 'details', Details::fromJson(...)),
-            Mapper::getItem($data, 'stats', Stats::fromJson(...)),
-            Mapper::getItem($data, $quotesKey, Quotes::fromJson(...)),
-            Mapper::getItem($data, $questionsKey, Questions::fromJson(...)),
-            Mapper::getItem($data, $topicsKey, Topics::fromJson(...)),
-            $data['viewerShelvings'] ?? null,
-            $data['viewerShelvingsUrl'] ?? null,
-            Mapper::getItem($data, 'featuredKNH', FeaturedKnh::fromJson(...)),
-            $data['giveaways'] ?? null,
-            Mapper::getItem($data, 'editions', Editions::fromJson(...))
+            id: $data['id'] ?? null,
+            typename: $data['__typename'] ?? null,
+            legacyId: $data['legacyId'] ?? null,
+            bestBook: Mapper::getItem($data, 'bestBook', BestBook::fromJson(...)),
+            choiceAwards: $data['choiceAwards'] ?? null,
+            details: Mapper::getItem($data, 'details', Details::fromJson(...)),
+            stats: Mapper::getItem($data, 'stats', Stats::fromJson(...)),
+            // quotes({\"pagination\":{\"limit\":1}}) = one per book
+            quotes: Mapper::getPatternItem($data, '/^quotes\(/', Quotes::fromJson(...)),
+            // questions({\"pagination\":{\"limit\":1}}) = one per book
+            questions: Mapper::getPatternItem($data, '/^questions\(/', Questions::fromJson(...)),
+            // topics({\"pagination\":{\"limit\":1}}) = one per book
+            topics: Mapper::getPatternItem($data, '/^topics\(/', Topics::fromJson(...)),
+            viewerShelvings: $data['viewerShelvings'] ?? null,
+            viewerShelvingsUrl: $data['viewerShelvingsUrl'] ?? null,
+            // Warning: different case for argument here
+            featuredKnh: Mapper::getItem($data, 'featuredKNH', FeaturedKnh::fromJson(...)),
+            giveaways: $data['giveaways'] ?? null,
+            editions: Mapper::getItem($data, 'editions', Editions::fromJson(...)),
         );
     }
 }

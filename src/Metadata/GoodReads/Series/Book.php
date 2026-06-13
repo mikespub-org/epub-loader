@@ -201,29 +201,31 @@ class Book
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['imageUrl'] ?? null,
-            $data['bookId'] ?? null,
-            $data['workId'] ?? null,
-            $data['bookUrl'] ?? null,
-            $data['from_search'] ?? null,
-            $data['from_srp'] ?? null,
-            $data['qid'] ?? null,
-            $data['rank'] ?? null,
-            $data['title'] ?? null,
-            $data['bookTitleBare'] ?? null,
-            $data['numPages'] ?? null,
-            $data['avgRating'] ?? null,
-            $data['ratingsCount'] ?? null,
-            Mapper::getItem($data, 'author', Author::fromJson(...)),
-            $data['kcrPreviewUrl'] ?? null,
-            Mapper::getItem($data, 'description', Description::fromJson(...)),
-            $data['textReviewsCount'] ?? null,
-            $data['publicationDate'] ?? null,
-            $data['toBePublished'] ?? null,
-            $data['editions'] ?? null,
-            $data['editionsUrl'] ?? null,
-            $data['seriesHeader'] ?? null
-        );
+        $keys = [
+            'imageUrl' => null,
+            'bookId' => null,
+            'workId' => null,
+            'bookUrl' => null,
+            'from_search' => null,
+            'from_srp' => null,
+            'qid' => null,
+            'rank' => null,
+            'title' => null,
+            'bookTitleBare' => null,
+            'numPages' => null,
+            'avgRating' => null,
+            'ratingsCount' => null,
+            'author' => Author::fromJson(...),
+            'kcrPreviewUrl' => null,
+            'description' => Description::fromJson(...),
+            'textReviewsCount' => null,
+            'publicationDate' => null,
+            'toBePublished' => null,
+            'editions' => null,
+            'editionsUrl' => null,
+            'seriesHeader' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

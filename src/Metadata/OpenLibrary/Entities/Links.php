@@ -40,10 +40,12 @@ class Links
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['url'] ?? null,
-            $data['title'] ?? null,
-            Mapper::getItem($data, 'type', Type::fromJson(...))
-        );
+        $keys = [
+            'url' => null,
+            'title' => null,
+            'type' => Type::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

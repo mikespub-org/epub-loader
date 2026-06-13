@@ -64,13 +64,15 @@ class FeatureFlags
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['hideAds'] ?? null,
-            $data['noIndex'] ?? null,
-            $data['noReviews'] ?? null,
-            $data['noNewRatings'] ?? null,
-            $data['noNewTextReviews'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'hideAds' => null,
+            'noIndex' => null,
+            'noReviews' => null,
+            'noNewRatings' => null,
+            'noNewTextReviews' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

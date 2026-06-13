@@ -56,12 +56,14 @@ class Author
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['id'] ?? null,
-            $data['name'] ?? null,
-            $data['isGoodreadsAuthor'] ?? null,
-            $data['profileUrl'] ?? null,
-            $data['worksListUrl'] ?? null
-        );
+        $keys = [
+            'id' => null,
+            'name' => null,
+            'isGoodreadsAuthor' => null,
+            'profileUrl' => null,
+            'worksListUrl' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

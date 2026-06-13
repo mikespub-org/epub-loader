@@ -40,10 +40,12 @@ class VolumeSeries
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['seriesId'] ?? null,
-            $data['seriesBookType'] ?? null,
-            $data['orderNumber'] ?? null
-        );
+        $keys = [
+            'seriesId' => null,
+            'seriesBookType' => null,
+            'orderNumber' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

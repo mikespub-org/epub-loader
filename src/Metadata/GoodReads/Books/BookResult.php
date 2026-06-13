@@ -100,16 +100,18 @@ class BookResult
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            Mapper::getItem($data, 'props', Props::fromJson(...)),
-            $data['page'] ?? null,
-            Mapper::getItem($data, 'query', Query::fromJson(...)),
-            $data['buildId'] ?? null,
-            Mapper::getItem($data, 'runtimeConfig', RuntimeConfig::fromJson(...)),
-            $data['isFallback'] ?? null,
-            $data['gssp'] ?? null,
-            $data['customServer'] ?? null,
-            $data['locales'] ?? null
-        );
+        $keys = [
+            'props' => Props::fromJson(...),
+            'page' => null,
+            'query' => Query::fromJson(...),
+            'buildId' => null,
+            'runtimeConfig' => RuntimeConfig::fromJson(...),
+            'isFallback' => null,
+            'gssp' => null,
+            'customServer' => null,
+            'locales' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

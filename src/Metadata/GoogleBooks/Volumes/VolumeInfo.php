@@ -217,30 +217,32 @@ class VolumeInfo
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['title'] ?? null,
-            $data['authors'] ?? null,
-            $data['publisher'] ?? null,
-            $data['publishedDate'] ?? null,
-            $data['description'] ?? null,
-            Mapper::getArray($data, 'industryIdentifiers', IndustryIdentifiers::fromJson(...)),
-            Mapper::getItem($data, 'readingModes', ReadingModes::fromJson(...)),
-            $data['pageCount'] ?? null,
-            $data['printType'] ?? null,
-            $data['categories'] ?? null,
-            $data['maturityRating'] ?? null,
-            $data['allowAnonLogging'] ?? null,
-            $data['contentVersion'] ?? null,
-            Mapper::getItem($data, 'panelizationSummary', PanelizationSummary::fromJson(...)),
-            Mapper::getItem($data, 'imageLinks', ImageLinks::fromJson(...)),
-            $data['language'] ?? null,
-            $data['previewLink'] ?? null,
-            $data['infoLink'] ?? null,
-            $data['canonicalVolumeLink'] ?? null,
-            $data['subtitle'] ?? null,
-            $data['averageRating'] ?? null,
-            $data['ratingsCount'] ?? null,
-            Mapper::getItem($data, 'seriesInfo', SeriesInfo::fromJson(...))
-        );
+        $keys = [
+            'title' => null,
+            'authors' => null,
+            'publisher' => null,
+            'publishedDate' => null,
+            'description' => null,
+            'industryIdentifiers' => [ IndustryIdentifiers::fromJson(...) ],
+            'readingModes' => ReadingModes::fromJson(...),
+            'pageCount' => null,
+            'printType' => null,
+            'categories' => null,
+            'maturityRating' => null,
+            'allowAnonLogging' => null,
+            'contentVersion' => null,
+            'panelizationSummary' => PanelizationSummary::fromJson(...),
+            'imageLinks' => ImageLinks::fromJson(...),
+            'language' => null,
+            'previewLink' => null,
+            'infoLink' => null,
+            'canonicalVolumeLink' => null,
+            'subtitle' => null,
+            'averageRating' => null,
+            'ratingsCount' => null,
+            'seriesInfo' => SeriesInfo::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

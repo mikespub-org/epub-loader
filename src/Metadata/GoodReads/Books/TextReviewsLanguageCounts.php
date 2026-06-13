@@ -40,10 +40,12 @@ class TextReviewsLanguageCounts
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['count'] ?? null,
-            $data['isoLanguageCode'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'count' => null,
+            'isoLanguageCode' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

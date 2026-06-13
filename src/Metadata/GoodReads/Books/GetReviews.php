@@ -55,11 +55,13 @@ class GetReviews
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['totalCount'] ?? null,
-            Mapper::getArray($data, 'edges', Edges::fromJson(...)),
-            Mapper::getItem($data, 'pageInfo', PageInfo::fromJson(...))
-        );
+        $keys = [
+            '__typename' => null,
+            'totalCount' => null,
+            'edges' => [ Edges::fromJson(...) ],
+            'pageInfo' => PageInfo::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

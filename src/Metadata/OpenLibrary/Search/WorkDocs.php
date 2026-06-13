@@ -92,15 +92,17 @@ class WorkDocs
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['key'] ?? null,
-            $data['type'] ?? null,
-            $data['title'] ?? null,
-            $data['edition_count'] ?? null,
-            $data['first_publish_year'] ?? null,
-            $data['number_of_pages_median'] ?? null,
-            $data['author_key'] ?? null,
-            $data['author_name'] ?? null
-        );
+        $keys = [
+            'key' => null,
+            'type' => null,
+            'title' => null,
+            'edition_count' => null,
+            'first_publish_year' => null,
+            'number_of_pages_median' => null,
+            'author_key' => null,
+            'author_name' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

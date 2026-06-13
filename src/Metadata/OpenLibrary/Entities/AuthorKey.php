@@ -23,8 +23,10 @@ class AuthorKey
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['key'] ?? null
-        );
+        $keys = [
+            'key' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

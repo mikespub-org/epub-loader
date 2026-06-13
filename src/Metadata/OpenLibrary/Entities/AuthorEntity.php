@@ -249,29 +249,31 @@ class AuthorEntity
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['title'] ?? null,
-            $data['source_records'] ?? null,
-            $data['personal_name'] ?? null,
-            $data['lc_classifications'] ?? null,
-            $data['subjects'] ?? null,
-            $data['birth_date'] ?? null,
-            $data['lccn'] ?? null,
-            $data['bio'] ?? null,
-            $data['alternate_names'] ?? null,
-            Mapper::getItem($data, 'remote_ids', RemoteIds::fromJson(...)),
-            Mapper::getArray($data, 'authors', AuthorKeys::fromJson(...)),
-            $data['death_date'] ?? null,
-            Mapper::getArray($data, 'links', Links::fromJson(...)),
-            Mapper::getItem($data, 'type', Type::fromJson(...)),
-            Mapper::getArray($data, 'works', WorkKey::fromJson(...)),
-            $data['key'] ?? null,
-            $data['photos'] ?? null,
-            $data['name'] ?? null,
-            $data['latest_revision'] ?? null,
-            $data['revision'] ?? null,
-            Mapper::getItem($data, 'created', Created::fromJson(...)),
-            Mapper::getItem($data, 'last_modified', LastModified::fromJson(...))
-        );
+        $keys = [
+            'title' => null,
+            'source_records' => null,
+            'personal_name' => null,
+            'lc_classifications' => null,
+            'subjects' => null,
+            'birth_date' => null,
+            'lccn' => null,
+            'bio' => null,
+            'alternate_names' => null,
+            'remote_ids' => RemoteIds::fromJson(...),
+            'authors' => [ AuthorKeys::fromJson(...) ],
+            'death_date' => null,
+            'links' => [ Links::fromJson(...) ],
+            'type' => Type::fromJson(...),
+            'works' => [ WorkKey::fromJson(...) ],
+            'key' => null,
+            'photos' => null,
+            'name' => null,
+            'latest_revision' => null,
+            'revision' => null,
+            'created' => Created::fromJson(...),
+            'last_modified' => LastModified::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

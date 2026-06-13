@@ -79,14 +79,16 @@ class SaleInfo
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['country'] ?? null,
-            $data['saleability'] ?? null,
-            $data['isEbook'] ?? null,
-            Mapper::getItem($data, 'listPrice', ListPrice::fromJson(...)),
-            Mapper::getItem($data, 'retailPrice', RetailPrice::fromJson(...)),
-            $data['buyLink'] ?? null,
-            Mapper::getArray($data, 'offers', Offers::fromJson(...))
-        );
+        $keys = [
+            'country' => null,
+            'saleability' => null,
+            'isEbook' => null,
+            'listPrice' => ListPrice::fromJson(...),
+            'retailPrice' => RetailPrice::fromJson(...),
+            'buyLink' => null,
+            'offers' => [ Offers::fromJson(...) ],
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

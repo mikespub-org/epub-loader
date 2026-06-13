@@ -30,9 +30,11 @@ class Series
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['isLibrarianView'] ?? null,
-            Mapper::getItem($data, 'book', Book::fromJson(...))
-        );
+        $keys = [
+            'isLibrarianView' => null,
+            'book' => Book::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

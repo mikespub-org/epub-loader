@@ -80,15 +80,17 @@ class Volume
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['kind'] ?? null,
-            $data['id'] ?? null,
-            $data['etag'] ?? null,
-            $data['selfLink'] ?? null,
-            Mapper::getItem($data, 'volumeInfo', VolumeInfo::fromJson(...)),
-            Mapper::getItem($data, 'saleInfo', SaleInfo::fromJson(...)),
-            Mapper::getItem($data, 'accessInfo', AccessInfo::fromJson(...)),
-            Mapper::getItem($data, 'searchInfo', SearchInfo::fromJson(...))
-        );
+        $keys = [
+            'kind' => null,
+            'id' => null,
+            'etag' => null,
+            'selfLink' => null,
+            'volumeInfo' => VolumeInfo::fromJson(...),
+            'saleInfo' => SaleInfo::fromJson(...),
+            'accessInfo' => AccessInfo::fromJson(...),
+            'searchInfo' => SearchInfo::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

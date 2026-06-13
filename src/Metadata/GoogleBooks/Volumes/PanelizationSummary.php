@@ -30,9 +30,11 @@ class PanelizationSummary
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['containsEpubBubbles'] ?? null,
-            $data['containsImageBubbles'] ?? null
-        );
+        $keys = [
+            'containsEpubBubbles' => null,
+            'containsImageBubbles' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

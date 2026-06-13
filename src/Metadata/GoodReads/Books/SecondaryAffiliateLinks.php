@@ -48,11 +48,13 @@ class SecondaryAffiliateLinks
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['name'] ?? null,
-            $data['url'] ?? null,
-            $data['ref'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'name' => null,
+            'url' => null,
+            'ref' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

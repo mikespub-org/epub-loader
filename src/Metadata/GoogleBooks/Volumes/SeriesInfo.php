@@ -55,11 +55,13 @@ class SeriesInfo
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['kind'] ?? null,
-            $data['shortSeriesBookTitle'] ?? null,
-            $data['bookDisplayNumber'] ?? null,
-            Mapper::getArray($data, 'volumeSeries', VolumeSeries::fromJson(...))
-        );
+        $keys = [
+            'kind' => null,
+            'shortSeriesBookTitle' => null,
+            'bookDisplayNumber' => null,
+            'volumeSeries' => [ VolumeSeries::fromJson(...) ],
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

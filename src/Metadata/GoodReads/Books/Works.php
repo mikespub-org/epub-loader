@@ -30,9 +30,11 @@ class Works
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['totalCount'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'totalCount' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

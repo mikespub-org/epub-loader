@@ -23,8 +23,10 @@ class SearchInfo
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['textSnippet'] ?? null
-        );
+        $keys = [
+            'textSnippet' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

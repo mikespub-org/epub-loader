@@ -23,8 +23,10 @@ class Query
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['book_id'] ?? null
-        );
+        $keys = [
+            'book_id' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

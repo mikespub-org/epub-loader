@@ -30,9 +30,11 @@ class BookGenres
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            Mapper::getItem($data, 'genre', Genre::fromJson(...))
-        );
+        $keys = [
+            '__typename' => null,
+            'genre' => Genre::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

@@ -23,8 +23,10 @@ class Creator
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__ref'] ?? null
-        );
+        $keys = [
+            '__ref' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

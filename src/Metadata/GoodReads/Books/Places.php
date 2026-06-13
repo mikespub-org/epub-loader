@@ -56,12 +56,14 @@ class Places
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['name'] ?? null,
-            $data['countryName'] ?? null,
-            $data['webUrl'] ?? null,
-            $data['year'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'name' => null,
+            'countryName' => null,
+            'webUrl' => null,
+            'year' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

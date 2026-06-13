@@ -48,11 +48,13 @@ class AuthContextParams
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['signedIn'] ?? null,
-            $data['customerId'] ?? null,
-            $data['legacyCustomerId'] ?? null,
-            $data['role'] ?? null
-        );
+        $keys = [
+            'signedIn' => null,
+            'customerId' => null,
+            'legacyCustomerId' => null,
+            'role' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

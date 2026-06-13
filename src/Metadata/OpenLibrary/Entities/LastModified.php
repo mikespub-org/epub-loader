@@ -30,9 +30,11 @@ class LastModified
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['type'] ?? null,
-            $data['value'] ?? null
-        );
+        $keys = [
+            'type' => null,
+            'value' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

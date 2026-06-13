@@ -30,9 +30,11 @@ class ReadingModes
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['text'] ?? null,
-            $data['image'] ?? null
-        );
+        $keys = [
+            'text' => null,
+            'image' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

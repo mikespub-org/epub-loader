@@ -30,9 +30,11 @@ class ImageLinks
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['smallThumbnail'] ?? null,
-            $data['thumbnail'] ?? null
-        );
+        $keys = [
+            'smallThumbnail' => null,
+            'thumbnail' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

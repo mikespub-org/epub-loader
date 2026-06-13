@@ -96,17 +96,19 @@ class AccessInfo
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['country'] ?? null,
-            $data['viewability'] ?? null,
-            $data['embeddable'] ?? null,
-            $data['publicDomain'] ?? null,
-            $data['textToSpeechPermission'] ?? null,
-            Mapper::getItem($data, 'epub', Epub::fromJson(...)),
-            Mapper::getItem($data, 'pdf', Pdf::fromJson(...)),
-            $data['webReaderLink'] ?? null,
-            $data['accessViewStatus'] ?? null,
-            $data['quoteSharingAllowed'] ?? null
-        );
+        $keys = [
+            'country' => null,
+            'viewability' => null,
+            'embeddable' => null,
+            'publicDomain' => null,
+            'textToSpeechPermission' => null,
+            'epub' => Epub::fromJson(...),
+            'pdf' => Pdf::fromJson(...),
+            'webReaderLink' => null,
+            'accessViewStatus' => null,
+            'quoteSharingAllowed' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

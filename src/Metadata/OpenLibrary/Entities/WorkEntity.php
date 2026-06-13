@@ -170,21 +170,23 @@ class WorkEntity
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['description'] ?? null,
-            Mapper::getArray($data, 'links', Links::fromJson(...)),
-            $data['title'] ?? null,
-            $data['covers'] ?? null,
-            $data['subject_places'] ?? null,
-            $data['subjects'] ?? null,
-            $data['key'] ?? null,
-            Mapper::getArray($data, 'authors', Authors::fromJson(...)),
-            $data['subject_times'] ?? null,
-            Mapper::getItem($data, 'type', Type::fromJson(...)),
-            $data['latest_revision'] ?? null,
-            $data['revision'] ?? null,
-            Mapper::getItem($data, 'created', Created::fromJson(...)),
-            Mapper::getItem($data, 'last_modified', LastModified::fromJson(...))
-        );
+        $keys = [
+            'description' => null,
+            'links' => [ Links::fromJson(...) ],
+            'title' => null,
+            'covers' => null,
+            'subject_places' => null,
+            'subjects' => null,
+            'key' => null,
+            'authors' => [ Authors::fromJson(...) ],
+            'subject_times' => null,
+            'type' => Type::fromJson(...),
+            'latest_revision' => null,
+            'revision' => null,
+            'created' => Created::fromJson(...),
+            'last_modified' => LastModified::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

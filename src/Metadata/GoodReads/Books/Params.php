@@ -23,8 +23,10 @@ class Params
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['book_id'] ?? null
-        );
+        $keys = [
+            'book_id' => null, // Normalizes to bookId
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

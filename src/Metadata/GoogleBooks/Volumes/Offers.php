@@ -40,10 +40,12 @@ class Offers
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['finskyOfferType'] ?? null,
-            Mapper::getItem($data, 'listPrice', OfferListPrice::fromJson(...)),
-            Mapper::getItem($data, 'retailPrice', OfferRetailPrice::fromJson(...))
-        );
+        $keys = [
+            'finskyOfferType' => null,
+            'listPrice' => OfferListPrice::fromJson(...),
+            'retailPrice' => OfferRetailPrice::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

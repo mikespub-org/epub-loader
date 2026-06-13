@@ -112,19 +112,21 @@ class ContributorMap
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['id'] ?? null,
-            $data['__typename'] ?? null,
-            $data['legacyId'] ?? null,
-            $data['name'] ?? null,
-            $data['description'] ?? null,
-            $data['isGrAuthor'] ?? null,
-            Mapper::getItem($data, 'works', Works::fromJson(...)),
-            $data['profileImageUrl'] ?? null,
-            $data['webUrl'] ?? null,
-            $data['user'] ?? null,
-            $data['viewerIsFollowing'] ?? null,
-            Mapper::getItem($data, 'followers', Followers::fromJson(...))
-        );
+        $keys = [
+            'id'                => null,
+            '__typename'        => null,
+            'legacyId'          => null,
+            'name'              => null,
+            'description'       => null,
+            'isGrAuthor'        => null,
+            'works'             => Works::fromJson(...),
+            'profileImageUrl'   => null,
+            'webUrl'            => null,
+            'user'              => null,
+            'viewerIsFollowing' => null,
+            'followers'         => Followers::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

@@ -47,10 +47,12 @@ class AuthorEntry
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['id'] ?? null,
-            $data['name'] ?? null,
-            Mapper::getArray($data, 'books', Books::fromJson(...))
-        );
+        $keys = [
+            'id' => null,
+            'name' => null,
+            'books' => [ Books::fromJson(...) ],
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

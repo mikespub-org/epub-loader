@@ -40,10 +40,12 @@ class GetAdsTargeting
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['behavioral'] ?? null,
-            $data['contextual'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'behavioral' => null,
+            'contextual' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

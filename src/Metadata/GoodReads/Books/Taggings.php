@@ -30,9 +30,11 @@ class Taggings
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            Mapper::getItem($data, 'tag', Tag::fromJson(...))
-        );
+        $keys = [
+            '__typename' => null,
+            'tag' => Tag::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

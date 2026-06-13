@@ -104,18 +104,20 @@ class UserMap
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['id'] ?? null,
-            $data['__typename'] ?? null,
-            $data['legacyId'] ?? null,
-            $data['imageUrlSquare'] ?? null,
-            $data['isAuthor'] ?? null,
-            $data['textReviewsCount'] ?? null,
-            $data['viewerRelationshipStatus'] ?? null,
-            $data['name'] ?? null,
-            $data['webUrl'] ?? null,
-            Mapper::getItem($data, 'contributor', Contributor::fromJson(...)),
-            $data['followersCount'] ?? null
-        );
+        $keys = [
+            'id' => null,
+            '__typename' => null,
+            'legacyId' => null,
+            'imageUrlSquare' => null,
+            'isAuthor' => null,
+            'textReviewsCount' => null,
+            'viewerRelationshipStatus' => null,
+            'name' => null,
+            'webUrl' => null,
+            'contributor' => Contributor::fromJson(...),
+            'followersCount' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

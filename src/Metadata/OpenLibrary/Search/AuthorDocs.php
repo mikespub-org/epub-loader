@@ -92,15 +92,17 @@ class AuthorDocs
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['key'] ?? null,
-            $data['type'] ?? null,
-            $data['name'] ?? null,
-            $data['alternate_names'] ?? null,
-            $data['top_work'] ?? null,
-            $data['work_count'] ?? null,
-            $data['top_subjects'] ?? null,
-            $data['_version_'] ?? null
-        );
+        $keys = [
+            'key' => null,
+            'type' => null,
+            'name' => null,
+            'alternate_names' => null,
+            'top_work' => null,
+            'work_count' => null,
+            'top_subjects' => null,
+            '_version_' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

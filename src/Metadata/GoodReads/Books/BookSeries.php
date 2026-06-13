@@ -40,10 +40,12 @@ class BookSeries
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['userPosition'] ?? null,
-            Mapper::getItem($data, 'series', Series::fromJson(...))
-        );
+        $keys = [
+            '__typename' => null,
+            'userPosition' => null,
+            'series' => Series::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

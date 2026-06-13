@@ -72,14 +72,16 @@ class PageProps
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            Mapper::getItem($data, 'params', Params::fromJson(...)),
-            $data['jwtToken'] ?? null,
-            $data['dataSource'] ?? null,
-            Mapper::getItem($data, 'apolloState', ApolloState::fromJson(...)),
-            Mapper::getItem($data, 'authContextParams', AuthContextParams::fromJson(...)),
-            Mapper::getItem($data, 'userAgentContextParams', UserAgentContextParams::fromJson(...)),
-            $data['userAgent'] ?? null
-        );
+        $keys = [
+            'params' => Params::fromJson(...),
+            'jwtToken' => null,
+            'dataSource' => null,
+            'apolloState' => ApolloState::fromJson(...),
+            'authContextParams' => AuthContextParams::fromJson(...),
+            'userAgentContextParams' => UserAgentContextParams::fromJson(...),
+            'userAgent' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

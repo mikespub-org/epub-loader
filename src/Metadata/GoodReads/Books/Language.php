@@ -30,9 +30,11 @@ class Language
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['name'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'name' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

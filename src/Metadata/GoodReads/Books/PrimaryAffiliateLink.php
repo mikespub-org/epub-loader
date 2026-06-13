@@ -72,14 +72,16 @@ class PrimaryAffiliateLink
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['name'] ?? null,
-            $data['url'] ?? null,
-            $data['ref'] ?? null,
-            $data['ebookPrice'] ?? null,
-            $data['kuEligible'] ?? null,
-            $data['primeEligible'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'name' => null,
+            'url' => null,
+            'ref' => null,
+            'ebookPrice' => null,
+            'kuEligible' => null,
+            'primeEligible' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

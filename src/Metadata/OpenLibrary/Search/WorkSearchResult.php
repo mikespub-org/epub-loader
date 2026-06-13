@@ -27,7 +27,7 @@ class WorkSearchResult
         ?int $start,
         ?bool $numFoundExact,
         ?array $docs,
-        ?int $num_found,
+        //?int $num_found,
         ?string $q,
         mixed $offset
     ) {
@@ -35,7 +35,7 @@ class WorkSearchResult
         $this->start = $start;
         $this->numFoundExact = $numFoundExact;
         $this->docs = $docs;
-        $this->num_found = $num_found;
+        //$this->num_found = $num_found;
         $this->q = $q;
         $this->offset = $offset;
     }
@@ -83,14 +83,16 @@ class WorkSearchResult
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['numFound'] ?? null,
-            $data['start'] ?? null,
-            $data['numFoundExact'] ?? null,
-            Mapper::getArray($data, 'docs', WorkDocs::fromJson(...)),
-            $data['num_found'] ?? null,
-            $data['q'] ?? null,
-            $data['offset'] ?? null
-        );
+        $keys = [
+            'numFound' => null,
+            'start' => null,
+            'numFoundExact' => null,
+            'docs' => [ WorkDocs::fromJson(...) ],
+            //'num_found' => null,
+            'q' => null,
+            'offset' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

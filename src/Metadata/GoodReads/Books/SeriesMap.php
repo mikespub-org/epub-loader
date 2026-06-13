@@ -48,11 +48,13 @@ class SeriesMap
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['id'] ?? null,
-            $data['__typename'] ?? null,
-            $data['title'] ?? null,
-            $data['webUrl'] ?? null
-        );
+        $keys = [
+            'id' => null,
+            '__typename' => null,
+            'title' => null,
+            'webUrl' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

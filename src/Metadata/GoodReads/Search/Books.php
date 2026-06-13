@@ -56,12 +56,14 @@ class Books
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['id'] ?? null,
-            $data['title'] ?? null,
-            $data['cover'] ?? null,
-            $data['rating'] ?? null,
-            $data['count'] ?? null
-        );
+        $keys = [
+            'id' => null,
+            'title' => null,
+            'cover' => null,
+            'rating' => null,
+            'count' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

@@ -41,13 +41,15 @@ class SearchResult
     public static function fromJson(array $data): self
     {
         // simulate patternProperties from JSON schema - all keys here
-        $properties = [];
-        $propertiesKeys = preg_grep('/^\d+/', array_keys($data)) ?: [];
-        foreach ($propertiesKeys as $key) {
-            $properties[$key] = Mapper::getItem($data, $key, AuthorEntry::fromJson(...));
-        }
+        /**
+        $keys = [
+            '/^\d+/ as properties' => [ AuthorEntry::fromJson(...) ],
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
+         */
         return new self(
-            $properties
+            Mapper::getPatternMap($data, '/^\d+/', AuthorEntry::fromJson(...))
         );
     }
 }

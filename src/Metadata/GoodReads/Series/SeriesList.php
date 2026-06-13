@@ -46,9 +46,11 @@ class SeriesList
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            Mapper::getArray($data, 'series', Series::fromJson(...)),
-            $data['seriesHeaders'] ?? null
-        );
+        $keys = [
+            'series' => [ Series::fromJson(...) ],
+            'seriesHeaders' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

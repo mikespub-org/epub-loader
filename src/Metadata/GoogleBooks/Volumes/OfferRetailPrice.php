@@ -30,9 +30,11 @@ class OfferRetailPrice
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['amountInMicros'] ?? null,
-            $data['currencyCode'] ?? null
-        );
+        $keys = [
+            'amountInMicros' => null,
+            'currencyCode' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

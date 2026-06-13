@@ -76,13 +76,15 @@ class Links
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            Mapper::getItem($data, 'primaryAffiliateLink', PrimaryAffiliateLink::fromJson(...)),
-            Mapper::getArray($data, 'secondaryAffiliateLinks', SecondaryAffiliateLinks::fromJson(...)),
-            Mapper::getArray($data, 'libraryLinks', LibraryLinks::fromJson(...)),
-            $data['overflowPageUrl'] ?? null,
-            Mapper::getItem($data, 'seriesLink', SeriesLink::fromJson(...))
-        );
+        $keys = [
+            '__typename'                => null, // Normalizes to typename
+            'primaryAffiliateLink'      => PrimaryAffiliateLink::fromJson(...),
+            'secondaryAffiliateLinks'   => [ SecondaryAffiliateLinks::fromJson(...) ],
+            'libraryLinks'              => [ LibraryLinks::fromJson(...) ],
+            'overflowPageUrl'           => null,
+            'seriesLink'                => SeriesLink::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

@@ -80,15 +80,17 @@ class GetSiteHeaderBanner
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['altText'] ?? null,
-            $data['clickthroughUrl'] ?? null,
-            $data['desktop1xPhoto'] ?? null,
-            $data['desktop2xPhoto'] ?? null,
-            $data['mobile1xPhoto'] ?? null,
-            $data['mobile2xPhoto'] ?? null,
-            $data['siteStripColor'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'altText' => null,
+            'clickthroughUrl' => null,
+            'desktop1xPhoto' => null,
+            'desktop2xPhoto' => null,
+            'mobile1xPhoto' => null,
+            'mobile2xPhoto' => null,
+            'siteStripColor' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

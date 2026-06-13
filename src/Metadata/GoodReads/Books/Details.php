@@ -153,22 +153,24 @@ class Details
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['asin'] ?? null,
-            $data['format'] ?? null,
-            $data['numPages'] ?? null,
-            $data['webUrl'] ?? null,
-            $data['shelvesUrl'] ?? null,
-            $data['publicationTime'] ?? null,
-            $data['originalTitle'] ?? null,
-            $data['awardsWon'] ?? null,
-            $data['places'] ?? null,
-            $data['characters'] ?? null,
-            $data['publisher'] ?? null,
-            $data['isbn'] ?? null,
-            $data['isbn13'] ?? null,
-            Mapper::getItem($data, 'language', Language::fromJson(...))
-        );
+        $keys = [
+            '__typename'        => null, // Normalizes to typename
+            'asin'              => null,
+            'format'            => null,
+            'numPages'          => null,
+            'webUrl'            => null,
+            'shelvesUrl'        => null,
+            'publicationTime'   => null,
+            'originalTitle'     => null,
+            'awardsWon'         => null,
+            'places'            => null,
+            'characters'        => null,
+            'publisher'         => null,
+            'isbn'              => null,
+            'isbn13'            => null,
+            'language'          => Language::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

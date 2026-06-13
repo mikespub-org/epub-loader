@@ -30,9 +30,11 @@ class Authors
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            Mapper::getItem($data, 'author', AuthorKey::fromJson(...)),
-            Mapper::getItem($data, 'type', Type::fromJson(...))
-        );
+        $keys = [
+            'author' => AuthorKey::fromJson(...),
+            'type' => Type::fromJson(...),
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

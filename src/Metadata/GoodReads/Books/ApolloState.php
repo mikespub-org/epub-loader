@@ -105,44 +105,14 @@ class ApolloState
     public static function fromJson(array $data): self
     {
         // simulate patternProperties from JSON schema - multiple keys here
-        $contributorMap = [];
-        $contributorMapKeys = preg_grep('/^Contributor:/', array_keys($data)) ?: [];
-        foreach ($contributorMapKeys as $key) {
-            $contributorMap[$key] = Mapper::getItem($data, $key, ContributorMap::fromJson(...));
-        }
-        $seriesMap = [];
-        $seriesMapKeys = preg_grep('/^Series:/', array_keys($data)) ?: [];
-        foreach ($seriesMapKeys as $key) {
-            $seriesMap[$key] = Mapper::getItem($data, $key, SeriesMap::fromJson(...));
-        }
-        $bookMap = [];
-        $bookMapKeys = preg_grep('/^Book:/', array_keys($data)) ?: [];
-        foreach ($bookMapKeys as $key) {
-            $bookMap[$key] = Mapper::getItem($data, $key, BookMap::fromJson(...));
-        }
-        $workMap = [];
-        $workMapKeys = preg_grep('/^Work:/', array_keys($data)) ?: [];
-        foreach ($workMapKeys as $key) {
-            $workMap[$key] = Mapper::getItem($data, $key, WorkMap::fromJson(...));
-        }
-        $userMap = [];
-        $userMapKeys = preg_grep('/^User:/', array_keys($data)) ?: [];
-        foreach ($userMapKeys as $key) {
-            $userMap[$key] = Mapper::getItem($data, $key, UserMap::fromJson(...));
-        }
-        $reviewMap = [];
-        $reviewMapKeys = preg_grep('/^Review:/', array_keys($data)) ?: [];
-        foreach ($reviewMapKeys as $key) {
-            $reviewMap[$key] = Mapper::getItem($data, $key, ReviewMap::fromJson(...));
-        }
         return new self(
-            Mapper::getItem($data, 'ROOT_QUERY', RootQuery::fromJson(...)),
-            $contributorMap,
-            $seriesMap,
-            $bookMap,
-            $workMap,
-            $userMap,
-            $reviewMap
+            rootQuery: Mapper::getItem($data, 'ROOT_QUERY', RootQuery::fromJson(...)),
+            contributorMap: Mapper::getPatternMap($data, '/^Contributor:/', ContributorMap::fromJson(...)),
+            seriesMap: Mapper::getPatternMap($data, '/^Series:/', SeriesMap::fromJson(...)),
+            bookMap: Mapper::getPatternMap($data, '/^Book:/', BookMap::fromJson(...)),
+            workMap: Mapper::getPatternMap($data, '/^Work:/', WorkMap::fromJson(...)),
+            userMap: Mapper::getPatternMap($data, '/^User:/', UserMap::fromJson(...)),
+            reviewMap: Mapper::getPatternMap($data, '/^Review:/', ReviewMap::fromJson(...)),
         );
     }
 }

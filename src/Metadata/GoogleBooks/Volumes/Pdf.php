@@ -30,9 +30,11 @@ class Pdf
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['isAvailable'] ?? null,
-            $data['acsTokenLink'] ?? null
-        );
+        $keys = [
+            'isAvailable' => null,
+            'acsTokenLink' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

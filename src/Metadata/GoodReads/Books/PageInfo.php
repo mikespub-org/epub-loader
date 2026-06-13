@@ -40,10 +40,12 @@ class PageInfo
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['prevPageToken'] ?? null,
-            $data['nextPageToken'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'prevPageToken' => null,
+            'nextPageToken' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

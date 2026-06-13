@@ -40,10 +40,12 @@ class PrimaryContributorEdge
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            Mapper::getItem($data, 'node', Node::fromJson(...)),
-            $data['role'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'node' => Node::fromJson(...),
+            'role' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

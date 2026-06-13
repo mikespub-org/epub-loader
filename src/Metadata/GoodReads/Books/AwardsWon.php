@@ -64,13 +64,15 @@ class AwardsWon
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['__typename'] ?? null,
-            $data['name'] ?? null,
-            $data['webUrl'] ?? null,
-            $data['awardedAt'] ?? null,
-            $data['category'] ?? null,
-            $data['designation'] ?? null
-        );
+        $keys = [
+            '__typename' => null,
+            'name' => null,
+            'webUrl' => null,
+            'awardedAt' => null,
+            'category' => null,
+            'designation' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

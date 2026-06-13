@@ -30,9 +30,11 @@ class IndustryIdentifiers
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['type'] ?? null,
-            $data['identifier'] ?? null
-        );
+        $keys = [
+            'type' => null,
+            'identifier' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

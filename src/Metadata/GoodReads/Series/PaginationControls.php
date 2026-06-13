@@ -44,10 +44,12 @@ class PaginationControls
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['numWorks'] ?? null,
-            $data['currentPageNumber'] ?? null,
-            $data['perPage'] ?? null
-        );
+        $keys = [
+            'numWorks' => null,
+            'currentPageNumber' => null,
+            'perPage' => null,
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

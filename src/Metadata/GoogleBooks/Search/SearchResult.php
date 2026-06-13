@@ -52,10 +52,12 @@ class SearchResult
      */
     public static function fromJson(array $data): self
     {
-        return new self(
-            $data['kind'] ?? null,
-            $data['totalItems'] ?? null,
-            Mapper::getArray($data, 'items', Volume::fromJson(...))
-        );
+        $keys = [
+            'kind' => null,
+            'totalItems' => null,
+            'items' => [ Volume::fromJson(...) ],
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }
