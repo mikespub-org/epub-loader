@@ -185,6 +185,32 @@ class BookMap
      */
     public static function fromJson(array $data): self
     {
+        /**
+        $keys = [
+            'id' => null,
+            '__typename' => null,
+            'title' => null,
+            'titleComplete' => null,
+            'legacyId' => null,
+            'webUrl' => null,
+            'description' => null,
+            'description({"stripped":true})' => null,
+            'primaryContributorEdge' => PrimaryContributorEdge::fromJson(...),
+            'secondaryContributorEdges' => null,
+            'imageUrl' => null,
+            'bookSeries' => [ BookSeries::fromJson(...) ],
+            'bookGenres' => [ BookGenres::fromJson(...) ],
+            'details' => Details::fromJson(...),
+            'work' => Work::fromJson(...),
+            'reviewEditUrl' => null,
+            'featureFlags' => FeatureFlags::fromJson(...),
+            'viewerShelving' => null,
+            'links({})' => Links::fromJson(...)
+        ];
+        $values = Mapper::getValues($data, $keys);
+        // map array key to constructor arg to use named arguments?
+        return new self(...array_values($values));
+         */
         return new self(
             $data['id'] ?? null,
             $data['__typename'] ?? null,

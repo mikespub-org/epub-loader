@@ -11,7 +11,7 @@ class Mapper
     /**
      * Handle value for nullable value
      * ```
-     * $data['title'] ?? null
+     * $data['__typename'] ?? null
      * ```
      * @param array<string, mixed> $data
      */
@@ -63,22 +63,23 @@ class Mapper
      */
     public static function getValues(array $data, array $keys): array
     {
-        $args = [];
+        // @todo map array key to constructor arg to use named arguments? - cfr. GoodReads\Books\BookMap
+        $values = [];
         foreach ($keys as $key => $transform) {
             if (!isset($data[$key])) {
-                $args[] = null;
+                $values[$key] = null;
                 continue;
             }
             if (!isset($transform)) {
-                $args[] = $data[$key];
+                $values[$key] = $data[$key];
                 continue;
             }
             if (!is_array($transform)) {
-                $args[] = $transform($data[$key]);
+                $values[$key] = $transform($data[$key]);
                 continue;
             }
-            $args[] = array_map($transform[0], $data[$key]);
+            $values[$key] = array_map($transform[0], $data[$key]);
         }
-        return $args;
+        return $values;
     }
 }
