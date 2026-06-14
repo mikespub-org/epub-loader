@@ -310,7 +310,7 @@ class Mapper
 
     /**
      * Validate that the values array contains all required parameters for the class constructor
-     * @deprecated Logic moved to integrated loop in getValues()
+     * @deprecated 4.1.1 Logic moved to integrated loop in getValues()
      * @param class-string $class
      * @param array<string, mixed> $values
      * @throws \InvalidArgumentException

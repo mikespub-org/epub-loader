@@ -15,7 +15,7 @@ class WorkSearchResult
     public ?bool $numFoundExact;
     /** @var WorkDocs[]|null */
     public ?array $docs;
-    public ?int $num_found;
+    public ?int $num_found = null;
     public ?string $q;
     public mixed $offset;
 
