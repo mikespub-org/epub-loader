@@ -6,6 +6,8 @@
 
 namespace Marsender\EPubLoader\Metadata;
 
+use Marsender\EPubLoader\RequestHandler;
+
 class BaseMatch
 {
     public const ENTITY_URL = 'http://www.wikidata.org/entity/';
@@ -35,6 +37,7 @@ class BaseMatch
         $this->context = stream_context_create([
             'http' => [
                 'timeout' => 60,
+                'user_agent' => 'EPubLoader/' . RequestHandler::VERSION . ' (https://github.com/mikespub-org/epub-loader)',
             ],
         ]);
     }
@@ -56,6 +59,16 @@ class BaseMatch
     public function getCache()
     {
         return $this->cache;
+    }
+
+    /**
+     * Summary of getUrlContent
+     * @param string $url
+     * @return bool|string
+     */
+    public function getUrlContent($url)
+    {
+        return file_get_contents($url, false, $this->context);
     }
 
     /**

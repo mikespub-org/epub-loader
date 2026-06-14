@@ -6,6 +6,10 @@
 4.x.x - 2026xxxx
   * ...
 
+4.1.2 - 20260614 Use Metadata Mapper
+  * Add user_agent to http context
+  * Use Metadata Mapper in fromJson()
+
 4.0.6 - 20260612 Fix phpstan issues
   * Update packages + fix phpstan issues
 
