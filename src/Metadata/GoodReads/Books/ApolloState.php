@@ -105,14 +105,16 @@ class ApolloState
     public static function fromJson(array $data): self
     {
         // simulate patternProperties from JSON schema - multiple keys here
-        return new self(
-            rootQuery: Mapper::getItem($data, 'ROOT_QUERY', RootQuery::fromJson(...)),
-            contributorMap: Mapper::getPatternMap($data, '/^Contributor:/', ContributorMap::fromJson(...)),
-            seriesMap: Mapper::getPatternMap($data, '/^Series:/', SeriesMap::fromJson(...)),
-            bookMap: Mapper::getPatternMap($data, '/^Book:/', BookMap::fromJson(...)),
-            workMap: Mapper::getPatternMap($data, '/^Work:/', WorkMap::fromJson(...)),
-            userMap: Mapper::getPatternMap($data, '/^User:/', UserMap::fromJson(...)),
-            reviewMap: Mapper::getPatternMap($data, '/^Review:/', ReviewMap::fromJson(...)),
-        );
+        $keys = [
+            'ROOT_QUERY'      => RootQuery::fromJson(...),
+            '/^Contributor:/' => [ContributorMap::fromJson(...)],
+            '/^Series:/'      => [SeriesMap::fromJson(...)],
+            '/^Book:/'        => [BookMap::fromJson(...)],
+            '/^Work:/'        => [WorkMap::fromJson(...)],
+            '/^User:/'        => [UserMap::fromJson(...)],
+            '/^Review:/'      => [ReviewMap::fromJson(...)],
+        ];
+
+        return new self(...Mapper::getValues($data, $keys, self::class));
     }
 }

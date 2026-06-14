@@ -19,7 +19,7 @@ class WorkMap
     public ?Topics $topics;
     public mixed $viewerShelvings;
     public ?string $viewerShelvingsUrl;
-    public ?FeaturedKnh $featuredKnh;
+    public ?FeaturedKnh $featuredKNH;
     public mixed $giveaways;
     public ?Editions $editions;
 
@@ -39,7 +39,7 @@ class WorkMap
         ?Topics $topics,
         mixed $viewerShelvings,
         ?string $viewerShelvingsUrl,
-        ?FeaturedKnh $featuredKnh,
+        ?FeaturedKnh $featuredKNH,
         mixed $giveaways,
         ?Editions $editions
     ) {
@@ -55,7 +55,7 @@ class WorkMap
         $this->topics = $topics;
         $this->viewerShelvings = $viewerShelvings;
         $this->viewerShelvingsUrl = $viewerShelvingsUrl;
-        $this->featuredKnh = $featuredKnh;
+        $this->featuredKNH = $featuredKNH;
         $this->giveaways = $giveaways;
         $this->editions = $editions;
     }
@@ -134,7 +134,7 @@ class WorkMap
 
     public function getFeaturedKnh(): ?FeaturedKnh
     {
-        return $this->featuredKnh;
+        return $this->featuredKNH;
     }
 
     public function getGiveaways(): mixed
@@ -153,7 +153,9 @@ class WorkMap
     public static function fromJson(array $data): self
     {
         // simulate patternProperties from JSON schema - single key here
-        /**
+        // quotes({\"pagination\":{\"limit\":1}}) = one per book
+        // questions({\"pagination\":{\"limit\":1}}) = one per book
+        // topics({\"pagination\":{\"limit\":1}}) = one per book
         $keys = [
             'id'                => null,
             '__typename'        => null,
@@ -162,11 +164,8 @@ class WorkMap
             'choiceAwards'      => null,
             'details'           => Details::fromJson(...),
             'stats'             => Stats::fromJson(...),
-            // quotes({\"pagination\":{\"limit\":1}}) = one per book
             '/^quotes\(/'       => Quotes::fromJson(...),
-            // questions({\"pagination\":{\"limit\":1}}) = one per book
             '/^questions\(/'    => Questions::fromJson(...),
-            // topics({\"pagination\":{\"limit\":1}}) = one per book
             '/^topics\(/'       => Topics::fromJson(...),
             'viewerShelvings'   => null,
             'viewerShelvingsUrl' => null,
@@ -176,27 +175,5 @@ class WorkMap
         ];
 
         return new self(...Mapper::getValues($data, $keys, self::class));
-         */
-        return new self(
-            id: $data['id'] ?? null,
-            typename: $data['__typename'] ?? null,
-            legacyId: $data['legacyId'] ?? null,
-            bestBook: Mapper::getItem($data, 'bestBook', BestBook::fromJson(...)),
-            choiceAwards: $data['choiceAwards'] ?? null,
-            details: Mapper::getItem($data, 'details', Details::fromJson(...)),
-            stats: Mapper::getItem($data, 'stats', Stats::fromJson(...)),
-            // quotes({\"pagination\":{\"limit\":1}}) = one per book
-            quotes: Mapper::getPatternItem($data, '/^quotes\(/', Quotes::fromJson(...)),
-            // questions({\"pagination\":{\"limit\":1}}) = one per book
-            questions: Mapper::getPatternItem($data, '/^questions\(/', Questions::fromJson(...)),
-            // topics({\"pagination\":{\"limit\":1}}) = one per book
-            topics: Mapper::getPatternItem($data, '/^topics\(/', Topics::fromJson(...)),
-            viewerShelvings: $data['viewerShelvings'] ?? null,
-            viewerShelvingsUrl: $data['viewerShelvingsUrl'] ?? null,
-            // Warning: different case for argument here
-            featuredKnh: Mapper::getItem($data, 'featuredKNH', FeaturedKnh::fromJson(...)),
-            giveaways: $data['giveaways'] ?? null,
-            editions: Mapper::getItem($data, 'editions', Editions::fromJson(...)),
-        );
     }
 }

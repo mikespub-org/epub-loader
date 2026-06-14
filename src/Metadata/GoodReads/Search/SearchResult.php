@@ -43,7 +43,7 @@ class SearchResult
         // simulate patternProperties from JSON schema - all keys here
         /**
         $keys = [
-            '/^\d+/ as properties' => [ AuthorEntry::fromJson(...) ],
+            '/^\d+/' => [ AuthorEntry::fromJson(...) ],
         ];
 
         return new self(...Mapper::getValues($data, $keys, self::class));

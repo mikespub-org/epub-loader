@@ -81,6 +81,26 @@ class SeriesResult
      */
     public static function fromJson(array $data): self
     {
+        $info = self::processRows($data);
+
+        $keys = [
+            'id'          => null,
+            'title'       => null,
+            'subtitle'    => null,
+            'description' => null,
+            'numWorks'    => null,
+            'bookList'    => null,
+        ];
+
+        return new self(...Mapper::getValues($info, $keys, self::class));
+    }
+
+    /**
+     * @param array<mixed> $data
+     * @return array<string, mixed>
+     */
+    private static function processRows(array $data): array
+    {
         // id is not available in JSON data - this must be set by caller
         $info = [
             'id' => null,
@@ -90,6 +110,7 @@ class SeriesResult
             'numWorks' => null,
             'bookList' => [],
         ];
+
         // convert row format by type - we can have several SeriesList here
         foreach ($data as $row) {
             switch ($row[0]) {
@@ -117,13 +138,7 @@ class SeriesResult
                     throw new Exception('Unknown series row format');
             }
         }
-        return new self(
-            $info['id'],
-            $info['title'],
-            $info['subtitle'],
-            $info['description'],
-            $info['numWorks'],
-            $info['bookList']
-        );
+
+        return $info;
     }
 }

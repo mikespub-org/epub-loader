@@ -7,12 +7,12 @@ use Marsender\EPubLoader\Metadata\Mapper;
 class Props
 {
     public ?PageProps $pageProps;
-    public ?bool $nSSP;
+    public ?bool $nSsp;
 
-    public function __construct(?PageProps $pageProps, ?bool $nSSP)
+    public function __construct(?PageProps $pageProps, ?bool $nSsp)
     {
         $this->pageProps = $pageProps;
-        $this->nSSP = $nSSP;
+        $this->nSsp = $nSsp;
     }
 
     public function getPageProps(): ?PageProps
@@ -20,9 +20,9 @@ class Props
         return $this->pageProps;
     }
 
-    public function getNSSP(): ?bool
+    public function getNSsp(): ?bool
     {
-        return $this->nSSP;
+        return $this->nSsp;
     }
 
     /**
